@@ -422,8 +422,13 @@ export class NgxJsonFormComponent {
       this.formGroup().get(field.formControlName!)?.setValue(remaining);
     }
 
+    // A button with buttonRole === 'submit' / 'reset' / 'cancel' / 'custom'
+    // should fire its action whether or not 'click' was explicitly listed
+    // in acceptedEvents — leaving it off is the most common cause of
+    // "my submit button does nothing" support tickets. (Added 1.1.0.)
+    const isButtonClick = type === 'click' && field.config.attributes.inputType === 'button';
     const allowed = field.config.attributes.acceptedEvents ?? [];
-    if (!allowed.includes(type)) return;
+    if (!isButtonClick && !allowed.includes(type)) return;
 
     const payload = this.buildPayload(field, type, event);
 

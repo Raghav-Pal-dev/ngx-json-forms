@@ -28,6 +28,24 @@ import {
 } from './types';
 
 /**
+ * Turn camelCase / snake_case / kebab-case form-control names into a
+ * sentence-case label, used as a fallback when neither `field.label` nor
+ * `validations.messages.<rule>` is provided.
+ *   firstName  → "First name"
+ *   user_email → "User email"
+ *   vat-number → "Vat number"
+ */
+export function humaniseControlName(name: string): string {
+  const spaced = name
+    .replace(/[_-]+/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
+
+/**
  * English fallbacks used when no `messages` override is set on a field and
  * no custom TranslateFn is provided. Keeps repeater rows and other
  * untouched fields from rendering raw i18n keys like "form.errors.required".
@@ -197,9 +215,15 @@ export class FormEngineService {
       if (v) syncValidators.push(v);
     }
 
-    for (const token of field.validations?.asyncValidators ?? []) {
-      const v = this.validatorRegistry.getAsync(token);
-      if (v) asyncValidators.push(v);
+    // Async validators may be either registry tokens (strings) or inline
+    // AsyncValidatorFn callables (added in 1.1.0).
+    for (const entry of field.validations?.asyncValidators ?? []) {
+      if (typeof entry === 'function') {
+        asyncValidators.push(entry);
+      } else {
+        const v = this.validatorRegistry.getAsync(entry);
+        if (v) asyncValidators.push(v);
+      }
     }
 
     return { syncValidators, asyncValidators };
@@ -240,7 +264,12 @@ export class FormEngineService {
   setupComputedFields(formGroup: FormGroup, fields: FormField[]): void {
     for (const field of fields) {
       if (!field.computed || !field.formControlName) continue;
-      const fn = this.fieldRegistry.getComputation(field.computed.fn);
+      // `fn` may be either a registered token (string) or an inline
+      // ComputationFn (added in 1.1.0). Tokens are resolved through the
+      // registry; functions are used as-is.
+      const fnRef = field.computed.fn;
+      const fn =
+        typeof fnRef === 'function' ? fnRef : this.fieldRegistry.getComputation(fnRef);
       if (!fn) continue;
 
       const target = formGroup.get(field.formControlName);
@@ -339,7 +368,12 @@ export class FormEngineService {
     const messages = field.validations?.messages ?? {};
     const rules = field.validations?.rules;
     const e = control.errors;
-    const label = field.label ?? field.formControlName ?? 'Field';
+    // Prefer an explicit label; fall back to a humanised version of the
+    // formControlName (firstName → "First name") so users who skip the
+    // `label` field don't end up with messages like "firstName is required".
+    const label =
+      field.label ??
+      (field.formControlName ? humaniseControlName(field.formControlName) : 'Field');
 
     if (e['required'])  return messages['required']  ?? this.translate('form.errors.required', { label });
     if (e['email'])     return messages['email']     ?? this.translate('form.errors.email', { label });

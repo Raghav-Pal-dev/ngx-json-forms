@@ -21,12 +21,32 @@ npm i @ngx-json-forms/core
 
 Peer dependencies: `@angular/core`, `@angular/forms`, `rxjs` (all ≥19).
 
+## One-call wiring (1.1.0+)
+
+```ts
+import { ApplicationConfig } from '@angular/core';
+import { provideNgxJsonForms } from '@ngx-json-forms/core';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideNgxJsonForms({
+      // both options optional
+      // storage:   myStorageAdapter,
+      // translate: (key, params) => i18n.translate(key, params),
+    }),
+  ],
+};
+```
+
+Granular alternatives also exist: `provideFormEngineStorage(adapter)`,
+`provideFormEngineTranslator(fn)`.
+
 ## Quick start
 
 ```ts
 import { Component, inject } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { FormEngineService, FormField } from '@ngx-json-forms/core';
+import { FormEngineService, FormField, presets } from '@ngx-json-forms/core';
 
 @Component({
   selector: 'app-profile',
@@ -42,17 +62,10 @@ import { FormEngineService, FormField } from '@ngx-json-forms/core';
 export class ProfileForm {
   private readonly engine = inject(FormEngineService);
 
+  // Use presets for the common cases, hand-roll the rest:
   fields: FormField[] = [
-    {
-      formControlName: 'firstName',
-      config: { attributes: { inputType: 'text' } },
-      validations: { rules: { required: true, minLength: 2 } },
-    },
-    {
-      formControlName: 'email',
-      config: { attributes: { inputType: 'text' } },
-      validations: { rules: { required: true, email: true } },
-    },
+    presets.text({  formControlName: 'firstName', label: 'First name', required: true, minLength: 2 }),
+    presets.email({ formControlName: 'email',     label: 'Email' }),
   ];
 
   form = this.engine.buildFormGroup(this.fields);
@@ -83,6 +96,23 @@ export class ProfileForm {
   it from the submit payload.
 - **`computed`** field config — derive a control's value from other
   controls via a function token.
+
+## Computed fields — inline functions (1.1.0+)
+
+```ts
+{
+  formControlName: 'fullName',
+  transient: true,             // don't include in the submit payload
+  computed: {
+    deps: ['firstName', 'lastName'],
+    fn: (deps) => `${deps['firstName'] ?? ''} ${deps['lastName'] ?? ''}`.trim(),
+  },
+  config: { attributes: { inputType: 'text', readonly: true } },
+}
+```
+
+`computed.fn` still accepts a registry token (string) for cases where
+you want to share the computation across forms — both forms work.
 
 ## Custom translations
 

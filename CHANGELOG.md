@@ -4,6 +4,69 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] — 2026-05-24
+
+### Added — DX improvements driven by the consumer-side test pass
+
+- **`provideNgxJsonForms({ storage?, translate? })`** — one-call wiring
+  helper from `@ngx-json-forms/core`. Wraps the `FORM_ENGINE_STORAGE`
+  and `FORM_ENGINE_TRANSLATE` injection tokens so consumers don't have
+  to write the `{ provide, useValue }` boilerplate.
+- **`provideFormEngineStorage(adapter)`** and
+  **`provideFormEngineTranslator(fn)`** — granular factory helpers for
+  the same two tokens, in case you want to wire only one of them.
+- **`presets`** export — ready-made `FormField` factories for the most
+  common field types, so a "five-field signup" stops being five
+  hand-typed JSON blocks:
+  ```ts
+  import { presets } from '@ngx-json-forms/core';
+  const fields = [
+    presets.text({ formControlName: 'firstName', label: 'First name', required: true }),
+    presets.email({ formControlName: 'email',    label: 'Email' }),
+    presets.password({ formControlName: 'pwd',   label: 'Password', strong: true }),
+    presets.phone({ formControlName: 'mobile',   label: 'Mobile' }),
+    presets.submit({ label: 'Create account' }),
+  ];
+  ```
+- **Inline `computed.fn`** — `computed.fn` now accepts either a
+  registry token (existing behaviour) or a `ComputationFn` defined
+  inline:
+  ```ts
+  { formControlName: 'fullName',
+    computed: {
+      deps: ['first', 'last'],
+      fn: (deps) => `${deps['first'] ?? ''} ${deps['last'] ?? ''}`.trim(),
+    },
+    ... }
+  ```
+- **Inline `asyncValidators`** — array entries may be either tokens
+  (existing behaviour) or `AsyncValidatorFn` callables. Mix freely.
+- **`humaniseControlName(name)`** export — pure helper used internally
+  for the error-message label fallback (see below); exported because
+  it's also handy for labels in custom UIs.
+
+### Changed — friendlier defaults
+
+- **Error messages no longer say "firstName is required".** When a
+  field has no `label`, the engine now humanises the `formControlName`
+  (`firstName` → "First name") before plugging it into the default
+  message template. Existing fields with explicit `label` are
+  unchanged.
+- **`<button buttonRole="submit">` fires `formSubmit` even when
+  `acceptedEvents` doesn't list `'click'`.** This was the single most
+  common "my submit button does nothing" footgun for new users.
+  Non-button click handlers are still gated on `acceptedEvents` —
+  nothing else changed.
+
+### Not a breaking change
+
+Everything in 1.1.0 is purely additive. Existing field schemas, custom
+renderers, registered tokens, manually-provided storage/translate
+adapters — all keep working. `npm i @ngx-json-forms/{core,primeng}@^1.1.0`
+on top of any existing 1.x consumer is safe.
+
+[1.1.0]: https://github.com/Raghav-Pal-dev/ngx-json-forms/releases/tag/v1.1.0
+
 ## [1.0.2] — 2026-05-24
 
 ### Fixed

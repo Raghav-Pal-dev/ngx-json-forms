@@ -91,8 +91,11 @@ export interface ValidationMessages {
 export interface FieldValidations {
   rules?: ValidationRules;
   messages?: ValidationMessages;
-  /** Async validator tokens — resolved via AsyncValidatorRegistry */
-  asyncValidators?: string[];
+  /**
+   * Async validator tokens (resolved via `AsyncValidatorRegistry`), or
+   * `AsyncValidatorFn` callables (added in 1.1.0). Mix freely.
+   */
+  asyncValidators?: (string | AsyncValidatorFn)[];
 }
 
 /** Cross-field group-level validators evaluated against the FormGroup raw value */
@@ -352,12 +355,20 @@ export interface FormField {
   tabIndex?: number;
   /** Mark control value to be excluded from the submit payload */
   transient?: boolean;
-  /** Computed field: derived from other controls' values, read-only */
+  /**
+   * Computed field: derived from other controls' values, read-only.
+   * `fn` may be either:
+   *   - a string token previously registered via
+   *     `FieldRegistry.registerComputation(token, fn)`, OR
+   *   - a `ComputationFn` defined inline in the JSON / TS schema (added
+   *     in 1.1.0; avoids the OnInit registration step for one-off
+   *     computations).
+   */
   computed?: {
     /** Names of controls whose changes recompute this value */
     deps: string[];
-    /** Token registered via FieldRegistry.registerComputation */
-    fn: string;
+    /** Registry token, or an inline `ComputationFn` */
+    fn: string | ComputationFn;
   };
   config: {
     attributes: FieldAttributes;
