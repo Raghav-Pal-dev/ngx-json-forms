@@ -59,18 +59,24 @@ import { NgxJsonFormComponent } from './ngx-form-engine-primeng.component';
           }
         </ol>
 
-        <!-- Step body -->
-        @if (activeStep(); as step) {
-          @if (step.description) {
-            <p class="ngx-stepper-desc">{{ step.description }}</p>
-          }
-          <ngx-json-form
-            [schema]="schema()"
-            [stepFields]="step.fields"
-            (formChange)="formChange.emit($event)"
-            (formSubmit)="onSubmit($event)"
-          />
+        <!--
+          Step body — resolve the active step from the schema INPUT (not
+          from formService.activeStep()) so the inner <ngx-json-form>
+          always renders. formService.activeStep() only becomes non-null
+          AFTER the inner form calls register(), which only happens once
+          the inner form is in the DOM; gating on activeStep() created a
+          chicken-and-egg that left the body permanently blank.
+        -->
+        @let currentStep = schema().steps?.[activeIndex()];
+        @if (currentStep?.description) {
+          <p class="ngx-stepper-desc">{{ currentStep!.description }}</p>
         }
+        <ngx-json-form
+          [schema]="schema()"
+          [stepFields]="currentStep?.fields ?? []"
+          (formChange)="formChange.emit($event)"
+          (formSubmit)="onSubmit($event)"
+        />
 
         <!-- Controls -->
         <div class="ngx-stepper-actions">

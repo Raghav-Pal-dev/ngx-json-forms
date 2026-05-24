@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] — 2026-05-24
+
+### Fixed
+- **`NgxJsonFormStepperComponent` rendered no fields at all** (latent bug
+  uncovered by the consumer-side test harness). The stepper template
+  gated the inner `<ngx-json-form>` on `@if (activeStep(); as step)`,
+  but `activeStep()` is a service-side computed that becomes non-null
+  only after the inner form's `buildForm()` calls `register()` — which
+  cannot happen until the inner form is in the DOM. The template now
+  derives the active step from the schema input via `@let currentStep
+  = schema().steps?.[activeIndex()]`, so the inner form always renders
+  and the wizard works end-to-end (Next blocks on invalid step fields;
+  Back / Submit / step-indicator clicks all behave correctly).
+
+[1.0.2]: https://github.com/Raghav-Pal-dev/ngx-json-forms/releases/tag/v1.0.2
+
 ## [1.0.1] — 2026-05-24
 
 ### Changed

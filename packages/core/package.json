@@ -1,6 +1,6 @@
 {
   "name": "@ngx-json-forms/core",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Core types, form builder, validation engine, and service for ngx-json-forms — a data-driven Angular form engine.",
   "keywords": [
     "angular",
