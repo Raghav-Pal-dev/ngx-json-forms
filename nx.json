@@ -37,7 +37,6 @@
       }
     }
   ],
-  "nxCloudId": "69eb4067cc2f37be62b22aad",
   "analytics": false,
   "targetDefaults": {
     "@nx/angular:package": {
