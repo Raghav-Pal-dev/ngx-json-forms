@@ -51,3 +51,20 @@ Thumbs.db
 __screenshots__/
 
 test-output
+
+# Local AI-agent / CLI tooling (personal, not part of the published library)
+.agents/
+.claude/
+.codex/
+.gemini/
+.opencode/
+.cursor/
+.junie/
+.aider/
+.continue/
+.amp/
+.warp/
+.crush/
+.verdaccio/
+scratchpad*.js
+scratchpad*.ts
