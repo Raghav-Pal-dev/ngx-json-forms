@@ -1,0 +1,769 @@
+@if (formTitle().length) {
+  <div class="ngx-form-title">{{ formTitle() }}</div>
+}
+
+@if (ready()) {
+  <form [formGroup]="formGroup()" class="ngx-form-grid">
+    @for (field of visibleFields(); track field.formControlName ?? $index) {
+      <div
+        [class]="
+          'ngx-col-' +
+          (field.layout?.columnSpan ?? 12) +
+          ' ' +
+          (field.layout?.wrapperClass ?? '')
+        "
+        [style]="field.layout?.wrapperStyle ?? {}"
+        [style.display]="field.config.attributes.isHidden ? 'none' : 'block'"
+      >
+        <!-- Float Label wrapper -->
+        @if (field.floatLabel) {
+          <p-floatlabel [variant]="field.floatVariant ?? 'on'">
+            <div class="ngx-field-inner">
+              <ng-container
+                [ngTemplateOutlet]="fieldTpl"
+                [ngTemplateOutletContext]="{ $implicit: field, formGroup: formGroup() }"
+              />
+            </div>
+            <label
+              [attr.for]="field.formControlName + 'Id'"
+              [attr.id]="field.formControlName + 'Label'"
+            >
+              @if (field.labelIconPos === 'left') {
+                <i [class]="field.labelIcon"></i>
+              }
+              {{ field.label }}
+              @if (field.labelIconPos === 'right') {
+                <i [class]="field.labelIcon"></i>
+              }
+              @if (field.validations?.rules?.required) {
+                <span class="ngx-required">*</span>
+              }
+            </label>
+          </p-floatlabel>
+        }
+
+        <!-- Toggle card layout -->
+        @else if (
+          field.config.attributes.cardLayout &&
+          field.config.attributes.inputType === 'toggle'
+        ) {
+          <div
+            class="ngx-toggle-card"
+            [style.--toggle-color]="field.config.attributes.cardIconColor"
+          >
+            <div
+              class="ngx-toggle-card-icon"
+              [style.background]="
+                field.config.attributes.cardIconBg ??
+                'var(--p-primary-50, #eff6ff)'
+              "
+              [style.color]="
+                field.config.attributes.cardIconColor ??
+                'var(--p-primary-500, #3b82f6)'
+              "
+            >
+              <i [class]="field.config.attributes.cardIcon ?? 'pi pi-bell'"></i>
+            </div>
+            <div class="ngx-toggle-card-body">
+              <span class="ngx-toggle-card-label">
+                {{ field.label }}
+                @if (field.validations?.rules?.required) {
+                  <span class="ngx-required">*</span>
+                }
+              </span>
+              @if (field.config.attributes.info?.length) {
+                <span
+                  class="ngx-toggle-card-desc"
+                  [innerHTML]="field.config.attributes.info"
+                ></span>
+              }
+            </div>
+            <p-toggleswitch
+              [formControlName]="field.formControlName!"
+              [inputId]="field.formControlName + 'Id'"
+              (onChange)="onEvent(field, $event, 'change')"
+            />
+          </div>
+          <!--
+            Always reserve one line of space for the error so the row height
+            doesn't change when validation fires (otherwise sibling fields
+            jump down when the error appears).
+          -->
+          @if (field.validations?.rules) {
+            <small
+              class="ngx-error"
+              [class.ngx-error--placeholder]="!errorMap()[field.formControlName!]"
+              [attr.id]="field.formControlName + 'Err'"
+            >{{ errorMap()[field.formControlName!] || ' ' }}</small>
+          }
+        }
+
+        <!-- Normal label wrapper -->
+        @else {
+          @if (field.label && field.label.length) {
+            <label
+              class="ngx-field-label"
+              [attr.for]="field.formControlName + 'Id'"
+              [attr.id]="field.formControlName + 'Label'"
+            >
+              @if (field.labelIconPos === 'left') {
+                <i [class]="field.labelIcon"></i>
+              }
+              {{ field.label }}
+              @if (field.labelIconPos === 'right') {
+                <i [class]="field.labelIcon"></i>
+              }
+              @if (field.validations?.rules?.required) {
+                <span class="ngx-required">*</span>
+              }
+            </label>
+          }
+          <div class="ngx-field-inner">
+            <ng-container
+              [ngTemplateOutlet]="fieldTpl"
+              [ngTemplateOutletContext]="{ $implicit: field, formGroup: formGroup() }"
+            />
+          </div>
+
+          <!--
+            Validation error — always reserve one line of space (placeholder
+            class makes it invisible when there's no error) so triggering a
+            required/pattern message doesn't push the row below it down.
+          -->
+          @if (field.validations?.rules) {
+            <small
+              class="ngx-error"
+              [class.ngx-error--placeholder]="!errorMap()[field.formControlName!]"
+              [attr.id]="field.formControlName + 'Err'"
+            >{{ errorMap()[field.formControlName!] || ' ' }}</small>
+          }
+
+          <!-- Info / hint -->
+          @if (field.config.attributes.info?.length) {
+            <small
+              class="ngx-hint"
+              [attr.id]="field.formControlName + 'Hint'"
+              [innerHTML]="field.config.attributes.info"
+            ></small>
+          }
+        }
+      </div>
+    }
+  </form>
+}
+
+<!-- ─── Field Renderer Template ──────────────────────────────────────────── -->
+<!--
+  `formGroup` is passed in via the template context so each rendering site
+  binds the right group: the root FormGroup for top-level fields, the row's
+  FormGroup for repeater rows. Hard-coding `formGroup()` here would override
+  row-level bindings and route nested formControlName lookups to the root,
+  which is the bug we're fixing.
+
+  Known issue: during initial CD passes Angular logs NG01050 spam because
+  the FormGroup directive on this ng-container materialises after children
+  formControlName directives query their parent ControlContainer. Bindings
+  recover and form values flow correctly afterwards. Cleaner fix would be
+  to avoid the ngTemplateOutlet + context + nested formGroup combination
+  altogether (e.g. inline the @switch at each call site).
+-->
+<ng-template #fieldTpl let-field let-fg="formGroup" let-idSuffix="idSuffix">
+  <ng-container [formGroup]="fg">
+    @switch (field.config.attributes.inputType) {
+      <!-- ── Custom field (registry) ── -->
+      @case (customRenderer(field) ? field.config.attributes.inputType : '__never__') {
+        <ng-container
+          *ngComponentOutlet="customRenderer(field)!; inputs: customRendererInputs(field)"
+        />
+      }
+
+      <!-- ── Group (nested FormGroup) ── -->
+      @case ('group') {
+        <fieldset
+          class="ngx-field-group"
+          [attr.formGroupName]="field.formControlName"
+        >
+          @for (sub of field.config.attributes.groupFields ?? []; track sub.formControlName ?? $index) {
+            <div class="ngx-field-group-row">
+              <ng-container
+                [ngTemplateOutlet]="fieldTpl"
+                [ngTemplateOutletContext]="{ $implicit: sub, formGroup: formGroup() }"
+              />
+            </div>
+          }
+        </fieldset>
+      }
+
+      <!-- ── Repeater (FormArray) ── -->
+      @case ('repeater') {
+        <div class="ngx-repeater">
+          @for (row of getArray(field.formControlName!)?.controls ?? []; track $index) {
+            @let rowIndex = $index;
+            <div class="ngx-repeater-row" [formGroup]="$any(row)">
+              <div class="ngx-repeater-row-fields">
+                @for (sub of field.config.attributes.itemFields ?? []; track sub.formControlName ?? $index) {
+                  <div
+                    [class]="
+                      'ngx-col-' + (sub.layout?.columnSpan ?? 12)
+                    "
+                  >
+                    @if (sub.label) {
+                      <label
+                        class="ngx-field-label"
+                        [attr.for]="inputId(sub, rowIndex)"
+                      >
+                        {{ sub.label }}
+                        @if (sub.validations?.rules?.required) {
+                          <span class="ngx-required">*</span>
+                        }
+                      </label>
+                    }
+                    <ng-container
+                      [ngTemplateOutlet]="fieldTpl"
+                      [ngTemplateOutletContext]="{ $implicit: sub, formGroup: $any(row), idSuffix: rowIndex }"
+                    />
+                    @if (sub.validations?.rules && sub.formControlName) {
+                      <small
+                        class="ngx-error"
+                        [class.ngx-error--placeholder]="!resolveRowError($any(row), sub)"
+                      >{{ resolveRowError($any(row), sub) || ' ' }}</small>
+                    }
+                  </div>
+                }
+              </div>
+              <button
+                type="button"
+                class="ngx-repeater-remove"
+                pButton
+                [icon]="'pi pi-trash'"
+                [rounded]="true"
+                [text]="true"
+                (click)="removeRepeaterRow(field, $index)"
+              ></button>
+            </div>
+          }
+          <button
+            pButton
+            type="button"
+            class="ngx-repeater-add"
+            [icon]="'pi pi-plus'"
+            [label]="field.config.attributes.addLabel ?? 'Add row'"
+            [text]="true"
+            (click)="addRepeaterRow(field)"
+          ></button>
+        </div>
+      }
+
+      <!-- ── Dependent / Cascading Dropdown ── -->
+      @case ('dependentDropdown') {
+        <p-cascadeselect
+          [id]="inputId(field, idSuffix)"
+          [inputId]="inputId(field, idSuffix)"
+          [formControlName]="field.formControlName!"
+          [options]="$any(optionsFor(field))"
+          [optionLabel]="field.config.attributes.optionLabel ?? 'label'"
+          [optionValue]="field.config.attributes.optionValue ?? 'value'"
+          [optionGroupLabel]="field.config.attributes.optionGroupLabel ?? 'label'"
+          [optionGroupChildren]="
+            $any(field.config.attributes.optionGroupChildren ?? ['children'])
+          "
+          [placeholder]="field.placeholder ?? ''"
+          appendTo="body"
+          (onChange)="onEvent(field, $event, 'change')"
+          (onShow)="onEvent(field, $event, 'show')"
+          (onHide)="onEvent(field, $event, 'hide')"
+        />
+      }
+
+      <!-- ── Editor (rich text) ── -->
+      @case ('editor') {
+        <p-editor
+          [formControlName]="field.formControlName!"
+          [style]="{ height: (field.config.attributes['height'] ?? '180px') }"
+          (onTextChange)="onEvent(field, $event, 'change')"
+        ></p-editor>
+      }
+
+      <!-- ── Confirm password ── -->
+      @case ('confirmPassword') {
+        <p-password
+          [inputId]="inputId(field, idSuffix)"
+          [formControlName]="field.formControlName!"
+          [feedback]="false"
+          [toggleMask]="field.config.attributes.toggleMask ?? true"
+          [placeholder]="field.placeholder ?? ''"
+          appendTo="body"
+          (onBlur)="onEvent(field, $event, 'blur')"
+        />
+      }
+
+      <!-- ── File Upload ── -->
+      @case ('fileUpload') {
+        <div>
+          <div
+            [class]="field.config.attributes.isInline ? 'ngx-file-inline' : ''"
+          >
+            <p-fileUpload
+              mode="basic"
+              customUpload
+              [id]="inputId(field, idSuffix)"
+              [multiple]="field.config.attributes.multiple"
+              [chooseIcon]="field.config.attributes.chooseIcon ?? 'pi pi-upload'"
+              [accept]="field.config.attributes.accept ?? 'image/*'"
+              [maxFileSize]="field.config.attributes.maxFileSize ?? 1000000"
+              [auto]="true"
+              [chooseLabel]="field.config.attributes.chooseLabel ?? 'Upload'"
+              (uploadHandler)="onEvent(field, $event, 'uploadHandler')"
+            />
+
+            @if (uploadService.imagePreviews()[field.formControlName!]?.length) {
+              <div class="ngx-image-list">
+                @for (
+                  image of uploadService.imagePreviews()[field.formControlName!];
+                  let i = $index;
+                  track i
+                ) {
+                  <div class="ngx-image-card">
+                    <i
+                      class="pi pi-times ngx-image-remove"
+                      (click)="removeImage(field, image)"
+                    ></i>
+                    <div class="ngx-image-wrapper">
+                      @if (!uploadService.isBase64(image)) {
+                        <img
+                          fill
+                          sizes="100"
+                          [ngSrc]="image"
+                          (load)="uploadService.onLoad(image)"
+                          (error)="uploadService.onLoad(image)"
+                          [class.loading]="uploadService.isLoading(image)"
+                          [class.loaded]="!uploadService.isLoading(image)"
+                          class="ngx-preview-img"
+                          alt="preview"
+                        />
+                      } @else {
+                        <img
+                          fill
+                          sizes="100"
+                          [src]="image"
+                          (load)="uploadService.onLoad(image)"
+                          (error)="uploadService.onLoad(image)"
+                          [class.loading]="uploadService.isLoading(image)"
+                          [class.loaded]="!uploadService.isLoading(image)"
+                          class="ngx-preview-img"
+                          alt="preview"
+                        />
+                      }
+                      @if (uploadService.isLoading(image)) {
+                        <div class="ngx-img-skeleton"></div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ── Static Text ── -->
+      @case ('staticText') {
+        <span
+          (click)="onEvent(field, $event, 'staticTextClick')"
+          [innerHTML]="field.config.attributes.value"
+        ></span>
+      }
+
+      <!-- ── Divider ── -->
+      @case ('divider') {
+        <p-divider
+          [layout]="field.config.attributes.dividerLayout"
+          [type]="field.config.attributes.dividerType"
+          [align]="field.config.attributes.dividerAlign"
+        >
+          @if (field.config.attributes.value) {
+            <span [innerHTML]="field.config.attributes.value"></span>
+          }
+        </p-divider>
+      }
+
+      <!-- ── Button ── -->
+      @case ('button') {
+        <div class="ngx-btn-wrap">
+          <button
+            pButton
+            type="button"
+            [id]="inputId(field, idSuffix)"
+            [label]="field.btnLabel ?? ''"
+            [icon]="field.config.attributes.icon ?? ''"
+            [iconPos]="field.config.attributes.iconPosition ?? 'left'"
+            [tabindex]="field.tabIndex ?? 0"
+            [disabled]="
+              field.config.attributes.buttonRole === 'submit' ||
+              field.config.attributes.type === 'submit'
+                ? !formValid()
+                : !!field.config.attributes.disabled
+            "
+            [class.p-button-outlined]="
+              field.config.attributes.variant === 'secondary'
+            "
+            [class.p-button-text]="field.config.attributes.text === true"
+            [class.p-button-rounded]="field.config.attributes.rounded === true"
+            [class.p-button-sm]="field.config.attributes.size === 'sm'"
+            [class.p-button-lg]="field.config.attributes.size === 'lg'"
+            (click)="onEvent(field, $event)"
+          ></button>
+        </div>
+      }
+
+      <!-- ── Everything else inside p-inputgroup ── -->
+      @default {
+        <p-inputgroup>
+          @if (
+            field.config.attributes.fieldPos === 'left' &&
+            field.config.attributes.fieldIcon
+          ) {
+            <p-inputgroup-addon>
+              <i [class]="field.config.attributes.fieldIcon">
+                {{ field.config.attributes.fieldIconText ?? '' }}
+              </i>
+            </p-inputgroup-addon>
+          }
+
+          @switch (field.config.attributes.inputType) {
+            <!-- text / email / number / url -->
+            @case ('text') {
+              <input
+                pInputText
+                [id]="inputId(field, idSuffix)"
+                [formControlName]="field.formControlName!"
+                [type]="field.config.attributes.type ?? 'text'"
+                [tabindex]="field.tabIndex ?? 0"
+                [attr.placeholder]="placeholderFor(field)"
+                [attr.aria-describedby]="
+                  (errorMap()[field.formControlName!] ? field.formControlName + 'Err ' : '') +
+                  (field.config.attributes.info ? field.formControlName + 'Hint' : '')
+                "
+                [pKeyFilter]="field.config.attributes.keyfilter"
+                (change)="onEvent(field, $event)"
+                (input)="onEvent(field, $event)"
+                (focus)="onEvent(field, $event)"
+                (blur)="onEvent(field, $event)"
+                (keyup)="onEvent(field, $event)"
+                (keydown)="onEvent(field, $event)"
+                (keypress)="onEvent(field, $event)"
+              />
+            }
+
+            <!-- password -->
+            @case ('password') {
+              <p-password
+                [inputId]="inputId(field, idSuffix)"
+                [formControlName]="field.formControlName!"
+                [feedback]="field.config.attributes.feedback"
+                [toggleMask]="field.config.attributes.toggleMask"
+                [placeholder]="field.config.attributes.placeholder ?? ''"
+                appendTo="body"
+                (onBlur)="onEvent(field, $event, 'blur')"
+                (onFocus)="onEvent(field, $event, 'focus')"
+              >
+                @if (field.config.attributes.templateHeader) {
+                  <ng-container
+                    [ngTemplateOutlet]="field.config.attributes.templateHeader"
+                  />
+                }
+                @if (field.config.attributes.templateFooter) {
+                  <ng-container
+                    [ngTemplateOutlet]="field.config.attributes.templateFooter"
+                  />
+                }
+              </p-password>
+            }
+
+            <!-- textarea -->
+            @case ('textarea') {
+              <textarea
+                pTextarea
+                [id]="inputId(field, idSuffix)"
+                [formControlName]="field.formControlName!"
+                [rows]="field.config.attributes.rows ?? 3"
+                [cols]="field.config.attributes.cols ?? 30"
+                [autoResize]="field.config.attributes.autoResize"
+                [placeholder]="field.config.attributes.placeholder ?? ''"
+                (change)="onEvent(field, $event)"
+                (input)="onEvent(field, $event)"
+                (focus)="onEvent(field, $event)"
+                (blur)="onEvent(field, $event)"
+              >
+              </textarea>
+            }
+
+            <!-- select -->
+            @case ('select') {
+              <p-select
+                [id]="inputId(field, idSuffix)"
+                [inputId]="inputId(field, idSuffix)"
+                [attr.aria-labelledby]="field.formControlName + 'Label'"
+                [formControlName]="field.formControlName!"
+                [options]="$any(optionsFor(field))"
+                [optionLabel]="field.config.attributes.optionLabel"
+                [optionValue]="field.config.attributes.optionValue"
+                [placeholder]="placeholderFor(field) ?? ''"
+                [showClear]="field.config.attributes.showClear"
+                [filter]="field.config.attributes.filter"
+                [filterBy]="field.config.attributes.filterBy"
+                [filterPlaceholder]="field.config.attributes.filterPlaceholder"
+                [loading]="field.config.attributes.loading"
+                [virtualScroll]="field.config.attributes.virtualScroll"
+                [virtualScrollItemSize]="
+                  field.config.attributes.virtualScrollItemSize
+                "
+                [lazy]="field.config.attributes.lazy"
+                [emptyMessage]="field.config.attributes.emptyMessage"
+                appendTo="body"
+                (onChange)="onEvent(field, $event, 'change')"
+                (onFocus)="onEvent(field, $event, 'focus')"
+                (onBlur)="onEvent(field, $event, 'blur')"
+                (onShow)="onEvent(field, $event, 'show')"
+                (onHide)="onEvent(field, $event, 'hide')"
+                (onClear)="onEvent(field, $event, 'clear')"
+                (onLazyLoad)="onEvent(field, $event, 'lazyLoad')"
+              >
+                @if (
+                  field.config.attributes.isTemplate &&
+                  field.config.attributes.template
+                ) {
+                  <ng-container
+                    [ngTemplateOutlet]="field.config.attributes.template"
+                  />
+                }
+              </p-select>
+            }
+
+            <!-- multiSelect -->
+            @case ('multiSelect') {
+              <p-multiselect
+                [id]="inputId(field, idSuffix)"
+                [inputId]="inputId(field, idSuffix)"
+                [formControlName]="field.formControlName!"
+                [options]="$any(optionsFor(field))"
+                [optionLabel]="field.config.attributes.optionLabel"
+                [optionValue]="field.config.attributes.optionValue"
+                [placeholder]="field.config.attributes.placeholder ?? ''"
+                [filter]="field.config.attributes.filter"
+                [showClear]="field.config.attributes.showClear"
+                [selectionLimit]="field.config.attributes.selectionLimit"
+                [display]="field.config.attributes.display"
+                [loading]="field.config.attributes.loading"
+                [virtualScroll]="field.config.attributes.virtualScroll"
+                [virtualScrollItemSize]="
+                  field.config.attributes.virtualScrollItemSize
+                "
+                [scrollHeight]="field.config.attributes.scrollHeight"
+                appendTo="body"
+                (onChange)="onEvent(field, $event, 'change')"
+                (onFocus)="onEvent(field, $event, 'focus')"
+                (onBlur)="onEvent(field, $event, 'blur')"
+                (onClear)="onEvent(field, $event, 'clear')"
+                (onHide)="onEvent(field, $event, 'hide')"
+                (onRemove)="onEvent(field, $event, 'remove')"
+                (onSelectAll)="onEvent(field, $event, 'select')"
+              >
+              </p-multiselect>
+            }
+
+            <!-- autocomplete -->
+            @case ('autocomplete') {
+              <p-autocomplete
+                [id]="inputId(field, idSuffix)"
+                [inputId]="inputId(field, idSuffix)"
+                [formControlName]="field.formControlName!"
+                [placeholder]="field.config.attributes.placeholder ?? ''"
+                [suggestions]="field.config.attributes.suggestions"
+                [optionLabel]="field.config.attributes.optionLabel"
+                [multiple]="field.config.attributes.multiple"
+                [forceSelection]="field.config.attributes.forceSelection"
+                [dropdown]="field.config.attributes.dropdown"
+                [showClear]="field.config.attributes.showClear"
+                [completeOnFocus]="field.config.attributes.completeOnFocus"
+                [minLength]="field.config.attributes.minLength ?? 1"
+                [delay]="field.config.attributes.delay ?? 300"
+                [virtualScroll]="field.config.attributes.virtualScroll"
+                [virtualScrollItemSize]="
+                  field.config.attributes.virtualScrollItemSize
+                "
+                [scrollHeight]="field.config.attributes.scrollHeight"
+                appendTo="body"
+                (completeMethod)="onEvent(field, $event, 'complete')"
+                (onSelect)="onEvent(field, $event, 'select')"
+                (onUnselect)="onEvent(field, $event, 'unselect')"
+                (onAdd)="onEvent(field, $event, 'add')"
+                (onFocus)="onEvent(field, $event, 'focus')"
+                (onBlur)="onEvent(field, $event, 'blur')"
+                (onClear)="onEvent(field, $event, 'clear')"
+                (onInputKeydown)="onEvent(field, $event, 'inputKeydown')"
+              >
+              </p-autocomplete>
+            }
+
+            <!-- toggle -->
+            @case ('toggle') {
+              <p-toggleswitch
+                [formControlName]="field.formControlName!"
+                [inputId]="inputId(field, idSuffix)"
+                [attr.aria-labelledby]="field.formControlName + 'Label'"
+                (onChange)="onEvent(field, $event, 'change')"
+              />
+            }
+
+            <!-- checkbox -->
+            @case ('checkbox') {
+              <p-checkbox
+                [inputId]="inputId(field, idSuffix)"
+                [formControlName]="field.formControlName!"
+                [name]="field.config.attributes.name ?? field.formControlName!"
+                [value]="field.config.attributes.value"
+                (onChange)="onEvent(field, $event, 'change')"
+              />
+            }
+
+            <!-- radio -->
+            @case ('radio') {
+              @for (opt of $any(optionsFor(field)); track $index) {
+                <div class="ngx-radio-item">
+                  <p-radiobutton
+                    [inputId]="field.formControlName + '_' + $index"
+                    [formControlName]="field.formControlName!"
+                    [name]="field.formControlName!"
+                    [value]="
+                      opt[field.config.attributes.optionValue ?? 'value']
+                    "
+                    (onClick)="onEvent(field, $event, 'change')"
+                  />
+                  <label [for]="field.formControlName + '_' + $index">
+                    {{ opt[field.config.attributes.optionLabel ?? 'label'] }}
+                  </label>
+                </div>
+              }
+            }
+
+            <!-- datePicker / time / month / year -->
+            @case ('datePicker') {
+              <p-datepicker
+                [inputId]="inputId(field, idSuffix)"
+                [formControlName]="field.formControlName!"
+                [placeholder]="field.config.attributes.placeholder ?? ''"
+                [showIcon]="field.config.attributes.showIcon"
+                [minDate]="minDateFor(field)!"
+                [maxDate]="maxDateFor(field)!"
+                [selectionMode]="$any(field.config.attributes.selectionMode)"
+                [readonlyInput]="field.config.attributes.readonlyInput"
+                [showButtonBar]="field.config.attributes.showButtonBar"
+                [showTime]="field.config.attributes.showTime"
+                [hourFormat]="field.config.attributes.hourFormat"
+                [timeOnly]="field.config.attributes.timeOnly"
+                [view]="$any(field.config.attributes.view)"
+                [dateFormat]="field.config.attributes.dateFormat"
+                [numberOfMonths]="field.config.attributes.numberOfMonths ?? 1"
+                [showClear]="field.config.attributes.showClear"
+                appendTo="body"
+                (onSelect)="onEvent(field, $event, 'select')"
+                (onBlur)="onEvent(field, $event, 'blur')"
+                (onFocus)="onEvent(field, $event, 'focus')"
+                (onClear)="onEvent(field, $event, 'clear')"
+              >
+              </p-datepicker>
+            }
+
+            @case ('time') {
+              <p-datepicker
+                [inputId]="inputId(field, idSuffix)"
+                [formControlName]="field.formControlName!"
+                [placeholder]="field.config.attributes.placeholder ?? ''"
+                [showIcon]="true"
+                [iconDisplay]="'input'"
+                [timeOnly]="true"
+                [showTime]="true"
+                [hourFormat]="field.config.attributes.hourFormat ?? '24'"
+                appendTo="body"
+                (onSelect)="onEvent(field, $event, 'select')"
+              />
+            }
+
+            @case ('month') {
+              <p-datepicker
+                [inputId]="inputId(field, idSuffix)"
+                [formControlName]="field.formControlName!"
+                [placeholder]="field.config.attributes.placeholder ?? ''"
+                [showIcon]="true"
+                [view]="'month'"
+                [dateFormat]="field.config.attributes.dateFormat ?? 'mm/yy'"
+                [readonlyInput]="true"
+                appendTo="body"
+                (onSelect)="onEvent(field, $event, 'select')"
+              />
+            }
+
+            @case ('year') {
+              <p-datepicker
+                [inputId]="inputId(field, idSuffix)"
+                [formControlName]="field.formControlName!"
+                [placeholder]="field.config.attributes.placeholder ?? ''"
+                [showIcon]="true"
+                [view]="'year'"
+                [dateFormat]="field.config.attributes.dateFormat ?? 'yy'"
+                [readonlyInput]="true"
+                appendTo="body"
+                (onSelect)="onEvent(field, $event, 'select')"
+              />
+            }
+
+            <!-- slider -->
+            @case ('slider') {
+              <p-slider
+                [formControlName]="field.formControlName!"
+                [min]="field.config.attributes.min ?? 0"
+                [max]="field.config.attributes.max ?? 100"
+                [step]="field.config.attributes.step ?? 1"
+                [range]="field.config.attributes.range"
+                [orientation]="
+                  field.config.attributes.orientation ?? 'horizontal'
+                "
+                (onChange)="onEvent(field, $event, 'change')"
+              />
+            }
+
+            <!-- rating -->
+            @case ('rating') {
+              <p-rating
+                [formControlName]="field.formControlName!"
+                [stars]="field.config.attributes.stars ?? 5"
+                (onRate)="onEvent(field, $event, 'change')"
+              />
+            }
+
+            <!-- colorPicker -->
+            @case ('colorPicker') {
+              <p-colorpicker
+                [formControlName]="field.formControlName!"
+                [inline]="field.config.attributes.inline"
+                (onChange)="onEvent(field, $event, 'change')"
+              />
+            }
+          }
+
+          @if (
+            field.config.attributes.fieldPos === 'right' &&
+            field.config.attributes.fieldIcon
+          ) {
+            <p-inputgroup-addon>
+              <i [class]="field.config.attributes.fieldIcon">
+                {{ field.config.attributes.fieldIconText ?? '' }}
+              </i>
+            </p-inputgroup-addon>
+          }
+        </p-inputgroup>
+      }
+    }
+  </ng-container>
+</ng-template>

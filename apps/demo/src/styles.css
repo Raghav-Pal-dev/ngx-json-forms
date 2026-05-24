@@ -1,0 +1,225 @@
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* PrimeNG Icons */
+@import 'primeicons/primeicons.css';
+
+/* Quill (used by p-editor) */
+@import 'quill/dist/quill.snow.css';
+
+/* Reset */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ─── Design tokens ─────────────────────────────────────────────────────── */
+:root {
+  --font: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --brand-50:  #eff6ff;
+  --brand-100: #dbeafe;
+  --brand-200: #bfdbfe;
+  --brand-400: #60a5fa;
+  --brand-500: #3b82f6;
+  --brand-600: #2563eb;
+  --brand-700: #1d4ed8;
+
+  --gray-50:  #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+
+  --page-bg: #f1f5f9;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0/.06),0 1px 2px -1px rgb(0 0 0/.06);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0/.07),0 2px 4px -2px rgb(0 0 0/.07);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0/.08),0 4px 6px -4px rgb(0 0 0/.08);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0/.1),0 8px 10px -6px rgb(0 0 0/.08);
+}
+
+html  { font-size: 16px; scroll-behavior: smooth; }
+body  {
+  font-family: var(--font);
+  background: var(--page-bg);
+  color: var(--gray-900);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* ─── Global PrimeNG overrides (must be global — view-encapsulation bypass) ── */
+
+/* Base input font + radius */
+.p-inputtext,
+.p-select .p-select-label,
+.p-multiselect .p-multiselect-label,
+.p-password > .p-inputtext,
+.p-autocomplete .p-autocomplete-input,
+.p-textarea {
+  font-family: var(--font) !important;
+}
+
+/* Input height and padding */
+.p-inputtext {
+  height: 44px !important;
+  padding: 0 0.85rem !important;
+  font-size: 0.875rem !important;
+  color: var(--gray-700) !important;
+}
+
+.p-select,
+.p-multiselect {
+  height: 44px !important;
+  width: 100% !important;
+}
+.p-select .p-select-label,
+.p-multiselect .p-multiselect-label {
+  padding: 0 0.85rem !important;
+  line-height: 44px !important;
+  font-size: 0.875rem !important;
+  color: var(--gray-400) !important;
+}
+.p-select.p-select-open .p-select-label,
+.p-select .p-select-label:not(.p-placeholder) {
+  color: var(--gray-700) !important;
+}
+
+/* ─── Seamless inputgroup addon (icon merges into input, no visible divider) ── */
+
+.p-inputgroup {
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  overflow: hidden;
+}
+
+.p-inputgroup:focus-within {
+  border-color: var(--brand-500);
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 0.12);
+}
+
+/* Strip individual borders — the group border handles it */
+.p-inputgroup .p-inputtext,
+.p-inputgroup .p-select,
+.p-inputgroup .p-multiselect,
+.p-inputgroup .p-textarea,
+.p-inputgroup .p-autocomplete,
+.p-inputgroup .p-autocomplete .p-autocomplete-input {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  border-radius: 0 !important;
+  flex: 1;
+  width: 100%;
+  background: transparent !important;
+}
+
+/* Seamless addon — no background or right border */
+.p-inputgroup-addon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0 0 0.85rem !important;
+  background: transparent !important;
+  border: none !important;
+  color: var(--gray-400) !important;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  min-width: unset !important;
+}
+
+/* Textarea addon — align to top so icon doesn't stretch */
+.p-inputgroup .p-textarea {
+  align-self: stretch;
+  padding: 0.65rem 0.85rem !important;
+  height: auto !important;
+  min-height: 100px;
+  resize: vertical;
+}
+.p-inputgroup:has(.p-textarea) .p-inputgroup-addon {
+  align-items: flex-start;
+  padding-top: 0.75rem !important;
+}
+.p-inputgroup:has(.p-textarea) {
+  align-items: flex-start;
+}
+
+/* p-floatlabel font */
+.p-floatlabel label { font-family: var(--font) !important; font-size: .875rem; }
+
+/* Toggle label alignment */
+.p-toggleswitch { vertical-align: middle; flex-shrink: 0; }
+
+/* ─── ngx-json-form layout inside the demo card ─────────────────────────── */
+
+/* Wrapper padding */
+ngx-json-form {
+  display: block;
+  padding: 1.75rem 2rem 2rem;
+}
+
+/* 12-col grid — more vertical breathing room */
+.ngx-form-grid {
+  gap: 1.4rem 1.25rem !important;
+}
+
+/* Field labels */
+.ngx-field-label {
+  font-size: .775rem !important;
+  font-weight: 600 !important;
+  color: var(--gray-600) !important;
+  margin-bottom: .4rem !important;
+  letter-spacing: .01em;
+}
+
+/* Error text — always reserves one line of space so triggering a required/
+   pattern error doesn't push siblings downward. The placeholder variant
+   hides the text while keeping the box height. */
+.ngx-error {
+  display: block !important;
+  font-size: .72rem !important;
+  line-height: 1.4 !important;
+  min-height: calc(.72rem * 1.4) !important;
+  margin-top: .25rem !important;
+}
+.ngx-error--placeholder {
+  visibility: hidden !important;
+}
+
+/* Info/hint text */
+.ngx-hint {
+  font-size: .72rem !important;
+  color: var(--gray-400) !important;
+}
+
+/* Submit button — full width centred */
+.ngx-btn-wrap { align-items: flex-end !important; padding-top: 0.5rem !important; }
+.ngx-btn-wrap button {
+  width: 100% !important;
+  justify-content: center !important;
+  padding: .75rem 1.5rem !important;
+  font-size: .9rem !important;
+  font-weight: 600 !important;
+  border-radius: var(--radius-sm) !important;
+  height: 44px !important;
+}
+
+/* Divider label text */
+.p-divider .p-divider-content { background: transparent; }
+
+/* ─── Scrollbar ─────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--gray-100); }
+::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }

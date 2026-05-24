@@ -1,0 +1,493 @@
+// ─── Grid ────────────────────────────────────────────────────────────────────
+
+.ngx-form-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1.25rem;
+}
+
+@for $i from 1 through 12 {
+  .ngx-col-#{$i} {
+    grid-column: span #{$i};
+    min-width: 0;
+  }
+}
+
+// Collapse to full-width on mobile
+@media (max-width: 640px) {
+  @for $i from 1 through 11 {
+    .ngx-col-#{$i} { grid-column: span 12; }
+  }
+}
+
+// ─── Labels ──────────────────────────────────────────────────────────────────
+
+.ngx-form-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  color: var(--p-text-color, #111827);
+}
+
+.ngx-field-label {
+  display: block;
+  font-size: 0.775rem;
+  font-weight: 600;
+  color: var(--p-text-muted-color, #4b5563);
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.01em;
+}
+
+.ngx-required {
+  color: var(--p-red-500, #ef4444);
+  margin-left: 0.15rem;
+}
+
+.ngx-field-inner {
+  margin-top: 0.2rem;
+  width: 100%;
+
+  // Ensure all PrimeNG inputs stretch full width
+  .p-inputgroup,
+  .p-select,
+  .p-multiselect,
+  .p-autocomplete,
+  .p-datepicker,
+  .p-inputtext,
+  .p-textarea,
+  .p-password {
+    width: 100%;
+  }
+}
+
+:host ::ng-deep {
+  .p-inputgroup {
+    border: 1px solid var(--p-surface-border, #d1d5db);
+    border-radius: 8px;
+    background: #fff;
+    transition: all 0.2s;
+    display: flex;
+    align-items: stretch;
+
+    p-inputgroup-addon, .p-inputgroup-addon {
+      background: transparent !important;
+      border: none !important;
+      color: #9ca3af;
+      padding: 0.75rem 0.5rem 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+
+      i { font-size: 1.15rem; }
+    }
+
+    &:has(textarea) p-inputgroup-addon,
+    &:has(textarea) .p-inputgroup-addon {
+      align-items: flex-start;
+      padding-top: 1rem;
+    }
+
+    &:has(input:focus), &:has(textarea:focus), &:has(.p-focus) {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    > .p-inputtext, > .p-textarea, p-select > .p-select, p-multiselect > .p-multiselect, p-autocomplete > .p-autocomplete, p-datepicker > .p-datepicker {
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    // When the input group contains a select/multiselect, make the addon absolute
+    // so the select element can take 100% width. This ensures the overlay panel
+    // spans the entire input group width.
+    &:has(p-select), &:has(p-multiselect) {
+      position: relative;
+      
+      p-inputgroup-addon {
+        position: absolute;
+        z-index: 2;
+        border: none !important;
+        background: transparent !important;
+        height: 100%;
+        width: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        &:first-child {
+          left: 0;
+        }
+      }
+
+      p-select, p-multiselect {
+        width: 100%;
+        flex: 1 1 100%;
+      }
+    }
+
+    &:has(p-inputgroup-addon:first-child):has(p-select),
+    &:has(p-inputgroup-addon:first-child):has(p-multiselect) {
+      .p-select-label, 
+      .p-multiselect-label {
+        padding-left: 2.75rem !important;
+      }
+    }
+  }
+
+  .ngx-toggle-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--p-surface-border, #e5e7eb);
+    border-radius: 8px;
+    background: #fff;
+    margin-bottom: 0.75rem;
+
+    .ngx-toggle-card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      margin-right: 1rem;
+    }
+
+    .ngx-toggle-card-body {
+      flex: 1;
+      min-width: 0;
+      padding-right: 1.5rem;
+
+      .ngx-toggle-label {
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.2rem;
+        font-size: 0.95rem;
+      }
+      .ngx-toggle-desc {
+        color: var(--gray-500);
+        font-size: 0.8rem;
+        line-height: 1.4;
+      }
+    }
+
+    p-toggleswitch, .p-toggleswitch {
+      flex: 0 0 auto !important;
+      width: 44px !important;
+      height: 24px !important;
+      display: block !important;
+      position: relative !important;
+      box-sizing: border-box !important;
+    }
+
+    .p-toggleswitch-slider {
+      position: absolute !important;
+      top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      border-radius: 24px !important;
+      transition: background-color 0.2s, box-shadow 0.2s !important;
+      background: var(--p-surface-300, #cbd5e1) !important;
+    }
+
+    .p-toggleswitch-handle {
+      position: absolute !important;
+      top: 50% !important;
+      left: 3px !important;
+      margin-top: -9px !important;
+      width: 18px !important;
+      height: 18px !important;
+      border-radius: 50% !important;
+      background: #fff !important;
+      transition: transform 0.2s !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+    }
+
+    .p-toggleswitch.p-toggleswitch-checked .p-toggleswitch-handle {
+      transform: translateX(20px) !important;
+    }
+
+    .p-toggleswitch.p-toggleswitch-checked .p-toggleswitch-slider {
+      background: var(--toggle-color, var(--p-primary-500)) !important;
+    }
+  }
+
+}
+
+// ─── Global Overlays (Appended to body) ──────────────────────────────────────
+
+::ng-deep {
+  .p-select-overlay, .p-multiselect-overlay, .p-autocomplete-overlay {
+    background: #fff !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    border: 1px solid var(--p-surface-border, #e5e7eb) !important;
+    border-radius: 8px !important;
+    margin-top: 6px !important;
+    padding: 0.25rem !important;
+    
+    .p-select-header, .p-multiselect-header {
+      padding: 0.5rem !important;
+      margin-bottom: 0.25rem;
+    }
+
+    .p-select-filter-container .p-inputtext, .p-select-filter, .p-multiselect-filter-container .p-inputtext, .p-multiselect-filter {
+      padding: 0.5rem 0.75rem !important;
+    }
+
+    .p-select-list, .p-multiselect-list {
+      padding: 0 !important;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .p-select-option, .p-multiselect-option {
+      border-radius: 6px !important;
+      margin: 0 !important;
+      padding: 0.5rem 0.75rem !important;
+      display: flex;
+      align-items: center;
+      
+      &:hover {
+        background: var(--p-surface-hover, #f3f4f6) !important;
+      }
+      &[data-p-highlight="true"], &.p-select-option-selected {
+        background: #f1f5f9 !important;
+        color: var(--p-primary-700, #334155) !important;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+// ─── Errors & Hints ──────────────────────────────────────────────────────────
+
+.ngx-error {
+  display: block;
+  color: var(--p-red-500, #ef4444);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  // Reserve one line of vertical space even when the message is empty so
+  // a row doesn't grow when validation fires and push siblings down.
+  min-height: calc(0.72rem * 1.4);
+  margin-top: 0.25rem;
+  font-weight: 500;
+
+  &--placeholder {
+    visibility: hidden;
+  }
+}
+
+.ngx-hint {
+  display: block;
+  font-size: 0.72rem;
+  margin-top: 0.25rem;
+  color: var(--p-text-muted-color, #9ca3af);
+  line-height: 1.4;
+}
+
+// ─── Button ──────────────────────────────────────────────────────────────────
+
+.ngx-btn-wrap {
+  display: flex;
+  align-items: flex-end;
+  justify-content: stretch;
+  width: 100%;
+  height: 100%;
+  padding-top: 1.5rem;
+
+  button {
+    width: 100%;
+    justify-content: center;
+    font-weight: 600;
+  }
+}
+
+// ─── File Upload ─────────────────────────────────────────────────────────────
+
+.ngx-file-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ngx-image-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.ngx-image-card {
+  position: relative;
+}
+
+.ngx-image-remove {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+  background: white;
+  color: #111;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transform: translate(40%, -40%);
+  font-size: 0.65rem;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+}
+
+.ngx-image-wrapper {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--p-surface-border, #e5e7eb);
+}
+
+.ngx-preview-img {
+  object-fit: cover;
+  transition: opacity 0.25s ease;
+
+  &.loading { opacity: 0; }
+  &.loaded  { opacity: 1; }
+}
+
+.ngx-img-skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 8px;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+// ─── Toggle Card ─────────────────────────────────────────────────────────────
+
+.ngx-toggle-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--p-surface-border, #e5e7eb);
+  border-radius: 10px;
+  background: #fff;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+
+  &:has(.p-toggleswitch.p-toggleswitch-checked) {
+    border-color: var(--toggle-color, var(--p-primary-500, #3b82f6));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--toggle-color, #3b82f6) 12%, transparent);
+  }
+}
+
+.ngx-toggle-card-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.ngx-toggle-card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.ngx-toggle-card-label {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--p-text-color, #111827);
+  line-height: 1.3;
+}
+
+.ngx-toggle-card-desc {
+  font-size: 0.72rem;
+  color: var(--p-text-muted-color, #6b7280);
+  line-height: 1.4;
+}
+
+// ─── Radio ───────────────────────────────────────────────────────────────────
+
+.ngx-radio-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.875rem;
+  color: var(--p-text-color, #374151);
+}
+
+// ─── Field Group (nested) ────────────────────────────────────────────────────
+
+.ngx-field-group {
+  border: 1px solid var(--p-surface-border, #e5e7eb);
+  border-radius: 10px;
+  padding: 1rem 1rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ngx-field-group-row {
+  display: block;
+}
+
+// ─── Repeater ────────────────────────────────────────────────────────────────
+
+.ngx-repeater {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ngx-repeater-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  align-items: start;
+  padding: 0.75rem;
+  border: 1px solid var(--p-surface-border, #e5e7eb);
+  border-radius: 10px;
+  background: var(--p-surface-50, #f9fafb);
+}
+
+.ngx-repeater-row-fields {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.ngx-repeater-remove {
+  margin-top: 0.2rem;
+}
+
+.ngx-repeater-add {
+  align-self: flex-start;
+}

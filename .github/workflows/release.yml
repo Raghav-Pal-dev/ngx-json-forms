@@ -1,0 +1,79 @@
+name: Release
+
+# Publishes @ngx-json-forms/core and @ngx-json-forms/primeng to npm whenever
+# you push a tag matching v1.2.3. The tag name MUST match the version in
+# both packages/*/package.json (this workflow verifies that).
+#
+# Setup, once:
+#   1. Create an npm automation token at https://www.npmjs.com/settings/<user>/tokens
+#      (Granular Access Token → Publish, scoped to the two packages or the
+#      whole @ngx-json-forms org).
+#   2. Add it as a repo secret named NPM_TOKEN
+#      (GitHub repo → Settings → Secrets and variables → Actions → New
+#      repository secret).
+#
+# Cutting a release:
+#   1. Bump version in packages/core/package.json AND packages/primeng/package.json
+#      (must match — primeng peers on ^<major>.x of core).
+#   2. Update CHANGELOG.md with the new version's entry.
+#   3. git commit -am "chore: release v1.2.3" && git push
+#   4. git tag v1.2.3 && git push origin v1.2.3
+#   5. Watch the Actions tab — this workflow runs lint+test+build, verifies
+#      version, publishes both packages, then creates a GitHub release.
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write   # to create the GitHub release
+  id-token: write   # for npm provenance
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci
+
+      - name: Verify tag matches package versions
+        run: |
+          tag_version="${GITHUB_REF_NAME#v}"
+          core_version=$(node -p "require('./packages/core/package.json').version")
+          primeng_version=$(node -p "require('./packages/primeng/package.json').version")
+          if [ "$tag_version" != "$core_version" ] || [ "$tag_version" != "$primeng_version" ]; then
+            echo "::error::Tag v$tag_version does not match core=$core_version, primeng=$primeng_version"
+            exit 1
+          fi
+          echo "Releasing v$tag_version"
+
+      - name: Lint, test, build
+        run: npx nx run-many --target=lint,test,build --projects=core,primeng
+
+      - name: Publish @ngx-json-forms/core
+        run: npm publish --access public --provenance
+        working-directory: dist/packages/core
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @ngx-json-forms/primeng
+        run: npm publish --access public --provenance
+        working-directory: dist/packages/primeng
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          body_path: CHANGELOG.md
+          generate_release_notes: false

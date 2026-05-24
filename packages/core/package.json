@@ -1,0 +1,27 @@
+{
+  "name": "@ngx-json-forms/core",
+  "version": "1.0.0",
+  "description": "Core types, form builder, validation engine, and service for ngx-json-forms — a data-driven Angular form engine.",
+  "keywords": [
+    "angular",
+    "form",
+    "json-form",
+    "form-engine",
+    "reactive-forms",
+    "dynamic-forms",
+    "ngx-json-forms"
+  ],
+  "author": "Raghav <dev.raghvendrasing@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/raghav/ngx-json-forms"
+  },
+  "homepage": "https://github.com/raghav/ngx-json-forms#readme",
+  "peerDependencies": {
+    "@angular/core": ">=19.0.0",
+    "@angular/forms": ">=19.0.0",
+    "rxjs": "~7.8.0"
+  },
+  "sideEffects": false
+}

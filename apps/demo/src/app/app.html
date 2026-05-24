@@ -1,0 +1,278 @@
+<!-- ─── Nav ─────────────────────────────────────────────────────── -->
+<nav class="topnav">
+  <div class="topnav-inner">
+    <div class="topnav-brand">
+      <div class="brand-icon"><i class="pi pi-bolt"></i></div>
+      <span class="brand-name">ngx-json-forms</span>
+      <span class="brand-badge">v1.0</span>
+    </div>
+    <div class="topnav-links">
+      <a href="https://www.npmjs.com/package/@ngx-json-forms/core" target="_blank" class="nav-link">
+        <i class="pi pi-box"></i> npm
+      </a>
+      <a href="#" class="nav-link"><i class="pi pi-book"></i> Docs</a>
+      <a href="https://github.com" target="_blank" class="nav-link"><i class="pi pi-github"></i> GitHub</a>
+      <a href="#demo" class="nav-cta">Get Started <i class="pi pi-arrow-right"></i></a>
+    </div>
+  </div>
+</nav>
+
+<!-- ─── Hero ─────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-glow hero-glow-1"></div>
+  <div class="hero-glow hero-glow-2"></div>
+  <div class="hero-inner">
+    <div class="hero-pill"><i class="pi pi-bolt"></i> Angular 21 · Signal-first · Zero-config</div>
+    <h1 class="hero-title">Build forms from<br><span class="hero-gradient">JSON config.</span></h1>
+    <p class="hero-desc">
+      Drop one component. Pass a field array. Get a fully reactive,
+      validated, multi-library form — no templates, no boilerplate.
+    </p>
+    <div class="hero-actions">
+      <a href="#demo" class="btn-primary"><i class="pi pi-play"></i> Live Demo</a>
+      <a href="https://www.npmjs.com/package/@ngx-json-forms/core" target="_blank" class="btn-ghost">
+        <i class="pi pi-copy"></i><code>npm i @ngx-json-forms/core</code>
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-num">17</span><span class="stat-label">Field Types</span></div>
+      <div class="stat-div"></div>
+      <div class="stat"><span class="stat-num">3</span><span class="stat-label">UI Adapters</span></div>
+      <div class="stat-div"></div>
+      <div class="stat"><span class="stat-num">0</span><span class="stat-label">Boilerplate</span></div>
+      <div class="stat-div"></div>
+      <div class="stat"><span class="stat-num">100%</span><span class="stat-label">TypeScript</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Features ──────────────────────────────────────────────── -->
+<section class="features">
+  <div class="features-inner">
+    <div class="feature-card">
+      <div class="feature-icon feature-icon--blue"><i class="pi pi-code"></i></div>
+      <h3>JSON-Driven</h3>
+      <p>Every field, label, validator, layout, and event lives in a plain array — no markup needed.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon feature-icon--violet"><i class="pi pi-bolt"></i></div>
+      <h3>Signal-First</h3>
+      <p>Built on Angular 19 signals and computed values. Zone-less ready, auto change detection.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon feature-icon--green"><i class="pi pi-sliders-h"></i></div>
+      <h3>External Control</h3>
+      <p>Inject <code>FormEngineService</code> anywhere — patch, swap options, add/remove fields at runtime.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon feature-icon--orange"><i class="pi pi-eye"></i></div>
+      <h3>Conditional Fields</h3>
+      <p>Use <code>showWhen</code> to reactively show/hide fields based on other field values.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon feature-icon--pink"><i class="pi pi-th-large"></i></div>
+      <h3>Multi-Adapter</h3>
+      <p>Core has zero UI deps. Swap PrimeNG for Angular Material by switching one adapter package.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon feature-icon--cyan"><i class="pi pi-shield"></i></div>
+      <h3>Built-in Validation</h3>
+      <p>required, min/maxLength, pattern, email — all in JSON with fully customisable messages.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── Demo ──────────────────────────────────────────────────── -->
+<section class="demo-section" id="demo">
+  <div class="demo-inner">
+
+    <!-- ── Left: form card ── -->
+    <div class="demo-form-col">
+      <div class="demo-card">
+
+        <div class="demo-tabs">
+          <button class="demo-tab" [class.active]="activeTab() === 'form'" (click)="activeTab.set('form')">
+            <i class="pi pi-external-link"></i> Live Form
+          </button>
+          <button class="demo-tab" [class.active]="activeTab() === 'schema'" (click)="activeTab.set('schema')">
+            <i class="pi pi-code"></i> JSON Schema
+          </button>
+        </div>
+
+        <!-- Live Form tab -->
+        @if (activeTab() === 'form') {
+          @if (!submitted()) {
+            <div class="form-header">
+              <div class="form-header-icon"><i class="pi pi-user"></i></div>
+              <div>
+                <h2 class="form-title">Create your profile</h2>
+                <p class="form-subtitle">Fill in your details to get started</p>
+              </div>
+            </div>
+            <ngx-json-form
+              [fieldsInput]="activeFields()"
+              (formSubmit)="onSubmit($event)"
+              (formChange)="onChange($event)" />
+          } @else {
+            <div class="success-state">
+              <div class="success-icon"><i class="pi pi-check-circle"></i></div>
+              <h2>Profile Created!</h2>
+              <p>Your profile was submitted successfully.</p>
+              <div class="success-data">
+                <pre>{{ lastEvent()?.values | json }}</pre>
+              </div>
+              <button class="btn-primary btn-reset" (click)="reset()">
+                <i class="pi pi-refresh"></i> Start Over
+              </button>
+            </div>
+          }
+        }
+
+        <!-- JSON Schema tab -->
+        @if (activeTab() === 'schema') {
+          <div class="schema-view">
+            <div class="schema-header">
+              <span class="schema-badge">FormField[]</span>
+              <span class="schema-note">First 2 fields shown</span>
+            </div>
+            <pre class="schema-code">{{ schemaJson }}</pre>
+          </div>
+        }
+
+      </div>
+    </div>
+
+    <!-- ── Right sidebar ── -->
+    <div class="demo-side-col">
+
+      <!-- Live Form State -->
+      <div class="side-card">
+        <div class="side-card-header">
+          <div class="pulse-dot"></div>
+          <span>Live Form State</span>
+          @if (hasInteracted()) {
+            <span [class]="liveValid() ? 'state-valid' : 'state-invalid'">
+              <i [class]="liveValid() ? 'pi pi-check' : 'pi pi-times'"></i>
+              {{ liveValid() ? 'Valid' : 'Invalid' }}
+            </span>
+          }
+        </div>
+
+        @if (hasInteracted()) {
+          <div class="validity-bar" [class.valid]="liveValid()" [class.invalid]="!liveValid()">
+            <div class="validity-bar-fill" [style.width]="liveValid() ? '100%' : '40%'"></div>
+          </div>
+          <pre class="output-code">{{ liveValues() | json }}</pre>
+        } @else {
+          <div class="output-empty">
+            <i class="pi pi-cursor"></i>
+            <span>Interact with the form to see live state here</span>
+          </div>
+        }
+      </div>
+
+      <!-- JSON Schema Editor -->
+      <div class="side-card editor-card">
+        <div class="side-card-header">
+          <i class="pi pi-file-edit"></i>
+          <span>Live JSON Editor</span>
+          <span class="editor-hint">Edit → form updates instantly</span>
+        </div>
+
+        <div class="editor-toolbar">
+          <span class="editor-status" [class.editor-ok]="!editorError()" [class.editor-err]="!!editorError()">
+            @if (!editorError()) {
+              <i class="pi pi-check-circle"></i> Valid JSON
+            } @else {
+              <i class="pi pi-exclamation-circle"></i> Parse error
+            }
+          </span>
+          <button class="editor-reset-btn" (click)="resetEditor()" title="Reset to default">
+            <i class="pi pi-refresh"></i> Reset
+          </button>
+        </div>
+
+        <div class="editor-wrap">
+          <textarea
+            class="editor-textarea"
+            [ngModel]="editorJson()"
+            (ngModelChange)="onEditorInput($event)"
+            spellcheck="false"
+            autocomplete="off"
+            rows="18">
+          </textarea>
+        </div>
+
+        @if (editorError()) {
+          <div class="editor-error-bar">
+            <i class="pi pi-exclamation-triangle"></i>
+            {{ editorError() }}
+          </div>
+        }
+      </div>
+
+      <!-- How it works -->
+      <div class="side-card">
+        <div class="side-card-header"><i class="pi pi-list-check"></i><span>How it works</span></div>
+        <ol class="how-list">
+          <li>
+            <span class="how-num">1</span>
+            <div><strong>Install</strong>
+              <code class="how-code">npm i @ngx-json-forms/core @ngx-json-forms/primeng</code>
+            </div>
+          </li>
+          <li>
+            <span class="how-num">2</span>
+            <div><strong>Import</strong><code class="how-code">NgxJsonFormComponent</code></div>
+          </li>
+          <li>
+            <span class="how-num">3</span>
+            <div><strong>Define</strong><code class="how-code">fields: FormField[] = [...]</code></div>
+          </li>
+          <li>
+            <span class="how-num">4</span>
+            <div><strong>Render</strong>
+              <code class="how-code">&lt;ngx-json-form [fieldsInput]="fields" /&gt;</code>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <!-- Adapters -->
+      <div class="side-card">
+        <div class="side-card-header"><i class="pi pi-th-large"></i><span>UI Adapters</span></div>
+        <div class="adapters-list">
+          <div class="adapter active">
+            <i class="pi pi-check-circle"></i><span>PrimeNG</span>
+            <span class="adapter-badge">Active</span>
+          </div>
+          <div class="adapter coming">
+            <i class="pi pi-clock"></i><span>Angular Material</span>
+            <span class="adapter-badge coming-badge">Soon</span>
+          </div>
+          <div class="adapter coming">
+            <i class="pi pi-clock"></i><span>Tailwind UI</span>
+            <span class="adapter-badge coming-badge">Soon</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── Footer ────────────────────────────────────────────────── -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="brand-icon brand-icon--sm"><i class="pi pi-bolt"></i></div>
+      <span>ngx-json-forms</span>
+    </div>
+    <p class="footer-copy">MIT License · Built with Angular 21 + PrimeNG 21</p>
+    <div class="footer-links">
+      <a href="https://www.npmjs.com/package/@ngx-json-forms/core" target="_blank">npm</a>
+      <a href="https://github.com" target="_blank">GitHub</a>
+      <a href="#">Docs</a>
+    </div>
+  </div>
+</footer>
