@@ -5,6 +5,9 @@ Drop in `<ngx-json-form>`, pass a `FormField[]`, and get a fully
 validated, reactive, multi-field PrimeNG form — no template markup
 needed.
 
+**Live demo:** https://raghav-pal-dev.github.io/ngx-json-forms/  
+**Source:** https://github.com/Raghav-Pal-dev/ngx-json-forms
+
 ## Install
 
 ```bash

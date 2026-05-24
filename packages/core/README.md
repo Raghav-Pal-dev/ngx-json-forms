@@ -10,6 +10,9 @@ Pair it with a renderer adapter (e.g.
 [`@ngx-json-forms/primeng`](https://www.npmjs.com/package/@ngx-json-forms/primeng))
 to actually render the form, or write your own adapter.
 
+**Live demo:** https://raghav-pal-dev.github.io/ngx-json-forms/  
+**Source:** https://github.com/Raghav-Pal-dev/ngx-json-forms
+
 ## Install
 
 ```bash
