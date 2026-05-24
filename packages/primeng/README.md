@@ -151,7 +151,7 @@ Where `schema` is a `FormSchema` with `steps: FormStep[]`.
 
 ## Documentation
 
-See the [demo app](https://github.com/raghav/ngx-json-forms) for
+See the [demo app](https://github.com/Raghav-Pal-dev/ngx-json-forms) for
 end-to-end examples and the `OVERVIEW.md` for the full feature matrix.
 
 ## License

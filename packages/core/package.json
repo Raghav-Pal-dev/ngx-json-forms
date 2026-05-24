@@ -11,13 +11,13 @@
     "dynamic-forms",
     "ngx-json-forms"
   ],
-  "author": "Raghav <dev.raghvendrasing@gmail.com>",
+  "author": "Raghvendrasing Pal <dev.raghvendrasing@gmail.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/raghav/ngx-json-forms"
+    "url": "https://github.com/Raghav-Pal-dev/ngx-json-forms"
   },
-  "homepage": "https://github.com/raghav/ngx-json-forms#readme",
+  "homepage": "https://github.com/Raghav-Pal-dev/ngx-json-forms#readme",
   "peerDependencies": {
     "@angular/core": ">=19.0.0",
     "@angular/forms": ">=19.0.0",

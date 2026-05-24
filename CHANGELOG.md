@@ -148,4 +148,4 @@ Render a form:
   (formChange)="onChange($event)" />
 ```
 
-[1.0.0]: https://github.com/raghav/ngx-json-forms/releases/tag/v1.0.0
+[1.0.0]: https://github.com/Raghav-Pal-dev/ngx-json-forms/releases/tag/v1.0.0
