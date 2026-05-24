@@ -1,6 +1,6 @@
 {
   "name": "@ngx-json-forms/primeng",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "PrimeNG adapter for ngx-json-forms — renders JSON-defined forms using PrimeNG components.",
   "keywords": [
     "angular",
@@ -17,12 +17,12 @@
     "type": "git",
     "url": "https://github.com/Raghav-Pal-dev/ngx-json-forms"
   },
-  "homepage": "https://github.com/Raghav-Pal-dev/ngx-json-forms#readme",
+  "homepage": "https://raghav-pal-dev.github.io/ngx-json-forms/",
   "peerDependencies": {
     "@angular/common": ">=19.0.0",
     "@angular/core": ">=19.0.0",
     "@angular/forms": ">=19.0.0",
-    "@ngx-json-forms/core": "^1.0.0",
+    "@ngx-json-forms/core": "^1.0.1",
     "primeng": ">=19.0.0",
     "rxjs": "~7.8.0"
   },

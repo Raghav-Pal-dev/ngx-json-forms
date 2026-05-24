@@ -376,6 +376,19 @@ export class App implements OnInit {
     }
   }
 
+  /**
+   * Scroll the in-page demo section into view. The app builds with
+   * `<base href="/ngx-json-forms/">` for GitHub Pages, so an unmanaged
+   * `href="#demo"` anchor would resolve to a full-URL nav. Stopping the
+   * default and calling scrollIntoView keeps the user on the same page.
+   */
+  protected scrollToDemo(event: Event): void {
+    event.preventDefault();
+    document
+      .getElementById('demo')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   protected resetEditor(): void {
     const json = JSON.stringify(DEFAULT_FIELDS, null, 2);
     this.editorJson.set(json);

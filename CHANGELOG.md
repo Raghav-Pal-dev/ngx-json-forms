@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] — 2026-05-24
+
+### Changed
+- **`homepage` field on both packages** now points at the live demo
+  (https://raghav-pal-dev.github.io/ngx-json-forms/) instead of the
+  GitHub README. The "Homepage" link on each npm package page now opens
+  the interactive demo directly.
+- **README**: live-demo link added near the top of both packages so npm
+  visitors can reach the demo from the package page itself.
+
+No code changes — same fesm2022 bundle as 1.0.0. Safe to bump in any
+existing app: `npm i @ngx-json-forms/core@^1.0.1 @ngx-json-forms/primeng@^1.0.1`.
+
 ## [1.0.0] — 2026-05-24
 
 First public release of `@ngx-json-forms/core` and `@ngx-json-forms/primeng`.
@@ -148,4 +161,5 @@ Render a form:
   (formChange)="onChange($event)" />
 ```
 
+[1.0.1]: https://github.com/Raghav-Pal-dev/ngx-json-forms/releases/tag/v1.0.1
 [1.0.0]: https://github.com/Raghav-Pal-dev/ngx-json-forms/releases/tag/v1.0.0

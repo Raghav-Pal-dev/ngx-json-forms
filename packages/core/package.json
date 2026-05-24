@@ -1,6 +1,6 @@
 {
   "name": "@ngx-json-forms/core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Core types, form builder, validation engine, and service for ngx-json-forms — a data-driven Angular form engine.",
   "keywords": [
     "angular",
@@ -17,7 +17,7 @@
     "type": "git",
     "url": "https://github.com/Raghav-Pal-dev/ngx-json-forms"
   },
-  "homepage": "https://github.com/Raghav-Pal-dev/ngx-json-forms#readme",
+  "homepage": "https://raghav-pal-dev.github.io/ngx-json-forms/",
   "peerDependencies": {
     "@angular/core": ">=19.0.0",
     "@angular/forms": ">=19.0.0",
