@@ -1,0 +1,19 @@
+@import 'primeicons/primeicons.css';
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #1f2937;
+  background: #f9fafb;
+}
+a { color: #2563eb; }
+.container { max-width: 880px; margin: 0 auto; padding: 1.5rem; }
+.card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+.muted { color: #6b7280; font-size: 0.85rem; }
+nav.top { display: flex; gap: 0.6rem; flex-wrap: wrap; padding: 1rem 1.5rem; background: #111827; color: #f3f4f6; }
+nav.top a { color: #f3f4f6; text-decoration: none; padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.82rem; }
+nav.top a.active, nav.top a:hover { background: #374151; }
+h1 { margin: 0 0 0.4rem; font-size: 1.35rem; }
+h2 { margin: 1rem 0 0.5rem; font-size: 1.05rem; color: #374151; }
+pre { background: #0f172a; color: #e2e8f0; padding: 0.75rem; border-radius: 8px; font-size: 0.72rem; overflow-x: auto; line-height: 1.6; }

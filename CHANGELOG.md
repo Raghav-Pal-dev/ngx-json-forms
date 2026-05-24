@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] — 2026-05-24
+
+### Added
+- **"Open in StackBlitz" badge** on both package READMEs, plus a new
+  `/stackblitz/` starter app in the repo. One click → fork a ready-made
+  Angular 21 workspace with all six form scenarios pre-wired; edit any
+  field def and the form re-renders instantly. Lowers the
+  "let me try the library" barrier from "scaffold an Angular app +
+  install 5 peer deps + wire 3 providers" to "click button".
+- Documentation-only release; no code changes. fesm2022 bundles identical to 1.1.0.
+
+[1.1.1]: https://github.com/Raghav-Pal-dev/ngx-json-forms/releases/tag/v1.1.1
+
 ## [1.1.0] — 2026-05-24
 
 ### Added — DX improvements driven by the consumer-side test pass

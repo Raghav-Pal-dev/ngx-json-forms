@@ -6,6 +6,7 @@ validated, reactive, multi-field PrimeNG form — no template markup
 needed.
 
 **Live demo:** https://raghav-pal-dev.github.io/ngx-json-forms/  
+**Try it live (StackBlitz):** [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz_small.svg)](https://stackblitz.com/github/Raghav-Pal-dev/ngx-json-forms/tree/main/stackblitz?file=src/app/tests/simple.ts) — fork a ready-made Angular 21 starter with all 6 form scenarios, edit any field def, see the form re-render instantly.  
 **Source:** https://github.com/Raghav-Pal-dev/ngx-json-forms
 
 ## Install
