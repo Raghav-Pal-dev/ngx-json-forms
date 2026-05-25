@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] — 2026-05-24
+
+### Changed
+- **Package descriptions rewritten** to be search-friendly. The npm
+  search index ranks by text-match × popularity × quality; a vague
+  one-liner was leaving discoverability points on the table. New
+  descriptions name every major feature (validation, conditional
+  fields, computed, wizard, repeater, persistence, the supported
+  field types) so the text-match score in npm search picks up more
+  common queries like "angular form builder", "json schema form",
+  "angular dynamic form".
+- **Keywords expanded** from 7 → 30 on each package. Adds the terms
+  developers actually search for: `angular21`, `form-builder`,
+  `dynamic-form`, `json-schema-form`, `schema-driven`,
+  `multi-step-form`, `wizard`, `stepper`, `conditional-fields`,
+  `form-validation`, etc.
+
+Pure metadata release — `fesm2022` bundles byte-identical to 1.1.1.
+Note: npm search is heavily popularity-weighted, so keyword changes
+alone won't immediately bring the package to page 1 of search
+results. The keywords help once real downloads accumulate.
+
+[1.1.2]: https://github.com/Raghav-Pal-dev/ngx-json-forms/releases/tag/v1.1.2
+
 ## [1.1.1] — 2026-05-24
 
 ### Added
