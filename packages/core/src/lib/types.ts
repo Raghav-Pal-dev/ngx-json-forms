@@ -34,6 +34,7 @@ export type InputType =
   | 'timeSlots'
   | 'markdown'
   | 'captcha'
+  | 'imageCrop'
   | 'staticText'
   | 'divider'
   | 'button'
@@ -337,6 +338,14 @@ export interface FieldAttributes {
   suffix?: string;
   /** Permit clearing the value to null/empty. Default true. */
   allowEmpty?: boolean;
+
+  // ── image-crop (1.17.0) ──
+  /** Crop aspect ratio (1 = square, 16/9, NaN = free). Default 1. */
+  aspectRatio?: number;
+  /** Max output PNG width in px. Default 1024. */
+  maxOutputWidth?: number;
+  /** Max output PNG height in px. Default 1024. */
+  maxOutputHeight?: number;
 
   // ── captcha (1.16.0, Cloudflare Turnstile) ──
   /** Turnstile sitekey. Required. `1x00000000000000000000AA` always passes (dev). */

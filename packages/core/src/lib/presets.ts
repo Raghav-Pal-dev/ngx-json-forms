@@ -1061,6 +1061,69 @@ export const presets = {
     };
   },
 
+  /**
+   * Upload-then-crop image input. The user picks a file, drags out
+   * a crop region with the configured aspect ratio, clicks Apply,
+   * and the form gets a PNG data URL of the cropped result.
+   *
+   * Requires the `cropperjs@^1.6` peer dep — declared optional on
+   * `@ngx-json-forms/primeng`. If absent, the field shows an
+   * "install cropperjs" hint instead of crashing.
+   *
+   * @example
+   *   // 1:1 avatar with 256×256 max output.
+   *   presets.imageCrop({
+   *     formControlName: 'avatar',
+   *     label: 'Avatar',
+   *     aspectRatio: 1,
+   *     maxOutputWidth: 256,
+   *     maxOutputHeight: 256,
+   *   });
+   *
+   *   // 16:9 cover image, free-aspect option:
+   *   presets.imageCrop({
+   *     formControlName: 'cover',
+   *     aspectRatio: 16 / 9,
+   *   });
+   *
+   * @since 1.17.0
+   */
+  imageCrop(opts: {
+    formControlName: string;
+    label?: string;
+    /** Aspect ratio. `1` (square, default), `16/9`, `NaN` for free. */
+    aspectRatio?: number;
+    /** Accept MIME / extension filter. Defaults to `'image/*'`. */
+    accept?: string;
+    /** Cap on output image width. Defaults to 1024. */
+    maxOutputWidth?: number;
+    /** Cap on output image height. Defaults to 1024. */
+    maxOutputHeight?: number;
+    required?: boolean;
+    columnSpan?: number;
+  }): FormField {
+    return {
+      formControlName: opts.formControlName,
+      label: opts.label,
+      config: {
+        attributes: {
+          inputType: 'imageCrop',
+          aspectRatio: opts.aspectRatio ?? 1,
+          accept: opts.accept ?? 'image/*',
+          maxOutputWidth: opts.maxOutputWidth ?? 1024,
+          maxOutputHeight: opts.maxOutputHeight ?? 1024,
+          acceptedEvents: ['change', 'blur'],
+        },
+      },
+      validations: {
+        rules: {
+          ...(opts.required ? { required: true } : {}),
+        },
+      },
+      layout: { columnSpan: opts.columnSpan ?? 12 },
+    };
+  },
+
   /** Submit button with sensible defaults. */
   submit(opts: { formControlName?: string; label?: string; columnSpan?: number } = {}): FormField {
     return {

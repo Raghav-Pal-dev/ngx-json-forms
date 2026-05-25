@@ -526,6 +526,34 @@ describe('presets', () => {
     });
   });
 
+  describe('imageCrop (1.17.0)', () => {
+    it('defaults to 1:1 aspect, image/*, 1024 max output', () => {
+      const f = presets.imageCrop({ formControlName: 'avatar' });
+      expect(f.config.attributes.inputType).toBe('imageCrop');
+      expect(f.config.attributes.aspectRatio).toBe(1);
+      expect(f.config.attributes.accept).toBe('image/*');
+      expect(f.config.attributes.maxOutputWidth).toBe(1024);
+      expect(f.config.attributes.maxOutputHeight).toBe(1024);
+    });
+
+    it('supports 16:9 cover-image config', () => {
+      const f = presets.imageCrop({
+        formControlName: 'cover',
+        aspectRatio: 16 / 9,
+        maxOutputWidth: 1920,
+        maxOutputHeight: 1080,
+      });
+      expect(f.config.attributes.aspectRatio).toBeCloseTo(16 / 9, 5);
+      expect(f.config.attributes.maxOutputWidth).toBe(1920);
+      expect(f.config.attributes.maxOutputHeight).toBe(1080);
+    });
+
+    it('omits required by default; adds when requested', () => {
+      expect(presets.imageCrop({ formControlName: 'x' }).validations?.rules?.required).toBeUndefined();
+      expect(presets.imageCrop({ formControlName: 'x', required: true }).validations?.rules?.required).toBe(true);
+    });
+  });
+
   describe('email', () => {
     it('produces a text input with email validation + envelope icon', () => {
       const f = presets.email({ formControlName: 'workEmail' });

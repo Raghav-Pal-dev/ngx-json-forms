@@ -688,6 +688,18 @@
               </p-autocomplete>
             }
 
+            <!-- imageCrop (1.17.0) — pick + crop image → PNG data URL.
+                 Requires the cropperjs optional peer dep at runtime. -->
+            @case ('imageCrop') {
+              <ngx-image-crop
+                [formControlName]="field.formControlName!"
+                [aspectRatio]="field.config.attributes.aspectRatio ?? 1"
+                [accept]="field.config.attributes.accept ?? 'image/*'"
+                [maxOutputWidth]="field.config.attributes.maxOutputWidth ?? 1024"
+                [maxOutputHeight]="field.config.attributes.maxOutputHeight ?? 1024"
+              />
+            }
+
             <!-- captcha (1.16.0) — Cloudflare Turnstile widget.
                  Value: verification token (string) or null. Verify
                  server-side via cloudflare /siteverify. -->

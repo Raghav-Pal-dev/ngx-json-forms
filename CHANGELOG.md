@@ -4,6 +4,86 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.17.0] — 2026-05-25
+
+### Added — `imageCrop` field type + `<ngx-image-crop>` + `presets.imageCrop()`
+
+Upload-then-crop image input. User picks a file, drags a crop box
+at the configured aspect ratio, clicks Apply — form gets a PNG data
+URL of the cropped result. Typical use: profile avatars, post cover
+images, KYC photos.
+
+Backed by `cropperjs@^1.6` as an OPTIONAL peer dep. The component
+dynamic-imports the library + lazy-loads its CSS on first file pick,
+so consumers who never use `imageCrop` pay zero load cost. If the
+peer is absent, the field shows an "install cropperjs" hint
+instead of crashing.
+
+(We pinned cropperjs to v1.6.x rather than v2.x because v2 is a web-
+components rewrite with a different API and is still stabilising.
+v1 is battle-tested, ~50 KB, and the imperative `getCroppedCanvas`
+flow is exactly what a forms library needs.)
+
+```ts
+import { presets, defineForm } from '@ngx-json-forms/core';
+
+defineForm<{ displayName: string; avatar: string | null; cover: string | null }>([
+  presets.text({ formControlName: 'displayName', label: 'Display name', required: true }),
+
+  // Square avatar, 256×256 max output.
+  presets.imageCrop({
+    formControlName: 'avatar',
+    label: 'Avatar',
+    aspectRatio: 1,
+    maxOutputWidth: 256,
+    maxOutputHeight: 256,
+    required: true,
+  }),
+
+  // 16:9 cover image.
+  presets.imageCrop({
+    formControlName: 'cover',
+    label: 'Cover image',
+    aspectRatio: 16 / 9,
+    maxOutputWidth: 1920,
+    maxOutputHeight: 1080,
+  }),
+]);
+```
+
+**Options on `presets.imageCrop(...)`:**
+
+| Option            | Default      | Description                                   |
+|-------------------|--------------|-----------------------------------------------|
+| `formControlName` | —            | Required.                                     |
+| `label`           | —            | Field label.                                  |
+| `aspectRatio`     | `1`          | `1` square, `16/9`, `4/3`, `NaN` for free.    |
+| `accept`          | `'image/*'`  | File picker filter.                           |
+| `maxOutputWidth`  | `1024`       | Cap on output PNG width in px.                |
+| `maxOutputHeight` | `1024`       | Cap on output PNG height in px.               |
+| `required`        | `false`      | Whether a cropped image is required.          |
+| `columnSpan`      | `12`         | PrimeFlex column span.                        |
+
+**Implementation notes:**
+- Cropper CSS loaded once via `<link rel="stylesheet">` (cdn.jsdelivr.net)
+  because ng-packagr can't bundle CSS from an optional peer dep at
+  build time. Override via your global styles if you need a self-
+  hosted copy.
+- Apply emits on demand (not on every drag) so we don't burn CPU
+  serialising the canvas while the user is still framing the crop.
+- Clear resets both the form value and the file input so the user
+  can pick the same file again afterwards (browser-native file
+  inputs ignore re-picks of the same path).
+
+Install in your consumer to enable:
+```bash
+npm install cropperjs@^1.6
+```
+
+Live demo: `/image-crop` route in the StackBlitz playground.
+
+---
+
 ## [1.16.0] — 2026-05-25
 
 ### Added — `captcha` field type + `<ngx-captcha>` + `presets.captcha()`

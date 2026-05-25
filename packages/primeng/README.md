@@ -141,8 +141,10 @@ export class ProfileForm {
 `currency` (1.7.0), `tagInput` (1.8.0), `signature` (1.10.0),
 `dragUpload` (1.12.0), `treeSelect` (1.13.0), `timeSlots` (1.14.0),
 `markdown` (1.15.0, requires optional peer `marked`),
-`captcha` (1.16.0, Cloudflare Turnstile), `staticText`,
-`divider`, `button`, `repeater` (FormArray), `group` (nested FormGroup),
+`captcha` (1.16.0, Cloudflare Turnstile),
+`imageCrop` (1.17.0, requires optional peer `cropperjs@^1.6`),
+`staticText`, `divider`, `button`, `repeater` (FormArray),
+`group` (nested FormGroup),
 plus any custom component registered through
 `FieldRegistry.registerRenderer()`.
 

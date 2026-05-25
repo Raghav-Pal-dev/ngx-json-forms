@@ -19,4 +19,5 @@ export const routes: Routes = [
   { path: 'time-slots',      loadComponent: () => import('./tests/time-slots').then(m => m.TimeSlotsComponent) },
   { path: 'markdown',        loadComponent: () => import('./tests/markdown').then(m => m.MarkdownComponent) },
   { path: 'captcha',         loadComponent: () => import('./tests/captcha').then(m => m.CaptchaComponent) },
+  { path: 'image-crop',      loadComponent: () => import('./tests/image-crop').then(m => m.ImageCropComponent) },
 ];
