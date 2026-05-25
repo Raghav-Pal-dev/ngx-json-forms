@@ -20,6 +20,7 @@ import { RouterLink } from '@angular/router';
         <li><a routerLink="/wizard">Wizard</a> — 3-step stepper</li>
         <li><a routerLink="/computed">Computed</a> — derived + transient field</li>
         <li><a routerLink="/custom-validator">Custom validator</a> — inline async validator</li>
+        <li><a routerLink="/otp">OTP</a> — verification code / PIN / backup code (1.6.0)</li>
       </ul>
     </div>
   `,

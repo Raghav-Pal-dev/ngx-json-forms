@@ -25,6 +25,7 @@ export type InputType =
   | 'colorPicker'
   | 'rating'
   | 'slider'
+  | 'otp'
   | 'staticText'
   | 'divider'
   | 'button'
@@ -286,6 +287,14 @@ export interface FieldAttributes {
 
   // ── Key filter ──
   keyfilter?: 'int' | 'pint' | 'num' | 'pnum' | 'money' | 'hex' | 'email' | 'alpha' | 'alphanum' | string;
+
+  // ── OTP (1.6.0) ──
+  /** Number of OTP boxes to render. Defaults to 6. */
+  length?: number;
+  /** When true, masks each character (treat as a secret). */
+  mask?: boolean;
+  /** When true, only digits 0–9 are accepted. */
+  integerOnly?: boolean;
 
   // ── Color picker ──
   inline?: boolean;

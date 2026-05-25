@@ -137,8 +137,8 @@ export class ProfileForm {
 `editor` (Quill rich text), `select`, `multiSelect`, `autocomplete`,
 `dependentDropdown` (cascading), `datePicker`, `time`, `month`, `year`,
 `toggle` (with optional card layout), `checkbox`, `radio`, `fileUpload`
-(base64 + preview), `slider`, `rating`, `colorPicker`, `staticText`,
-`divider`, `button`, `repeater` (FormArray), `group` (nested FormGroup),
+(base64 + preview), `slider`, `rating`, `colorPicker`, `otp` (1.6.0),
+`staticText`, `divider`, `button`, `repeater` (FormArray), `group` (nested FormGroup),
 plus any custom component registered through
 `FieldRegistry.registerRenderer()`.
 

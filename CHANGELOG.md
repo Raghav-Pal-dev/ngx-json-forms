@@ -4,6 +4,75 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] — 2026-05-25
+
+### Added — `otp` field type + `presets.otp()`
+
+A dedicated `inputType: 'otp'` renderer backed by PrimeNG's
+`<p-inputotp>`. Use it for any "enter N characters" UX: verification
+codes, PINs, backup codes, 2FA challenges.
+
+```ts
+import { presets, defineForm } from '@ngx-json-forms/core';
+
+defineForm<{ email: string; code: string; pin: string }>([
+  presets.email({ formControlName: 'email', label: 'Email' }),
+
+  // Default: 6 digits, required, pattern auto-matches length.
+  presets.otp({ formControlName: 'code', label: 'Verification code' }),
+
+  // 4-digit masked PIN.
+  presets.otp({ formControlName: 'pin', label: 'PIN', length: 4, mask: true }),
+
+  // 8-character alphanumeric backup code.
+  presets.otp({
+    formControlName: 'backup',
+    label: 'Backup code',
+    length: 8,
+    integerOnly: false,
+  }),
+
+  presets.submit({ label: 'Verify' }),
+]);
+```
+
+Or hand-roll the FormField if you want full control:
+
+```ts
+{
+  formControlName: 'code',
+  label: 'Verification code',
+  config: {
+    attributes: {
+      inputType: 'otp',
+      length: 6,
+      mask: false,
+      integerOnly: true,
+      acceptedEvents: ['change', 'blur'],
+    },
+  },
+}
+```
+
+**Options on `presets.otp(...)`:**
+
+| Option            | Default | Description                                |
+|-------------------|---------|--------------------------------------------|
+| `formControlName` | —       | Required.                                  |
+| `label`           | —       | Field label above the boxes.               |
+| `length`          | `6`     | Number of OTP cells.                       |
+| `mask`            | `false` | Mask each character (treat as a secret).   |
+| `integerOnly`     | `true`  | Only digits 0–9 are accepted.              |
+| `required`        | `true`  | Whether the field is required.             |
+| `columnSpan`      | `12`    | PrimeFlex column span (1–12).              |
+
+The preset auto-derives a `pattern` validator matching the chosen
+length, so partial codes never pass validation.
+
+Live demo: `/otp` route in the StackBlitz playground.
+
+---
+
 ## [1.5.0] — 2026-05-25
 
 ### Added — `ng g @ngx-json-forms/primeng:form <name>` scaffold

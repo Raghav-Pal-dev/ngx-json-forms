@@ -36,6 +36,7 @@ import { ColorPickerModule } from 'primeng/colorpicker';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { KeyFilterModule } from 'primeng/keyfilter';
 import { EditorModule } from 'primeng/editor';
+import { InputOtpModule } from 'primeng/inputotp';
 
 import {
   FieldRegistry,
@@ -82,6 +83,7 @@ import {
     RadioButtonModule,
     KeyFilterModule,
     EditorModule,
+    InputOtpModule,
   ],
 })
 export class NgxJsonFormComponent {

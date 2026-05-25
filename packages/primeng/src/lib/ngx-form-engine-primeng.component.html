@@ -480,6 +480,20 @@
               </p-password>
             }
 
+            <!-- otp (1.6.0) -->
+            @case ('otp') {
+              <p-inputotp
+                [formControlName]="field.formControlName!"
+                [length]="field.config.attributes.length ?? 6"
+                [mask]="field.config.attributes.mask ?? false"
+                [integerOnly]="field.config.attributes.integerOnly ?? true"
+                [tabindex]="field.tabIndex ?? 0"
+                (onChange)="onEvent(field, $event, 'change')"
+                (onFocus)="onEvent(field, $event, 'focus')"
+                (onBlur)="onEvent(field, $event, 'blur')"
+              />
+            }
+
             <!-- textarea -->
             @case ('textarea') {
               <textarea

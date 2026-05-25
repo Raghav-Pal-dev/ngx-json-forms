@@ -145,6 +145,54 @@ export const presets = {
     };
   },
 
+  /**
+   * One-Time-Password input (PrimeNG `<p-inputotp>`). Sensible defaults:
+   * 6 digit-only boxes, required, pattern matches the chosen length.
+   * Tweak `length`, `mask`, `integerOnly` to suit (e.g. an 8-character
+   * alphanumeric backup code: `presets.otp({ length: 8, integerOnly: false })`).
+   *
+   * @since 1.6.0
+   */
+  otp(opts: {
+    formControlName: string;
+    label?: string;
+    /** Number of OTP cells. Defaults to 6. */
+    length?: number;
+    /** Mask each character (treat as a secret). Defaults to false. */
+    mask?: boolean;
+    /** Only allow digits 0–9. Defaults to true. */
+    integerOnly?: boolean;
+    required?: boolean;
+    columnSpan?: number;
+  }): FormField {
+    const length = opts.length ?? 6;
+    const integerOnly = opts.integerOnly ?? true;
+    const pattern = integerOnly ? `^[0-9]{${length}}$` : `^.{${length}}$`;
+    return {
+      formControlName: opts.formControlName,
+      label: opts.label,
+      config: {
+        attributes: {
+          inputType: 'otp',
+          length,
+          mask: opts.mask ?? false,
+          integerOnly,
+          acceptedEvents: ['change', 'blur'],
+        },
+      },
+      validations: {
+        rules: {
+          required: opts.required ?? true,
+          pattern,
+        },
+        messages: {
+          pattern: `Enter all ${length} ${integerOnly ? 'digits' : 'characters'}`,
+        },
+      },
+      layout: { columnSpan: opts.columnSpan ?? 12 },
+    };
+  },
+
   /** Submit button with sensible defaults. */
   submit(opts: { formControlName?: string; label?: string; columnSpan?: number } = {}): FormField {
     return {
