@@ -4,6 +4,89 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.13.0] — 2026-05-25
+
+### Added — `treeSelect` field type + `presets.treeSelect()`
+
+Hierarchical select widget for nested taxonomies — categories,
+org charts, file trees, permission grids. Three selection modes,
+each producing a different value shape:
+
+| Mode         | Value shape                                                  |
+|--------------|--------------------------------------------------------------|
+| `'single'`   | `TreeNode \| null`                                           |
+| `'multiple'` | `TreeNode[]`                                                 |
+| `'checkbox'` | `{ [key: string]: { checked, partialChecked } }`             |
+
+```ts
+import { presets, defineForm } from '@ngx-json-forms/core';
+
+const orgChart = [
+  { key: '1', label: 'Engineering', children: [
+    { key: '1-0', label: 'Frontend', children: [
+      { key: '1-0-0', label: 'Web' },
+      { key: '1-0-1', label: 'Mobile' },
+    ]},
+    { key: '1-1', label: 'Backend' },
+  ]},
+  { key: '2', label: 'Sales' },
+];
+
+defineForm<{ employee: string; department: unknown; permissions: unknown }>([
+  presets.text({ formControlName: 'employee', label: 'Employee', required: true }),
+
+  // Single-select.
+  presets.treeSelect({
+    formControlName: 'department',
+    label: 'Department',
+    nodes: orgChart,
+    required: true,
+  }),
+
+  // Multiple + filter + chip display.
+  presets.treeSelect({
+    formControlName: 'regions',
+    nodes: orgChart,
+    mode: 'multiple',
+    display: 'chip',
+    filter: true,
+  }),
+
+  // Checkbox tree with auto-propagation up + down (default).
+  presets.treeSelect({
+    formControlName: 'permissions',
+    nodes: permissionsTree,
+    mode: 'checkbox',
+  }),
+]);
+```
+
+**Options on `presets.treeSelect(...)`:**
+
+| Option                   | Default     | Description                                            |
+|--------------------------|-------------|--------------------------------------------------------|
+| `formControlName`        | —           | Required.                                              |
+| `nodes`                  | —           | Required. `TreeNode[]` (`{ key, label, children? }`).  |
+| `mode`                   | `'single'`  | `'single' \| 'multiple' \| 'checkbox'`.                |
+| `label`                  | —           | Field label.                                           |
+| `placeholder`            | `'Select'`  | Trigger placeholder text.                              |
+| `filter`                 | `false`     | Show a search box above the tree.                      |
+| `filterBy`               | `'label'`   | Field to filter on.                                    |
+| `filterPlaceholder`      | `'Search'`  | Search-box placeholder.                                |
+| `showClear`              | `false`     | Show a clear (X) button on the trigger.                |
+| `propagateSelectionDown` | `true`      | Checkbox mode: select children when parent selected.   |
+| `propagateSelectionUp`   | `true`      | Checkbox mode: select parent when all children selected.|
+| `display`                | `'comma'`   | Multi-mode value display: `'comma'` or `'chip'`.       |
+| `scrollHeight`           | `'300px'`   | Max overlay height.                                    |
+| `emptyMessage`           | `'No options'` | Shown when the tree is empty / filter has no hits.   |
+| `required`               | `false`     | Whether at least one selection is required.            |
+| `columnSpan`             | `12`        | PrimeFlex column span.                                 |
+
+Reuses PrimeNG's `<p-treeSelect>` (already a peer dep) — no new
+dependencies. Live demo: `/tree-select` route in StackBlitz.
+
+---
+
 ## [1.12.0] — 2026-05-25
 
 ### Added — `dragUpload` field type + `presets.dragUpload()`

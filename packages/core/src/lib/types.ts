@@ -30,6 +30,7 @@ export type InputType =
   | 'tagInput'
   | 'signature'
   | 'dragUpload'
+  | 'treeSelect'
   | 'staticText'
   | 'divider'
   | 'button'
@@ -333,6 +334,16 @@ export interface FieldAttributes {
   suffix?: string;
   /** Permit clearing the value to null/empty. Default true. */
   allowEmpty?: boolean;
+
+  // ── TreeSelect (1.13.0) ──
+  /** Tree nodes for `treeSelect`. Shape: `{ key, label, children?, data?, leaf?, ... }`. */
+  nodes?: unknown[];
+  /** Selection mode for treeSelect. `'single' | 'multiple' | 'checkbox'`. */
+  treeSelectionMode?: 'single' | 'multiple' | 'checkbox';
+  /** Whether checkbox selection should propagate down to descendants. Default true. */
+  propagateSelectionDown?: boolean;
+  /** Whether checkbox selection should propagate up to ancestors. Default true. */
+  propagateSelectionUp?: boolean;
 
   // ── Signature pad (1.10.0) ──
   /** Pen stroke color (CSS color string). Defaults to dark grey. */

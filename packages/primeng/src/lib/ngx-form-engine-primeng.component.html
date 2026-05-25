@@ -688,6 +688,40 @@
               </p-autocomplete>
             }
 
+            <!-- treeSelect (1.13.0) — hierarchical multi-select.
+                 Value type depends on selectionMode:
+                   - 'single':   TreeNode | null
+                   - 'multiple': TreeNode[]
+                   - 'checkbox': { [key]: { checked, partialChecked } } -->
+            @case ('treeSelect') {
+              <p-treeselect
+                [inputId]="inputId(field, idSuffix)"
+                [formControlName]="field.formControlName!"
+                [options]="$any(field.config.attributes.nodes ?? [])"
+                [selectionMode]="$any(field.config.attributes.treeSelectionMode ?? 'single')"
+                [placeholder]="field.config.attributes.placeholder ?? 'Select'"
+                [filter]="field.config.attributes.filter ?? false"
+                [filterBy]="field.config.attributes.filterBy ?? 'label'"
+                [filterPlaceholder]="field.config.attributes.filterPlaceholder ?? 'Search'"
+                [showClear]="field.config.attributes.showClear ?? false"
+                [propagateSelectionDown]="field.config.attributes.propagateSelectionDown ?? true"
+                [propagateSelectionUp]="field.config.attributes.propagateSelectionUp ?? true"
+                [scrollHeight]="field.config.attributes.scrollHeight ?? '300px'"
+                [emptyMessage]="field.config.attributes.emptyMessage ?? 'No options'"
+                [display]="field.config.attributes.display ?? 'comma'"
+                [tabindex]="field.tabIndex ?? 0"
+                appendTo="body"
+                (onNodeSelect)="onEvent(field, $event, 'select')"
+                (onNodeUnselect)="onEvent(field, $event, 'unselect')"
+                (onClear)="onEvent(field, $event, 'clear')"
+                (onFilter)="onEvent(field, $event, 'change')"
+                (onFocus)="onEvent(field, $event, 'focus')"
+                (onBlur)="onEvent(field, $event, 'blur')"
+                (onShow)="onEvent(field, $event, 'show')"
+                (onHide)="onEvent(field, $event, 'hide')"
+              />
+            }
+
             <!-- signature (1.10.0) — canvas pad, value is a PNG data URL -->
             @case ('signature') {
               <ngx-signature-pad

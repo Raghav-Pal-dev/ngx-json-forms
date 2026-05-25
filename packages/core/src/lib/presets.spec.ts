@@ -349,6 +349,69 @@ describe('presets', () => {
     });
   });
 
+  describe('treeSelect (1.13.0)', () => {
+    const nodes = [
+      { key: '1', label: 'Sales', children: [
+        { key: '1-0', label: 'North America' },
+        { key: '1-1', label: 'EMEA' },
+      ]},
+      { key: '2', label: 'Engineering' },
+    ];
+
+    it('defaults to single-mode select with no filter', () => {
+      const f = presets.treeSelect({ formControlName: 'cat', nodes });
+      expect(f.config.attributes.inputType).toBe('treeSelect');
+      expect(f.config.attributes.treeSelectionMode).toBe('single');
+      expect(f.config.attributes.filter).toBe(false);
+      expect(f.config.attributes.propagateSelectionDown).toBe(true);
+      expect(f.config.attributes.propagateSelectionUp).toBe(true);
+      expect(f.config.attributes.nodes).toBe(nodes);
+    });
+
+    it('switches to checkbox + chip display + filter when asked', () => {
+      const f = presets.treeSelect({
+        formControlName: 'perms',
+        nodes,
+        mode: 'checkbox',
+        display: 'chip',
+        filter: true,
+      });
+      expect(f.config.attributes.treeSelectionMode).toBe('checkbox');
+      expect(f.config.attributes.display).toBe('chip');
+      expect(f.config.attributes.filter).toBe(true);
+    });
+
+    it('supports multiple mode + custom scrollHeight + showClear', () => {
+      const f = presets.treeSelect({
+        formControlName: 'tags',
+        nodes,
+        mode: 'multiple',
+        scrollHeight: '450px',
+        showClear: true,
+      });
+      expect(f.config.attributes.treeSelectionMode).toBe('multiple');
+      expect(f.config.attributes.scrollHeight).toBe('450px');
+      expect(f.config.attributes.showClear).toBe(true);
+    });
+
+    it('can disable propagation (independent parent/child selection)', () => {
+      const f = presets.treeSelect({
+        formControlName: 'x',
+        nodes,
+        mode: 'checkbox',
+        propagateSelectionDown: false,
+        propagateSelectionUp: false,
+      });
+      expect(f.config.attributes.propagateSelectionDown).toBe(false);
+      expect(f.config.attributes.propagateSelectionUp).toBe(false);
+    });
+
+    it('emits select / unselect / clear / change / blur events by default', () => {
+      const f = presets.treeSelect({ formControlName: 'c', nodes });
+      expect(f.config.attributes.acceptedEvents).toEqual(['select', 'unselect', 'clear', 'change', 'blur']);
+    });
+  });
+
   describe('email', () => {
     it('produces a text input with email validation + envelope icon', () => {
       const f = presets.email({ formControlName: 'workEmail' });

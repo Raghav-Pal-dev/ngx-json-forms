@@ -779,6 +779,91 @@ export const presets = {
     };
   },
 
+  /**
+   * Hierarchical multi-select (`<p-treeSelect>`). Use for nested
+   * taxonomies — categories, org charts, locations, file folders,
+   * permissions trees.
+   *
+   * `nodes` shape (PrimeNG `TreeNode[]`):
+   * ```ts
+   * [{ key: '1', label: 'Sales', children: [
+   *     { key: '1-0', label: 'North America' },
+   *     { key: '1-1', label: 'EMEA' },
+   *   ]
+   * }]
+   * ```
+   *
+   * Value type depends on `mode`:
+   *   - `'single'`   → `TreeNode | null`
+   *   - `'multiple'` → `TreeNode[]`
+   *   - `'checkbox'` → `{ [key]: { checked, partialChecked } }`
+   *
+   * @example
+   *   presets.treeSelect({ formControlName: 'category', label: 'Category', nodes });
+   *   presets.treeSelect({
+   *     formControlName: 'permissions',
+   *     label: 'Permissions',
+   *     mode: 'checkbox',
+   *     nodes,
+   *     filter: true,
+   *   });
+   *
+   * @since 1.13.0
+   */
+  treeSelect(opts: {
+    formControlName: string;
+    label?: string;
+    /** `TreeNode[]`. Each node: `{ key, label, children?, data? }`. */
+    nodes: unknown[];
+    /** Selection mode. Defaults to `'single'`. */
+    mode?: 'single' | 'multiple' | 'checkbox';
+    placeholder?: string;
+    /** Show a filter input above the tree. Default false. */
+    filter?: boolean;
+    filterBy?: string;
+    filterPlaceholder?: string;
+    showClear?: boolean;
+    /** Checkbox mode: propagate selection down to children. Default true. */
+    propagateSelectionDown?: boolean;
+    /** Checkbox mode: propagate selection up to ancestors. Default true. */
+    propagateSelectionUp?: boolean;
+    /** Display compact value list as comma-separated labels ('comma') or chips. */
+    display?: 'comma' | 'chip';
+    scrollHeight?: string;
+    emptyMessage?: string;
+    required?: boolean;
+    columnSpan?: number;
+  }): FormField {
+    return {
+      formControlName: opts.formControlName,
+      label: opts.label,
+      placeholder: opts.placeholder ?? 'Select',
+      config: {
+        attributes: {
+          inputType: 'treeSelect',
+          nodes: opts.nodes,
+          treeSelectionMode: opts.mode ?? 'single',
+          filter: opts.filter ?? false,
+          filterBy: opts.filterBy ?? 'label',
+          filterPlaceholder: opts.filterPlaceholder ?? 'Search',
+          showClear: opts.showClear ?? false,
+          propagateSelectionDown: opts.propagateSelectionDown ?? true,
+          propagateSelectionUp: opts.propagateSelectionUp ?? true,
+          display: opts.display ?? 'comma',
+          scrollHeight: opts.scrollHeight ?? '300px',
+          emptyMessage: opts.emptyMessage ?? 'No options',
+          acceptedEvents: ['select', 'unselect', 'clear', 'change', 'blur'],
+        },
+      },
+      validations: {
+        rules: {
+          ...(opts.required ? { required: true } : {}),
+        },
+      },
+      layout: { columnSpan: opts.columnSpan ?? 12 },
+    };
+  },
+
   /** Submit button with sensible defaults. */
   submit(opts: { formControlName?: string; label?: string; columnSpan?: number } = {}): FormField {
     return {

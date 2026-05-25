@@ -38,6 +38,7 @@ import { KeyFilterModule } from 'primeng/keyfilter';
 import { EditorModule } from 'primeng/editor';
 import { InputOtpModule } from 'primeng/inputotp';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { TreeSelectModule } from 'primeng/treeselect';
 
 import { SignaturePadComponent } from './signature-pad.component';
 
@@ -88,6 +89,7 @@ import {
     EditorModule,
     InputOtpModule,
     InputNumberModule,
+    TreeSelectModule,
     SignaturePadComponent,
   ],
 })
