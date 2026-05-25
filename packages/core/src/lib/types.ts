@@ -31,6 +31,7 @@ export type InputType =
   | 'signature'
   | 'dragUpload'
   | 'treeSelect'
+  | 'timeSlots'
   | 'staticText'
   | 'divider'
   | 'button'
@@ -334,6 +335,14 @@ export interface FieldAttributes {
   suffix?: string;
   /** Permit clearing the value to null/empty. Default true. */
   allowEmpty?: boolean;
+
+  // ── timeSlots (1.14.0) ──
+  /** Available time slots: `string[]` or `{ value, label?, disabled? }[]`. */
+  slots?: (string | { value: string; label?: string; disabled?: boolean })[];
+  /** Pill style for the currently selected slot(s). */
+  selectedSeverity?: string;
+  /** Pill style for unselected slots (outlined). */
+  unselectedSeverity?: string;
 
   // ── TreeSelect (1.13.0) ──
   /** Tree nodes for `treeSelect`. Shape: `{ key, label, children?, data?, leaf?, ... }`. */

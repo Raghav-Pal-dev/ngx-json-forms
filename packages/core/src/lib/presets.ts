@@ -864,6 +864,76 @@ export const presets = {
     };
   },
 
+  /**
+   * Appointment-style time-slot picker. Renders a button grid of
+   * server-provided times — single-pick (default) or multi-pick.
+   *
+   * Slots can be plain `string[]` (`['09:00', '09:30']`) or the
+   * richer `{ value, label?, disabled? }[]` shape so servers can
+   * mark already-booked slots as disabled without removing them.
+   *
+   * Value:
+   *   - `multiple: false` → `string | null`
+   *   - `multiple: true`  → `string[]`
+   *
+   * @example
+   *   presets.timeSlots({
+   *     formControlName: 'appointment',
+   *     label: 'Pick a time',
+   *     slots: ['09:00', '09:30', '10:00', '10:30', '11:00'],
+   *   });
+   *
+   *   // Multi-slot picker with one already taken:
+   *   presets.timeSlots({
+   *     formControlName: 'sessions',
+   *     multiple: true,
+   *     slots: [
+   *       { value: 'mon-9am', label: 'Mon 9 AM' },
+   *       { value: 'tue-9am', label: 'Tue 9 AM', disabled: true },
+   *       { value: 'wed-9am', label: 'Wed 9 AM' },
+   *     ],
+   *   });
+   *
+   * @since 1.14.0
+   */
+  timeSlots(opts: {
+    formControlName: string;
+    label?: string;
+    slots: (string | { value: string; label?: string; disabled?: boolean })[];
+    /** Allow picking multiple slots. Defaults to false. */
+    multiple?: boolean;
+    /** Severity for the *selected* button(s). Defaults to `'primary'`. */
+    selectedSeverity?: string;
+    /** Severity for unselected buttons (outlined). Defaults to `'secondary'`. */
+    unselectedSeverity?: string;
+    /** Message shown when `slots` is empty. */
+    emptyMessage?: string;
+    required?: boolean;
+    columnSpan?: number;
+  }): FormField {
+    return {
+      formControlName: opts.formControlName,
+      label: opts.label,
+      config: {
+        attributes: {
+          inputType: 'timeSlots',
+          slots: opts.slots,
+          multiple: opts.multiple ?? false,
+          selectedSeverity: opts.selectedSeverity ?? 'primary',
+          unselectedSeverity: opts.unselectedSeverity ?? 'secondary',
+          emptyMessage: opts.emptyMessage ?? 'No slots available',
+          acceptedEvents: ['change', 'blur'],
+        },
+      },
+      validations: {
+        rules: {
+          ...(opts.required ? { required: true } : {}),
+        },
+      },
+      layout: { columnSpan: opts.columnSpan ?? 12 },
+    };
+  },
+
   /** Submit button with sensible defaults. */
   submit(opts: { formControlName?: string; label?: string; columnSpan?: number } = {}): FormField {
     return {

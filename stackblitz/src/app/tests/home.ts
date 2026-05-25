@@ -28,6 +28,7 @@ import { RouterLink } from '@angular/router';
         <li><a routerLink="/address">Address</a> — composite group (line1/2, city, state, postal, country) (1.11.0)</li>
         <li><a routerLink="/drag-upload">Drag upload</a> — full dropzone with file queue + Upload/Cancel (1.12.0)</li>
         <li><a routerLink="/tree-select">Tree select</a> — hierarchical single / multiple / checkbox tree (1.13.0)</li>
+        <li><a routerLink="/time-slots">Time slots</a> — appointment-style button grid (1.14.0)</li>
       </ul>
     </div>
   `,

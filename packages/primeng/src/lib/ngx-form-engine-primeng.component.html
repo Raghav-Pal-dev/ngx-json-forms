@@ -688,6 +688,18 @@
               </p-autocomplete>
             }
 
+            <!-- timeSlots (1.14.0) — clickable grid for appointment booking -->
+            @case ('timeSlots') {
+              <ngx-time-slots
+                [formControlName]="field.formControlName!"
+                [slots]="$any(field.config.attributes.slots ?? [])"
+                [multiple]="field.config.attributes.multiple ?? false"
+                [selectedSeverity]="field.config.attributes.selectedSeverity ?? 'primary'"
+                [unselectedSeverity]="field.config.attributes.unselectedSeverity ?? 'secondary'"
+                [emptyMessage]="field.config.attributes.emptyMessage ?? 'No slots available'"
+              />
+            }
+
             <!-- treeSelect (1.13.0) — hierarchical multi-select.
                  Value type depends on selectionMode:
                    - 'single':   TreeNode | null

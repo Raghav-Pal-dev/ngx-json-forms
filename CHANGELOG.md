@@ -4,6 +4,72 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.14.0] — 2026-05-25
+
+### Added — `timeSlots` field type + `<ngx-time-slots>` + `presets.timeSlots()`
+
+Appointment-style button grid for server-driven time-slot picking
+(appointment booking, course scheduling, workshop sign-ups). Renders
+a wrap-flex grid of clickable slot buttons; selected ones get the
+primary fill.
+
+Slots can be plain `string[]` or the richer `Slot[]` shape so servers
+can mark already-booked slots as `disabled: true` without removing
+them — the user still sees the time but can't click it.
+
+Value shape:
+- `multiple: false` (default) → `string | null` (click-again deselects)
+- `multiple: true`            → `string[]`
+
+```ts
+import { presets, defineForm } from '@ngx-json-forms/core';
+
+defineForm<{ name: string; appointment: string | null }>([
+  presets.text({ formControlName: 'name', label: 'Your name', required: true }),
+
+  // Plain string list — single-pick.
+  presets.timeSlots({
+    formControlName: 'appointment',
+    label: 'Pick a time today',
+    slots: ['09:00', '09:30', '10:00', '10:30', '11:00'],
+    required: true,
+  }),
+
+  // Multi-pick, one slot already booked (greyed out).
+  presets.timeSlots({
+    formControlName: 'workshops',
+    multiple: true,
+    selectedSeverity: 'success',
+    slots: [
+      { value: 'mon-9', label: 'Mon 9 AM' },
+      { value: 'mon-2', label: 'Mon 2 PM', disabled: true },
+      { value: 'tue-9', label: 'Tue 9 AM' },
+    ],
+  }),
+]);
+```
+
+**Options on `presets.timeSlots(...)`:**
+
+| Option               | Default              | Description                                          |
+|----------------------|----------------------|------------------------------------------------------|
+| `formControlName`    | —                    | Required.                                            |
+| `slots`              | —                    | Required. `string[]` or `{value, label?, disabled?}[]`. |
+| `multiple`           | `false`              | Single vs multi-pick.                                |
+| `selectedSeverity`   | `'primary'`          | PrimeNG severity for selected button(s).             |
+| `unselectedSeverity` | `'secondary'`        | PrimeNG severity for unselected (outlined).          |
+| `emptyMessage`       | `'No slots available'`| Shown when `slots` is empty.                        |
+| `required`           | `false`              | Whether at least one slot must be picked.            |
+| `columnSpan`         | `12`                 | PrimeFlex column span.                               |
+
+The underlying `<ngx-time-slots>` standalone component is also
+exported from `@ngx-json-forms/primeng` (CVA-compliant) so consumers
+can use it directly in any reactive form via `formControlName`.
+
+Live demo: `/time-slots` route in the StackBlitz playground.
+
+---
+
 ## [1.13.0] — 2026-05-25
 
 ### Added — `treeSelect` field type + `presets.treeSelect()`

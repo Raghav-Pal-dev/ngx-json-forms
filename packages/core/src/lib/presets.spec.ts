@@ -412,6 +412,55 @@ describe('presets', () => {
     });
   });
 
+  describe('timeSlots (1.14.0)', () => {
+    it('defaults to single-pick + primary/secondary styling', () => {
+      const f = presets.timeSlots({
+        formControlName: 'slot',
+        slots: ['09:00', '09:30'],
+      });
+      expect(f.config.attributes.inputType).toBe('timeSlots');
+      expect(f.config.attributes.multiple).toBe(false);
+      expect(f.config.attributes.selectedSeverity).toBe('primary');
+      expect(f.config.attributes.unselectedSeverity).toBe('secondary');
+      expect((f.config.attributes.slots as unknown[]).length).toBe(2);
+    });
+
+    it('supports multi-pick + custom severities', () => {
+      const f = presets.timeSlots({
+        formControlName: 'sessions',
+        slots: ['mon', 'tue'],
+        multiple: true,
+        selectedSeverity: 'success',
+        unselectedSeverity: 'info',
+      });
+      expect(f.config.attributes.multiple).toBe(true);
+      expect(f.config.attributes.selectedSeverity).toBe('success');
+      expect(f.config.attributes.unselectedSeverity).toBe('info');
+    });
+
+    it('accepts rich Slot[] with disabled flag', () => {
+      const f = presets.timeSlots({
+        formControlName: 's',
+        slots: [
+          { value: '9am', label: 'Mon 9 AM' },
+          { value: '10am', label: 'Mon 10 AM', disabled: true },
+        ],
+      });
+      const slots = f.config.attributes.slots as { value: string; disabled?: boolean }[];
+      expect(slots[1].disabled).toBe(true);
+    });
+
+    it('emits change + blur events by default', () => {
+      const f = presets.timeSlots({ formControlName: 's', slots: [] });
+      expect(f.config.attributes.acceptedEvents).toEqual(['change', 'blur']);
+    });
+
+    it('omits required by default; adds when requested', () => {
+      expect(presets.timeSlots({ formControlName: 's', slots: [] }).validations?.rules?.required).toBeUndefined();
+      expect(presets.timeSlots({ formControlName: 's', slots: [], required: true }).validations?.rules?.required).toBe(true);
+    });
+  });
+
   describe('email', () => {
     it('produces a text input with email validation + envelope icon', () => {
       const f = presets.email({ formControlName: 'workEmail' });

@@ -16,4 +16,5 @@ export const routes: Routes = [
   { path: 'address',         loadComponent: () => import('./tests/address').then(m => m.AddressComponent) },
   { path: 'drag-upload',     loadComponent: () => import('./tests/drag-upload').then(m => m.DragUploadComponent) },
   { path: 'tree-select',     loadComponent: () => import('./tests/tree-select').then(m => m.TreeSelectComponent) },
+  { path: 'time-slots',      loadComponent: () => import('./tests/time-slots').then(m => m.TimeSlotsComponent) },
 ];
