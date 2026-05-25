@@ -4,6 +4,78 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.18.0] — 2026-05-25
+
+### Added — `phoneIntl` field type + `<ngx-phone-input>` + `presets.phoneIntl()`
+
+Internationalised phone input with country flag dropdown and
+format-as-you-type number entry. Form value is a canonical
+**E.164** string (e.g. `+14155551234`) — what backends almost
+always want. Consumers needing the rich parse output (country,
+national, type, etc.) can call `parsePhoneNumber(value)` from
+`libphonenumber-js` themselves.
+
+```ts
+import { presets, defineForm } from '@ngx-json-forms/core';
+
+defineForm<{ mobile: string; whatsapp: string }>([
+  presets.phoneIntl({
+    formControlName: 'mobile',
+    label: 'Mobile',
+    required: true,
+  }),
+  presets.phoneIntl({
+    formControlName: 'whatsapp',
+    defaultCountry: 'IN',   // ISO 3166-1 alpha-2
+  }),
+]);
+```
+
+The existing `presets.phone(...)` is **still here** — it's the
+lighter "digits-only + tel keyfilter" preset for forms that don't
+need international handling. Use `phoneIntl` when you need country
+selection, format-as-you-type, or guaranteed E.164 output;
+`phone` when you just want a tel input with a pattern.
+
+**`libphonenumber-js` is now an OPTIONAL peer dep** (~145 KB) of
+`@ngx-json-forms/primeng`. The component dynamic-imports it on
+first init, so consumers who never use this field pay zero load
+cost. Without the dep, the field falls back to a plain E.164 text
+input with an install hint — values still bind / submit.
+
+To enable formatted input + validation:
+```bash
+npm install libphonenumber-js
+```
+
+**Options on `presets.phoneIntl(...)`:**
+
+| Option            | Default  | Description                                    |
+|-------------------|----------|------------------------------------------------|
+| `formControlName` | —        | Required.                                      |
+| `label`           | —        | Field label.                                   |
+| `placeholder`     | —        | Number input placeholder.                      |
+| `defaultCountry`  | `'US'`   | ISO 3166-1 alpha-2 code shown when empty.      |
+| `required`        | `false`  | Whether the field is required.                 |
+| `columnSpan`      | `12`     | PrimeFlex column span.                         |
+
+Built-in validation: the preset ships with an E.164 `pattern`
+regex (`^\+[1-9]\d{1,14}$`) so invalid numbers fail validation
+even if the library isn't loaded.
+
+**Implementation notes:**
+- Pasting a number starting with `+44` auto-switches the country
+  dropdown to GB (libphonenumber's `AsYouType.getCountry()`).
+- Country list is the full set returned by `getCountries()`
+  (~250 countries), sorted by localised display name.
+- A curated `COUNTRY_NAMES` lookup gives human-readable labels for
+  ~50 common countries; the rest fall back to ISO codes (still
+  functional, just less pretty).
+
+Live demo: `/phone-intl` route in the StackBlitz playground.
+
+---
+
 ## [1.17.0] — 2026-05-25
 
 ### Added — `imageCrop` field type + `<ngx-image-crop>` + `presets.imageCrop()`

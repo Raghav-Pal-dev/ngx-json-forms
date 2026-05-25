@@ -45,6 +45,7 @@ import { TimeSlotsComponent } from './time-slots.component';
 import { MarkdownEditorComponent } from './markdown-editor.component';
 import { CaptchaComponent } from './captcha.component';
 import { ImageCropComponent } from './image-crop.component';
+import { PhoneInputComponent } from './phone-input.component';
 
 import {
   FieldRegistry,
@@ -99,6 +100,7 @@ import {
     MarkdownEditorComponent,
     CaptchaComponent,
     ImageCropComponent,
+    PhoneInputComponent,
   ],
 })
 export class NgxJsonFormComponent {

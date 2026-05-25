@@ -143,6 +143,7 @@ export class ProfileForm {
 `markdown` (1.15.0, requires optional peer `marked`),
 `captcha` (1.16.0, Cloudflare Turnstile),
 `imageCrop` (1.17.0, requires optional peer `cropperjs@^1.6`),
+`phoneIntl` (1.18.0, requires optional peer `libphonenumber-js`),
 `staticText`, `divider`, `button`, `repeater` (FormArray),
 `group` (nested FormGroup),
 plus any custom component registered through

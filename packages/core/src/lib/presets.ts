@@ -1124,6 +1124,68 @@ export const presets = {
     };
   },
 
+  /**
+   * International phone input with country flag dropdown + format-
+   * as-you-type. Backed by `libphonenumber-js@^1.11` (OPTIONAL peer
+   * dep) — dynamic-imported on first render, so consumers who never
+   * use it pay zero load cost. Without the dep, the field falls
+   * back to a plain text input with an install hint.
+   *
+   * The form value is a canonical **E.164** string (e.g.
+   * `+14155551234`) — what backends almost always want. Consumers
+   * needing the rich parse output (country, national, type, …) can
+   * call `parsePhoneNumber(value)` themselves.
+   *
+   * Note: this is the **internationalised** phone preset (1.18.0+).
+   * The earlier `presets.phone(...)` still exists for the simpler
+   * "digits-only with tel keyfilter" case — kept for back-compat
+   * and lighter forms that don't need country handling.
+   *
+   * @example
+   *   presets.phoneIntl({ formControlName: 'mobile', label: 'Mobile' });
+   *   presets.phoneIntl({
+   *     formControlName: 'phone',
+   *     label: 'Phone',
+   *     defaultCountry: 'IN',
+   *     required: true,
+   *   });
+   *
+   * @since 1.18.0
+   */
+  phoneIntl(opts: {
+    formControlName: string;
+    label?: string;
+    placeholder?: string;
+    /** Default country (ISO 3166-1 alpha-2). Defaults to `'US'`. */
+    defaultCountry?: string;
+    required?: boolean;
+    columnSpan?: number;
+  }): FormField {
+    return {
+      formControlName: opts.formControlName,
+      label: opts.label,
+      placeholder: opts.placeholder ?? '',
+      config: {
+        attributes: {
+          inputType: 'phoneIntl',
+          defaultCountry: opts.defaultCountry ?? 'US',
+          acceptedEvents: ['change', 'blur'],
+        },
+      },
+      validations: {
+        rules: {
+          ...(opts.required ? { required: true } : {}),
+          // E.164 pattern: '+' then 1–15 digits, first digit non-zero.
+          pattern: '^\\+[1-9]\\d{1,14}$',
+        },
+        messages: {
+          pattern: 'Enter a valid phone number',
+        },
+      },
+      layout: { columnSpan: opts.columnSpan ?? 12 },
+    };
+  },
+
   /** Submit button with sensible defaults. */
   submit(opts: { formControlName?: string; label?: string; columnSpan?: number } = {}): FormField {
     return {

@@ -35,6 +35,7 @@ export type InputType =
   | 'markdown'
   | 'captcha'
   | 'imageCrop'
+  | 'phoneIntl'
   | 'staticText'
   | 'divider'
   | 'button'
@@ -338,6 +339,10 @@ export interface FieldAttributes {
   suffix?: string;
   /** Permit clearing the value to null/empty. Default true. */
   allowEmpty?: boolean;
+
+  // ── phoneIntl (1.18.0, libphonenumber-js + country flag select) ──
+  /** Default country shown when no value (ISO 3166-1 alpha-2). Defaults 'US'. */
+  defaultCountry?: string;
 
   // ── image-crop (1.17.0) ──
   /** Crop aspect ratio (1 = square, 16/9, NaN = free). Default 1. */

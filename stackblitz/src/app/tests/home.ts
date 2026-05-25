@@ -32,6 +32,7 @@ import { RouterLink } from '@angular/router';
         <li><a routerLink="/markdown">Markdown</a> — editor + live preview, needs <code>marked</code> (1.15.0)</li>
         <li><a routerLink="/captcha">Captcha</a> — Cloudflare Turnstile (zero bundle cost) (1.16.0)</li>
         <li><a routerLink="/image-crop">Image crop</a> — pick + crop → PNG data URL, needs <code>cropperjs</code> (1.17.0)</li>
+        <li><a routerLink="/phone-intl">Phone (intl)</a> — country flag + libphonenumber-js E.164 output (1.18.0)</li>
       </ul>
     </div>
   `,

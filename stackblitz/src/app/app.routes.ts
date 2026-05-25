@@ -20,4 +20,5 @@ export const routes: Routes = [
   { path: 'markdown',        loadComponent: () => import('./tests/markdown').then(m => m.MarkdownComponent) },
   { path: 'captcha',         loadComponent: () => import('./tests/captcha').then(m => m.CaptchaComponent) },
   { path: 'image-crop',      loadComponent: () => import('./tests/image-crop').then(m => m.ImageCropComponent) },
+  { path: 'phone-intl',      loadComponent: () => import('./tests/phone-intl').then(m => m.PhoneIntlComponent) },
 ];

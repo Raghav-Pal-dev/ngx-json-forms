@@ -554,6 +554,36 @@ describe('presets', () => {
     });
   });
 
+  describe('phoneIntl (1.18.0)', () => {
+    it('produces phoneIntl renderer with US default + E.164 pattern', () => {
+      const f = presets.phoneIntl({ formControlName: 'mobile' });
+      expect(f.config.attributes.inputType).toBe('phoneIntl');
+      expect(f.config.attributes.defaultCountry).toBe('US');
+      expect(f.validations?.rules?.pattern).toBe('^\\+[1-9]\\d{1,14}$');
+      expect(f.validations?.messages?.pattern).toBe('Enter a valid phone number');
+    });
+
+    it('honours a different defaultCountry', () => {
+      const f = presets.phoneIntl({ formControlName: 'm', defaultCountry: 'IN' });
+      expect(f.config.attributes.defaultCountry).toBe('IN');
+    });
+
+    it('E.164 pattern matches real numbers, rejects garbage', () => {
+      const re = new RegExp(presets.phoneIntl({ formControlName: 'p' }).validations!.rules!.pattern!);
+      expect(re.test('+14155551234')).toBe(true);  // US
+      expect(re.test('+919876543210')).toBe(true); // IN
+      expect(re.test('+447911123456')).toBe(true); // UK
+      expect(re.test('14155551234')).toBe(false);  // missing +
+      expect(re.test('+0123')).toBe(false);        // leading zero after +
+      expect(re.test('+')).toBe(false);            // just '+'
+    });
+
+    it('omits required by default; adds when requested', () => {
+      expect(presets.phoneIntl({ formControlName: 'p' }).validations?.rules?.required).toBeUndefined();
+      expect(presets.phoneIntl({ formControlName: 'p', required: true }).validations?.rules?.required).toBe(true);
+    });
+  });
+
   describe('email', () => {
     it('produces a text input with email validation + envelope icon', () => {
       const f = presets.email({ formControlName: 'workEmail' });
