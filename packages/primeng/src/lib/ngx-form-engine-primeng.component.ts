@@ -39,6 +39,8 @@ import { EditorModule } from 'primeng/editor';
 import { InputOtpModule } from 'primeng/inputotp';
 import { InputNumberModule } from 'primeng/inputnumber';
 
+import { SignaturePadComponent } from './signature-pad.component';
+
 import {
   FieldRegistry,
   FormEngineEvent,
@@ -86,6 +88,7 @@ import {
     EditorModule,
     InputOtpModule,
     InputNumberModule,
+    SignaturePadComponent,
   ],
 })
 export class NgxJsonFormComponent {

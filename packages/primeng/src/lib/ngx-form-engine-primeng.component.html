@@ -649,6 +649,18 @@
               </p-autocomplete>
             }
 
+            <!-- signature (1.10.0) — canvas pad, value is a PNG data URL -->
+            @case ('signature') {
+              <ngx-signature-pad
+                [formControlName]="field.formControlName!"
+                [penColor]="field.config.attributes.penColor ?? '#111827'"
+                [penWidth]="field.config.attributes.penWidth ?? 2"
+                [height]="field.config.attributes.height ?? 180"
+                [hideClearButton]="field.config.attributes.hideClearButton ?? false"
+                [clearLabel]="field.config.attributes.clearLabel ?? 'Clear'"
+              />
+            }
+
             <!-- tagInput (1.8.0) — chip-style multi-string entry.
                  PrimeNG dropped <p-chips> in v21, so this wraps
                  <p-autocomplete multiple typeahead="false"> with no

@@ -28,6 +28,7 @@ export type InputType =
   | 'otp'
   | 'currency'
   | 'tagInput'
+  | 'signature'
   | 'staticText'
   | 'divider'
   | 'button'
@@ -321,6 +322,18 @@ export interface FieldAttributes {
   suffix?: string;
   /** Permit clearing the value to null/empty. Default true. */
   allowEmpty?: boolean;
+
+  // ── Signature pad (1.10.0) ──
+  /** Pen stroke color (CSS color string). Defaults to dark grey. */
+  penColor?: string;
+  /** Pen line width in CSS pixels. Defaults to 2. */
+  penWidth?: number;
+  /** Canvas height in CSS pixels. Width is responsive. Defaults to 180. */
+  height?: number;
+  /** Hide the built-in Clear button. */
+  hideClearButton?: boolean;
+  /** Label on the Clear button. */
+  clearLabel?: string;
 
   // ── tagInput (1.8.0) ──
   /** Separator regex/string that splits typed text into tags (e.g. ',' or `/[,;\s]/`). */

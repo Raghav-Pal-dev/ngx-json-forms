@@ -459,6 +459,67 @@ export const presets = {
     };
   },
 
+  /**
+   * Canvas-backed signature pad. Form value is a PNG data URL
+   * (`data:image/png;base64,...`) while there's a signature; `null`
+   * when empty / cleared. That makes it trivially persistable and
+   * previewable — `<img [src]="value">` just works.
+   *
+   * Use cases: consent / waiver / contract signing, delivery receipts,
+   * approval workflows.
+   *
+   * @example
+   *   presets.signature({ formControlName: 'consent', label: 'Sign here' });
+   *   presets.signature({
+   *     formControlName: 'approval',
+   *     label: 'Manager approval',
+   *     penColor: '#1d4ed8',
+   *     penWidth: 3,
+   *     height: 220,
+   *     required: true,
+   *   });
+   *
+   * @since 1.10.0
+   */
+  signature(opts: {
+    formControlName: string;
+    label?: string;
+    /** Pen stroke color (CSS color string). Defaults to dark grey. */
+    penColor?: string;
+    /** Pen line width in CSS pixels. Defaults to 2. */
+    penWidth?: number;
+    /** Canvas height in CSS pixels. Width is responsive. Defaults to 180. */
+    height?: number;
+    /** Hide the built-in Clear button. */
+    hideClearButton?: boolean;
+    /** Label on the Clear button. */
+    clearLabel?: string;
+    required?: boolean;
+    columnSpan?: number;
+  }): FormField {
+    return {
+      formControlName: opts.formControlName,
+      label: opts.label,
+      config: {
+        attributes: {
+          inputType: 'signature',
+          penColor: opts.penColor ?? '#111827',
+          penWidth: opts.penWidth ?? 2,
+          height: opts.height ?? 180,
+          hideClearButton: opts.hideClearButton ?? false,
+          clearLabel: opts.clearLabel ?? 'Clear',
+          acceptedEvents: ['change', 'blur', 'clear'],
+        },
+      },
+      validations: {
+        rules: {
+          ...(opts.required ? { required: true } : {}),
+        },
+      },
+      layout: { columnSpan: opts.columnSpan ?? 12 },
+    };
+  },
+
   /** Submit button with sensible defaults. */
   submit(opts: { formControlName?: string; label?: string; columnSpan?: number } = {}): FormField {
     return {

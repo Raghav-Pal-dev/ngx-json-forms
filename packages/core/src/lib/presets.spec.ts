@@ -203,6 +203,38 @@ describe('presets', () => {
     });
   });
 
+  describe('signature (1.10.0)', () => {
+    it('emits inputType=signature with sensible defaults', () => {
+      const f = presets.signature({ formControlName: 'sig' });
+      expect(f.config.attributes.inputType).toBe('signature');
+      expect(f.config.attributes.penColor).toBe('#111827');
+      expect(f.config.attributes.penWidth).toBe(2);
+      expect(f.config.attributes.height).toBe(180);
+      expect(f.config.attributes.hideClearButton).toBe(false);
+      expect(f.config.attributes.acceptedEvents).toContain('change');
+      expect(f.config.attributes.acceptedEvents).toContain('clear');
+    });
+
+    it('honours custom pen + height + hideClearButton', () => {
+      const f = presets.signature({
+        formControlName: 'sig',
+        penColor: '#1d4ed8',
+        penWidth: 3,
+        height: 240,
+        hideClearButton: true,
+      });
+      expect(f.config.attributes.penColor).toBe('#1d4ed8');
+      expect(f.config.attributes.penWidth).toBe(3);
+      expect(f.config.attributes.height).toBe(240);
+      expect(f.config.attributes.hideClearButton).toBe(true);
+    });
+
+    it('omits required by default; adds when requested', () => {
+      expect(presets.signature({ formControlName: 's' }).validations?.rules?.required).toBeUndefined();
+      expect(presets.signature({ formControlName: 's', required: true }).validations?.rules?.required).toBe(true);
+    });
+  });
+
   describe('email', () => {
     it('produces a text input with email validation + envelope icon', () => {
       const f = presets.email({ formControlName: 'workEmail' });

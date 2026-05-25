@@ -4,6 +4,69 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] — 2026-05-25
+
+### Added — `signature` field type + `<ngx-signature-pad>` + `presets.signature()`
+
+Canvas-backed signature pad for consent forms, waivers, delivery
+receipts, approval workflows. The form value is a PNG data URL
+(`data:image/png;base64,...`) while there's a signature; `null` when
+empty. Drop it into `<img [src]="value">` to render, POST it as-is
+to your backend, or persist in JSON.
+
+```ts
+import { presets, defineForm } from '@ngx-json-forms/core';
+
+defineForm<{ fullName: string; consent: string | null }>([
+  presets.text({ formControlName: 'fullName', label: 'Full name', required: true }),
+  presets.signature({
+    formControlName: 'consent',
+    label: 'I agree (sign below)',
+    required: true,
+  }),
+  presets.signature({
+    formControlName: 'approval',
+    label: 'Manager approval',
+    penColor: '#1d4ed8',
+    penWidth: 3,
+    height: 220,
+  }),
+]);
+```
+
+**Options on `presets.signature(...)`:**
+
+| Option            | Default     | Description                                       |
+|-------------------|-------------|---------------------------------------------------|
+| `formControlName` | —           | Required.                                         |
+| `label`           | —           | Field label.                                      |
+| `penColor`        | `'#111827'` | CSS color string (`'#1d4ed8'`, `'red'`, …).       |
+| `penWidth`        | `2`         | Line width in CSS pixels.                         |
+| `height`          | `180`       | Canvas height in CSS pixels (width is responsive).|
+| `hideClearButton` | `false`     | Hide the built-in Clear button.                   |
+| `clearLabel`      | `'Clear'`   | Label on the Clear button.                        |
+| `required`        | `false`     | Whether a signature is required.                  |
+| `columnSpan`      | `12`        | PrimeFlex column span.                            |
+
+The underlying `<ngx-signature-pad>` standalone component is also
+exported from `@ngx-json-forms/primeng` so you can use it directly
+in non-engine contexts (any reactive form via `formControlName`).
+
+Implementation notes:
+- Pointer events (not mouse) → touch + stylus + mouse work without
+  three sets of listeners. `touch-action: none` on the canvas
+  prevents the page scrolling while signing.
+- HiDPI / retina sharp: the canvas backing-store is sized to
+  `cssWidth × devicePixelRatio`. A `ResizeObserver` resamples on
+  container resize and preserves the signature across the resize.
+- Emits to the form on stroke-end (`pointerup`), not on every
+  pointer-move — avoids burning CPU serialising the canvas 60×/sec
+  mid-signature.
+
+Live demo: `/signature` route in the StackBlitz playground.
+
+---
+
 ## [1.9.0] — 2026-05-25
 
 ### Added — `presets.dateRange()` + `presets.endAfterStart()` cross-field validator

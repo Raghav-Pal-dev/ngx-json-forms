@@ -12,4 +12,5 @@ export const routes: Routes = [
   { path: 'currency',        loadComponent: () => import('./tests/currency').then(m => m.CurrencyComponent) },
   { path: 'tag-input',       loadComponent: () => import('./tests/tag-input').then(m => m.TagInputComponent) },
   { path: 'date-range',      loadComponent: () => import('./tests/date-range').then(m => m.DateRangeComponent) },
+  { path: 'signature',       loadComponent: () => import('./tests/signature').then(m => m.SignatureComponent) },
 ];
