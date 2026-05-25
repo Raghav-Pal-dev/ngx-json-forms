@@ -98,6 +98,79 @@ export class ProfileForm {
 - **`computed`** field config — derive a control's value from other
   controls via a function token.
 
+## From a standard JSON Schema (1.4.0+)
+
+If you already have a JSON Schema document (an OpenAPI request body,
+an Ajv validator, a backend contract, etc.), drop it into
+`formFieldsFromJsonSchema` and the engine maps it to `FormField[]`
+automatically:
+
+```ts
+import { formFieldsFromJsonSchema, JsonSchema } from '@ngx-json-forms/core';
+
+const userSchema: JsonSchema = {
+  type: 'object',
+  required: ['email', 'role'],
+  properties: {
+    firstName: { type: 'string', title: 'First name', minLength: 2 },
+    email:     { type: 'string', format: 'email', title: 'Email' },
+    age:       { type: 'integer', title: 'Age', minimum: 13, maximum: 120 },
+    role:      { type: 'string', title: 'Role', enum: ['admin','editor','viewer'] },
+    address: {
+      type: 'object',
+      title: 'Address',
+      properties: {
+        street: { type: 'string', title: 'Street' },
+        city:   { type: 'string', title: 'City' },
+      },
+    },
+    phones: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          kind:   { type: 'string', enum: ['home','work','mobile'] },
+          number: { type: 'string', pattern: '^[0-9]{7,}$' },
+        },
+      },
+    },
+  },
+};
+
+@Component({
+  template: `<ngx-json-form [fieldsInput]="fields" />`,
+})
+export class SignupForm {
+  fields = formFieldsFromJsonSchema(userSchema, {
+    layoutOverrides: { email: { columnSpan: 8, order: 3 } },
+  });
+}
+```
+
+Supported JSON Schema features:
+
+| JSON Schema                                  | Maps to                          |
+|----------------------------------------------|----------------------------------|
+| `type: 'string'`                             | `text` input                     |
+| `type: 'string', format: 'email'`            | text + `type=email` + email validator |
+| `type: 'string', format: 'password'`         | `password` with toggle-mask      |
+| `type: 'string', format: 'date'` / `date-time` / `time` | `datePicker` / `time`  |
+| `type: 'string', format: 'uri'` / `'tel'`    | text + `type=url` / `tel`        |
+| `type: 'string', enum: [...]`                | `select` with options            |
+| `type: 'number'` / `'integer'`               | text + `type=number`             |
+| `type: 'boolean'`                            | `toggle`                         |
+| `type: 'array'` of `'object'`                | `repeater`                       |
+| `type: 'array'` of enum strings              | `multiSelect`                    |
+| `type: 'object'`                             | `group` (nested FormGroup)       |
+| `required`, `minLength`, `maxLength`, `minimum`, `maximum`, `pattern` | `validations.rules` |
+| `title`, `description`, `default`, `readOnly`, `examples[0]` | `label`, `info`, `value`, `readonly`, `placeholder` |
+| `$ref: '#/$defs/Foo'` / `'#/definitions/Foo'` | resolved in-document             |
+
+Not (yet) supported: `allOf`, `anyOf`, `oneOf`, external `$ref`s, tuple
+arrays, `additionalProperties`, `patternProperties`, `dependencies`.
+For those you'll need to pre-bundle / pre-flatten the schema with a
+tool like `json-schema-ref-parser` first.
+
 ## Computed fields — inline functions (1.1.0+)
 
 ```ts

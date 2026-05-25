@@ -4,6 +4,67 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] — 2026-05-25
+
+### Added — `formFieldsFromJsonSchema(schema)` interop
+
+`@ngx-json-forms/core` now ships an adapter that consumes a standard
+JSON Schema (Draft 7 / 2019-09) and returns a `FormField[]` the
+renderer can use directly:
+
+```ts
+import { formFieldsFromJsonSchema, formSchemaFromJsonSchema } from '@ngx-json-forms/core';
+
+const fields = formFieldsFromJsonSchema(myOpenApiRequestBodySchema);
+
+// or for the full FormSchema (carries title / description):
+const schema = formSchemaFromJsonSchema(myJsonSchema);
+```
+
+This opens the **"I already have JSON Schema"** market — anyone with
+an OpenAPI spec, Ajv contract, or backend-shared JSON Schema can now
+render a working Angular form from it in one line. No more
+hand-translating each property into `FormField` JSON.
+
+**Mapped JSON Schema features** (covers the common subset):
+
+- `type: 'string'` + every common `format` (`email`, `password`,
+  `date`, `date-time`, `time`, `uri`, `tel`) → the right `inputType` +
+  HTML `type` + sensible PrimeNG icons + acceptedEvents.
+- `enum` on a string → `select` (multi-select when inside an array).
+- `type: 'number' | 'integer'` → numeric input with `keyfilter: 'int'`
+  when integer.
+- `type: 'boolean'` → toggle.
+- `type: 'array'` of objects → `repeater` with `itemFields` mapped
+  recursively.
+- `type: 'object'` → `group` with `groupFields`.
+- `required`, `minLength`, `maxLength`, `minimum`, `maximum`,
+  `pattern` → `validations.rules`.
+- `title`, `description`, `default`, `readOnly`, `examples[0]` →
+  `label`, `info`, `value`, `readonly` + `disabled`, `placeholder`.
+- `$ref: '#/definitions/...'` / `'#/$defs/...'` resolved in-document.
+
+**Options:**
+
+```ts
+formFieldsFromJsonSchema(schema, {
+  layoutOverrides: {
+    email:     { columnSpan: 8, order: 1 },
+    firstName: { columnSpan: 6, order: 2 },
+  },
+});
+```
+
+**Not (yet) supported** — document upfront so users aren't surprised:
+`allOf` / `anyOf` / `oneOf`, external `$ref`s, tuple arrays,
+`additionalProperties`, `patternProperties`, `dependencies`. For
+those, pre-bundle the schema with `json-schema-ref-parser` first.
+
+11 unit tests cover every supported case (run with `nx test core` —
+17 tests pass).
+
+[1.4.0]: https://github.com/Raghav-Pal-dev/ngx-json-forms/releases/tag/v1.4.0
+
 ## [1.3.0] — 2026-05-25
 
 ### Added — `ng add @ngx-json-forms/primeng`
