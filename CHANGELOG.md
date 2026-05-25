@@ -4,6 +4,83 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.0] — 2026-05-25
+
+### Added — `presets.address()` composite field
+
+Scaffolds a nested `group` with six sub-fields (line1, line2, city,
+state, postalCode, country), each pre-wired with sensible labels,
+column-span layout, and validation. Country defaults to a select
+backed by a curated list of common destinations; pass your own list
+or `countries: []` for a free-form text input.
+
+No new InputType, no new renderer — `address` is a configured
+`group`, so anything that already works for `group` continues to
+work.
+
+```ts
+import { presets, defineForm } from '@ngx-json-forms/core';
+
+defineForm<{ fullName: string; shipping: {
+  line1: string; line2: string; city: string; state: string;
+  postalCode: string; country: string;
+} }>([
+  presets.text({ formControlName: 'fullName', label: 'Full name', required: true }),
+
+  // Default: all 6 sub-fields, curated country list.
+  presets.address({ formControlName: 'shipping', label: 'Shipping address' }),
+
+  // Billing — skip line2 + state, restrict to India only.
+  presets.address({
+    formControlName: 'billing',
+    label: 'Billing address',
+    include: { line2: false, state: false },
+    countries: [{ label: 'India', value: 'IN' }],
+  }),
+
+  // Free-form country — pass [] to render text input instead of select.
+  presets.address({
+    formControlName: 'other',
+    countries: [],
+    required: { postalCode: false },
+  }),
+]);
+```
+
+**Options on `presets.address(...)`:**
+
+| Option            | Default                                     | Description                                  |
+|-------------------|---------------------------------------------|----------------------------------------------|
+| `formControlName` | —                                           | Required.                                    |
+| `label`           | —                                           | Group label.                                 |
+| `include`         | all 6 sub-fields                            | Selectively hide sub-fields.                 |
+| `required`        | all required except `line2`                 | Per-field required overrides.                |
+| `countries`       | US, CA, GB, AU, NZ, IN, DE, FR, ES, IT, JP, BR, MX, SG | Custom list of `{label, value}` or `[]` for text input. |
+| `columnSpan`      | `12`                                        | PrimeFlex column span for the whole group.   |
+
+**Postal-code validation:** the built-in `pattern` is intentionally
+permissive — it accepts US ZIP (5 or 5-4), Canadian (A1A 1A1),
+UK (SW1A 1AA), Indian (110001), and most other common formats.
+Tighten per-country in your own validator if you need strict matching.
+
+The form value shape is a nested object:
+```ts
+{
+  shipping: {
+    line1: '123 Main St',
+    line2: 'Apt 4B',
+    city: 'San Francisco',
+    state: 'CA',
+    postalCode: '94103',
+    country: 'US',   // ISO 3166-1 alpha-2 from the default list
+  }
+}
+```
+
+Live demo: `/address` route in the StackBlitz playground.
+
+---
+
 ## [1.10.0] — 2026-05-25
 
 ### Added — `signature` field type + `<ngx-signature-pad>` + `presets.signature()`

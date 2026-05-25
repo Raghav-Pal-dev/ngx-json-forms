@@ -25,6 +25,7 @@ import { RouterLink } from '@angular/router';
         <li><a routerLink="/tag-input">Tag input</a> — chip-style tokens / emails (1.8.0)</li>
         <li><a routerLink="/date-range">Date range</a> — check-in / check-out picker + endAfterStart validator (1.9.0)</li>
         <li><a routerLink="/signature">Signature</a> — canvas pad → PNG data URL (1.10.0)</li>
+        <li><a routerLink="/address">Address</a> — composite group (line1/2, city, state, postal, country) (1.11.0)</li>
       </ul>
     </div>
   `,

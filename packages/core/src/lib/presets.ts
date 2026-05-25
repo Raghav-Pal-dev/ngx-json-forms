@@ -520,6 +520,193 @@ export const presets = {
     };
   },
 
+  /**
+   * Composite address field — a nested `group` with line1 / line2 /
+   * city / state / postalCode / country sub-fields, each pre-wired
+   * with sensible labels, layout, and validation.
+   *
+   * Form value shape:
+   * ```ts
+   * {
+   *   <formControlName>: {
+   *     line1: string;
+   *     line2: string;
+   *     city: string;
+   *     state: string;
+   *     postalCode: string;
+   *     country: string;   // ISO 3166-1 alpha-2 code by default
+   *   }
+   * }
+   * ```
+   *
+   * The default country list is a curated set of common destinations
+   * (US, CA, GB, AU, NZ, IN, DE, FR, ES, IT, JP, BR, MX, SG). Pass
+   * `countries: [{ label, value }, ...]` to override; pass
+   * `countries: []` to render a plain text input for country.
+   *
+   * To skip a sub-field entirely, pass `include: { line2: false }`.
+   *
+   * @example
+   *   presets.address({ formControlName: 'shipping', label: 'Shipping address' });
+   *   presets.address({
+   *     formControlName: 'billing',
+   *     label: 'Billing address',
+   *     include: { line2: false, state: false },
+   *     countries: [{ label: 'India', value: 'IN' }],
+   *   });
+   *
+   * @since 1.11.0
+   */
+  address(opts: {
+    formControlName: string;
+    label?: string;
+    /** Customise the country dropdown options; defaults to a common set. */
+    countries?: { label: string; value: string }[];
+    /** Selectively hide sub-fields (all default to included). */
+    include?: Partial<{
+      line1: boolean;
+      line2: boolean;
+      city: boolean;
+      state: boolean;
+      postalCode: boolean;
+      country: boolean;
+    }>;
+    /** Per-sub-field required overrides (all required by default except line2). */
+    required?: Partial<{
+      line1: boolean;
+      line2: boolean;
+      city: boolean;
+      state: boolean;
+      postalCode: boolean;
+      country: boolean;
+    }>;
+    columnSpan?: number;
+  }): FormField {
+    const include = {
+      line1: true, line2: true, city: true, state: true,
+      postalCode: true, country: true,
+      ...opts.include,
+    };
+    const required = {
+      line1: true, line2: false, city: true, state: true,
+      postalCode: true, country: true,
+      ...opts.required,
+    };
+    const countries: { label: string; value: string }[] = opts.countries ?? [
+      { label: 'United States',  value: 'US' },
+      { label: 'Canada',         value: 'CA' },
+      { label: 'United Kingdom', value: 'GB' },
+      { label: 'Australia',      value: 'AU' },
+      { label: 'New Zealand',    value: 'NZ' },
+      { label: 'India',          value: 'IN' },
+      { label: 'Germany',        value: 'DE' },
+      { label: 'France',         value: 'FR' },
+      { label: 'Spain',          value: 'ES' },
+      { label: 'Italy',          value: 'IT' },
+      { label: 'Japan',          value: 'JP' },
+      { label: 'Brazil',         value: 'BR' },
+      { label: 'Mexico',         value: 'MX' },
+      { label: 'Singapore',      value: 'SG' },
+    ];
+
+    const groupFields: FormField[] = [];
+    if (include.line1) {
+      groupFields.push({
+        formControlName: 'line1',
+        label: 'Street address',
+        placeholder: '123 Main St',
+        config: { attributes: { inputType: 'text', acceptedEvents: ['change', 'blur'] } },
+        validations: { rules: { ...(required.line1 ? { required: true } : {}) } },
+        layout: { columnSpan: 12 },
+      });
+    }
+    if (include.line2) {
+      groupFields.push({
+        formControlName: 'line2',
+        label: 'Apt / Suite / Unit',
+        placeholder: 'Apt 4B',
+        config: { attributes: { inputType: 'text', acceptedEvents: ['change', 'blur'] } },
+        validations: { rules: { ...(required.line2 ? { required: true } : {}) } },
+        layout: { columnSpan: 12 },
+      });
+    }
+    if (include.city) {
+      groupFields.push({
+        formControlName: 'city',
+        label: 'City',
+        config: { attributes: { inputType: 'text', acceptedEvents: ['change', 'blur'] } },
+        validations: { rules: { ...(required.city ? { required: true } : {}) } },
+        layout: { columnSpan: 6 },
+      });
+    }
+    if (include.state) {
+      groupFields.push({
+        formControlName: 'state',
+        label: 'State / Province',
+        config: { attributes: { inputType: 'text', acceptedEvents: ['change', 'blur'] } },
+        validations: { rules: { ...(required.state ? { required: true } : {}) } },
+        layout: { columnSpan: 6 },
+      });
+    }
+    if (include.postalCode) {
+      groupFields.push({
+        formControlName: 'postalCode',
+        label: 'Postal code',
+        config: { attributes: { inputType: 'text', acceptedEvents: ['change', 'blur'] } },
+        validations: {
+          rules: {
+            ...(required.postalCode ? { required: true } : {}),
+            // Permissive — covers US (5 or 5-4), CA (A1A 1A1), UK, IN, etc.
+            // Tighten per-country in the consuming app if you need it.
+            pattern: '^[A-Za-z0-9][A-Za-z0-9\\-\\s]{2,9}[A-Za-z0-9]$',
+          },
+          messages: { pattern: 'Enter a valid postal code' },
+        },
+        layout: { columnSpan: 6 },
+      });
+    }
+    if (include.country) {
+      // If the consumer explicitly passes `countries: []`, fall back
+      // to a plain text input — they want free-form country entry.
+      const asSelect = countries.length > 0;
+      groupFields.push({
+        formControlName: 'country',
+        label: 'Country',
+        config: {
+          attributes: asSelect
+            ? {
+                inputType: 'select',
+                options: countries,
+                optionLabel: 'label',
+                optionValue: 'value',
+                placeholder: 'Select country',
+                showClear: false,
+                filter: true,
+                acceptedEvents: ['change', 'blur'],
+              }
+            : {
+                inputType: 'text',
+                acceptedEvents: ['change', 'blur'],
+              },
+        },
+        validations: { rules: { ...(required.country ? { required: true } : {}) } },
+        layout: { columnSpan: 6 },
+      });
+    }
+
+    return {
+      formControlName: opts.formControlName,
+      label: opts.label,
+      config: {
+        attributes: {
+          inputType: 'group',
+          groupFields,
+        },
+      },
+      layout: { columnSpan: opts.columnSpan ?? 12 },
+    };
+  },
+
   /** Submit button with sensible defaults. */
   submit(opts: { formControlName?: string; label?: string; columnSpan?: number } = {}): FormField {
     return {

@@ -235,6 +235,75 @@ describe('presets', () => {
     });
   });
 
+  describe('address (1.11.0)', () => {
+    it('produces a group with 6 sub-fields by default', () => {
+      const f = presets.address({ formControlName: 'shipping' });
+      expect(f.config.attributes.inputType).toBe('group');
+      const sub = f.config.attributes.groupFields ?? [];
+      expect(sub.map((s) => s.formControlName)).toEqual([
+        'line1', 'line2', 'city', 'state', 'postalCode', 'country',
+      ]);
+    });
+
+    it('makes everything except line2 required by default', () => {
+      const sub = presets.address({ formControlName: 'a' }).config.attributes.groupFields ?? [];
+      const reqOf = (name: string) =>
+        sub.find((s) => s.formControlName === name)?.validations?.rules?.required;
+      expect(reqOf('line1')).toBe(true);
+      expect(reqOf('line2')).toBeUndefined();
+      expect(reqOf('city')).toBe(true);
+      expect(reqOf('state')).toBe(true);
+      expect(reqOf('postalCode')).toBe(true);
+      expect(reqOf('country')).toBe(true);
+    });
+
+    it('honours include={ line2: false, state: false }', () => {
+      const f = presets.address({
+        formControlName: 'a',
+        include: { line2: false, state: false },
+      });
+      const names = (f.config.attributes.groupFields ?? []).map((s) => s.formControlName);
+      expect(names).toEqual(['line1', 'city', 'postalCode', 'country']);
+    });
+
+    it('renders country as a select with the default country list', () => {
+      const sub = presets.address({ formControlName: 'a' }).config.attributes.groupFields ?? [];
+      const country = sub.find((s) => s.formControlName === 'country')!;
+      expect(country.config.attributes.inputType).toBe('select');
+      expect((country.config.attributes.options as unknown[]).length).toBeGreaterThan(5);
+      const us = (country.config.attributes.options as { value: string }[]).find((o) => o.value === 'US');
+      expect(us).toBeDefined();
+    });
+
+    it('falls back to text input when countries=[] (free-form)', () => {
+      const f = presets.address({ formControlName: 'a', countries: [] });
+      const country = (f.config.attributes.groupFields ?? []).find((s) => s.formControlName === 'country')!;
+      expect(country.config.attributes.inputType).toBe('text');
+      expect(country.config.attributes.options).toBeUndefined();
+    });
+
+    it('postalCode validates a permissive cross-country pattern', () => {
+      const sub = presets.address({ formControlName: 'a' }).config.attributes.groupFields ?? [];
+      const postal = sub.find((s) => s.formControlName === 'postalCode')!;
+      const re = new RegExp(postal.validations!.rules!.pattern!);
+      expect(re.test('94103')).toBe(true);       // US ZIP
+      expect(re.test('94103-1234')).toBe(true);  // US ZIP+4
+      expect(re.test('K1A 0B1')).toBe(true);     // CA
+      expect(re.test('SW1A 1AA')).toBe(true);    // UK
+      expect(re.test('110001')).toBe(true);      // IN
+      expect(re.test('!')).toBe(false);          // garbage
+    });
+
+    it('per-field required overrides work (postalCode optional)', () => {
+      const sub = presets.address({
+        formControlName: 'a',
+        required: { postalCode: false },
+      }).config.attributes.groupFields ?? [];
+      const postal = sub.find((s) => s.formControlName === 'postalCode')!;
+      expect(postal.validations?.rules?.required).toBeUndefined();
+    });
+  });
+
   describe('email', () => {
     it('produces a text input with email validation + envelope icon', () => {
       const f = presets.email({ formControlName: 'workEmail' });
