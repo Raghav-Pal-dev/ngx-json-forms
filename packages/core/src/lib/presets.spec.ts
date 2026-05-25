@@ -584,6 +584,41 @@ describe('presets', () => {
     });
   });
 
+  describe('code (1.19.0)', () => {
+    it('defaults to text language with 12rem editorHeight', () => {
+      const f = presets.code({ formControlName: 'snippet' });
+      expect(f.config.attributes.inputType).toBe('code');
+      expect(f.config.attributes.language).toBe('text');
+      expect(f.config.attributes.editorHeight).toBe('12rem');
+      expect(f.config.attributes.readonly).toBe(false);
+    });
+
+    it('supports every built-in language pack', () => {
+      const langs = ['javascript', 'json', 'html', 'css', 'markdown', 'text'] as const;
+      for (const lang of langs) {
+        const f = presets.code({ formControlName: 'c', language: lang });
+        expect(f.config.attributes.language).toBe(lang);
+      }
+    });
+
+    it('honours custom height + readonly + required', () => {
+      const f = presets.code({
+        formControlName: 'tpl',
+        language: 'html',
+        height: '20rem',
+        readonly: true,
+        required: true,
+      });
+      expect(f.config.attributes.editorHeight).toBe('20rem');
+      expect(f.config.attributes.readonly).toBe(true);
+      expect(f.validations?.rules?.required).toBe(true);
+    });
+
+    it('omits required by default', () => {
+      expect(presets.code({ formControlName: 'c' }).validations?.rules?.required).toBeUndefined();
+    });
+  });
+
   describe('email', () => {
     it('produces a text input with email validation + envelope icon', () => {
       const f = presets.email({ formControlName: 'workEmail' });

@@ -7,3 +7,4 @@ export * from './lib/markdown-editor.component';
 export * from './lib/captcha.component';
 export * from './lib/image-crop.component';
 export * from './lib/phone-input.component';
+export * from './lib/code-editor.component';

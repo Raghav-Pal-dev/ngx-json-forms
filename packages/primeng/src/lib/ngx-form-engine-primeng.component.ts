@@ -46,6 +46,7 @@ import { MarkdownEditorComponent } from './markdown-editor.component';
 import { CaptchaComponent } from './captcha.component';
 import { ImageCropComponent } from './image-crop.component';
 import { PhoneInputComponent } from './phone-input.component';
+import { CodeEditorComponent } from './code-editor.component';
 
 import {
   FieldRegistry,
@@ -101,6 +102,7 @@ import {
     CaptchaComponent,
     ImageCropComponent,
     PhoneInputComponent,
+    CodeEditorComponent,
   ],
 })
 export class NgxJsonFormComponent {

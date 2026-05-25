@@ -4,6 +4,95 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.19.0] — 2026-05-25
+
+### Added — `code` field type + `<ngx-code-editor>` + `presets.code()`
+
+Code editor with syntax highlighting (CodeMirror 6). Use for JSON
+config fields, regex playgrounds, query builders, prompt templates,
+email-template authoring — anywhere users edit code-like text.
+
+Built-in language support:
+- `'javascript'`, `'json'`, `'html'`, `'css'`, `'markdown'`, `'text'`
+
+For other languages (Python, SQL, Rust, …) register a custom
+renderer via `FieldRegistry.registerRenderer('code', ...)`. We
+don't carry the surface area of every CM6 language package.
+
+```ts
+import { presets, defineForm } from '@ngx-json-forms/core';
+
+defineForm<{ name: string; config: string; template: string }>([
+  presets.text({ formControlName: 'name', label: 'Config name', required: true }),
+
+  presets.code({
+    formControlName: 'config',
+    label: 'JSON config',
+    language: 'json',
+    height: '14rem',
+    required: true,
+  }),
+
+  presets.code({
+    formControlName: 'template',
+    label: 'Email template (HTML)',
+    language: 'html',
+    height: '16rem',
+  }),
+]);
+```
+
+**CodeMirror 6 packages are OPTIONAL peer deps.** Each
+`await import('@codemirror/lang-…')` is its own code-split point so
+the consumer's app gets exactly one chunk per language they use.
+Consumers who never use the `code` field pay zero load cost.
+
+Install to enable:
+```bash
+npm install @codemirror/state @codemirror/view \\
+  @codemirror/language @codemirror/commands \\
+  @codemirror/lang-json @codemirror/lang-javascript \\
+  @codemirror/lang-html @codemirror/lang-css \\
+  @codemirror/lang-markdown
+```
+
+(You only need the `@codemirror/lang-<name>` packages for the
+languages you actually configure. Skipping a language pack and then
+selecting that language renders without highlighting — graceful
+degradation.)
+
+Without **any** CM6 deps, the field falls back to a styled
+`<textarea>` with monospace font and an install hint.
+
+**Options on `presets.code(...)`:**
+
+| Option            | Default    | Description                                            |
+|-------------------|------------|--------------------------------------------------------|
+| `formControlName` | —          | Required.                                              |
+| `label`           | —          | Field label.                                           |
+| `language`        | `'text'`   | One of the built-in languages above.                   |
+| `height`          | `'12rem'`  | CSS min-height for the editor container.               |
+| `readonly`        | `false`    | Render as view-only (no edits).                        |
+| `required`        | `false`    | Whether the field is required.                         |
+| `columnSpan`      | `12`       | PrimeFlex column span.                                 |
+
+**Editor capabilities (built-in extensions):**
+- Line numbers + active-line gutter highlight
+- Active-line highlight
+- Multi-cursor / proper selection drawing
+- Undo/redo history with the standard keybindings
+- Bracket matching + auto-indent on input
+- Syntax highlighting via CM6's default highlight style
+
+Live demo: `/code` route in the StackBlitz playground.
+
+This completes the Tier 2 field-type catalogue (10 new field types
+in 14 minor releases since 1.5.0: otp, currency, tagInput,
+dateRange, signature, address, dragUpload, treeSelect, timeSlots,
+markdown, captcha, imageCrop, phoneIntl, code).
+
+---
+
 ## [1.18.0] — 2026-05-25
 
 ### Added — `phoneIntl` field type + `<ngx-phone-input>` + `presets.phoneIntl()`

@@ -21,4 +21,5 @@ export const routes: Routes = [
   { path: 'captcha',         loadComponent: () => import('./tests/captcha').then(m => m.CaptchaComponent) },
   { path: 'image-crop',      loadComponent: () => import('./tests/image-crop').then(m => m.ImageCropComponent) },
   { path: 'phone-intl',      loadComponent: () => import('./tests/phone-intl').then(m => m.PhoneIntlComponent) },
+  { path: 'code',            loadComponent: () => import('./tests/code').then(m => m.CodeComponent) },
 ];

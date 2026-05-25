@@ -1186,6 +1186,70 @@ export const presets = {
     };
   },
 
+  /**
+   * Code editor with syntax highlighting (CodeMirror 6). Use for
+   * JSON config fields, regex playgrounds, query builders, prompt
+   * templates — anywhere users edit code-like text.
+   *
+   * Built-in language support:
+   *   `'javascript' | 'json' | 'html' | 'css' | 'markdown' | 'text'`
+   *
+   * For other languages (Python, SQL, Rust, …), register a custom
+   * renderer via `FieldRegistry.registerRenderer(...)` — we don't
+   * carry the surface area of every CodeMirror lang package.
+   *
+   * **Requires CodeMirror 6 peer deps** (all OPTIONAL):
+   * ```bash
+   * npm install codemirror @codemirror/state @codemirror/view \
+   *   @codemirror/language @codemirror/commands \
+   *   @codemirror/lang-<language>
+   * ```
+   *
+   * Without the deps, the field falls back to a plain `<textarea>`
+   * with an install hint.
+   *
+   * @example
+   *   presets.code({ formControlName: 'config', label: 'Config JSON', language: 'json' });
+   *   presets.code({
+   *     formControlName: 'template',
+   *     label: 'Email template',
+   *     language: 'html',
+   *     height: '20rem',
+   *   });
+   *
+   * @since 1.19.0
+   */
+  code(opts: {
+    formControlName: string;
+    label?: string;
+    language?: 'javascript' | 'json' | 'html' | 'css' | 'markdown' | 'text';
+    /** CSS min-height for the editor container. Defaults to `'12rem'`. */
+    height?: string;
+    readonly?: boolean;
+    required?: boolean;
+    columnSpan?: number;
+  }): FormField {
+    return {
+      formControlName: opts.formControlName,
+      label: opts.label,
+      config: {
+        attributes: {
+          inputType: 'code',
+          language: opts.language ?? 'text',
+          editorHeight: opts.height ?? '12rem',
+          readonly: opts.readonly ?? false,
+          acceptedEvents: ['change', 'blur'],
+        },
+      },
+      validations: {
+        rules: {
+          ...(opts.required ? { required: true } : {}),
+        },
+      },
+      layout: { columnSpan: opts.columnSpan ?? 12 },
+    };
+  },
+
   /** Submit button with sensible defaults. */
   submit(opts: { formControlName?: string; label?: string; columnSpan?: number } = {}): FormField {
     return {
