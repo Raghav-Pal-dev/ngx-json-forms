@@ -3,5 +3,27 @@
   "dest": "../../dist/packages/primeng",
   "lib": {
     "entryFile": "src/index.ts"
-  }
+  },
+  "assets": [
+    {
+      "glob": "collection.json",
+      "input": "./schematics",
+      "output": "./schematics"
+    },
+    {
+      "glob": "package.json",
+      "input": "./schematics",
+      "output": "./schematics"
+    },
+    {
+      "glob": "**/schema.json",
+      "input": "./schematics",
+      "output": "./schematics"
+    },
+    {
+      "glob": "**/*.js",
+      "input": "./schematics-compiled",
+      "output": "./schematics"
+    }
+  ]
 }

@@ -23,5 +23,13 @@ jobs:
 
       - run: npm ci
 
-      - name: Lint, test, build all projects
-        run: npx nx run-many --target=lint,test,build --all
+      - name: Lint and test
+        run: npx nx run-many --target=lint,test --all
+
+      # Schematics must be compiled before ng-packagr's `assets` glob can
+      # pick them up. (Two steps, not dependsOn — see release.yml for why.)
+      - name: Build schematics
+        run: npx nx run primeng:build-schematics
+
+      - name: Build all projects
+        run: npx nx run-many --target=build --all

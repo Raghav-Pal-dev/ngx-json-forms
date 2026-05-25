@@ -1,0 +1,6 @@
+{
+  "name": "@ngx-json-forms/primeng-schematics-internal",
+  "private": true,
+  "comment": "Internal — not published as its own package. Forces Node to treat the sibling .js files as CommonJS, because the parent package.json declares \"type\": \"module\". Without this, `ng add` fails with 'exports is not defined in ES module scope'.",
+  "type": "commonjs"
+}

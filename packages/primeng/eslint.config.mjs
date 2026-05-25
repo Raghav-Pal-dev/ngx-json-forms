@@ -11,12 +11,32 @@ export default [
       '@nx/dependency-checks': [
         'error',
         {
-          ignoredFiles: ['{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}'],
+          // Schematics import @angular-devkit/schematics at INSTALL TIME
+          // (via `ng add`), not at runtime — they must not appear in
+          // peerDependencies. The schematics folder ships as pre-compiled
+          // JS, so the dep checker should skip it entirely.
+          ignoredFiles: [
+            '{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}',
+            '{projectRoot}/schematics/**/*',
+            '{projectRoot}/schematics-compiled/**/*',
+          ],
+          ignoredDependencies: [
+            '@angular-devkit/schematics',
+            '@angular-devkit/core',
+          ],
         },
       ],
     },
     languageOptions: {
       parser: await import('jsonc-eslint-parser'),
+    },
+  },
+  {
+    // Schematic source files are Node CommonJS, not Angular — relax
+    // the Angular-flavoured rules so they don't bleed in.
+    files: ['**/schematics/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-non-null-assertion': 'off',
     },
   },
   {

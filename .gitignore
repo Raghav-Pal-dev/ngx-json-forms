@@ -68,3 +68,4 @@ test-output
 .verdaccio/
 scratchpad*.js
 scratchpad*.ts
+packages/primeng/schematics-compiled

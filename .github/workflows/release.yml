@@ -56,8 +56,18 @@ jobs:
           fi
           echo "Releasing v$tag_version"
 
-      - name: Lint, test, build
-        run: npx nx run-many --target=lint,test,build --projects=core,primeng
+      - name: Lint, test
+        run: npx nx run-many --target=lint,test --projects=core,primeng
+
+      # Compile the schematics first so ng-packagr's `assets` glob has
+      # something to copy. Done in two steps (not dependsOn) because Nx
+      # runs dependent run-commands tasks in a way that pollutes the TS
+      # context ng-packagr inherits for partial compilation.
+      - name: Build schematics (primeng only)
+        run: npx nx run primeng:build-schematics
+
+      - name: Build packages
+        run: npx nx run-many --target=build --projects=core,primeng
 
       - name: Publish @ngx-json-forms/core
         run: npm publish --access public --provenance

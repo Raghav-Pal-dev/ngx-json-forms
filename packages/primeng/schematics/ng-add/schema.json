@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "ngx-json-forms-primeng-ng-add",
+  "title": "@ngx-json-forms/primeng ng-add",
+  "type": "object",
+  "properties": {
+    "theme": {
+      "type": "string",
+      "default": "aura",
+      "enum": ["aura", "material", "lara", "nora"],
+      "description": "PrimeNG theme preset to wire as the default."
+    },
+    "skipInstall": {
+      "type": "boolean",
+      "default": false,
+      "description": "Skip running npm install after the schematic completes."
+    }
+  }
+}

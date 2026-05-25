@@ -4,6 +4,71 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] — 2026-05-25
+
+### Added — `ng add @ngx-json-forms/primeng`
+
+The single biggest "first form on screen" friction reducer. A consumer
+who's never touched the library now runs **one command** and is ready
+to render `<ngx-json-form>`:
+
+```bash
+ng add @ngx-json-forms/primeng
+```
+
+The schematic:
+
+1. Adds 5 peer dependencies to `package.json`
+   (`@angular/animations`, `@primeng/themes`, `primeicons`, `primeng`,
+   `quill`).
+2. Runs `npm install` (skippable with `--skip-install`).
+3. Patches `src/app/app.config.ts` to add the three providers:
+   ```ts
+   import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+   import { providePrimeNG } from 'primeng/config';
+   import Aura from '@primeng/themes/aura';
+   import { provideNgxJsonForms } from '@ngx-json-forms/core';
+
+   providers: [
+     provideAnimationsAsync(),
+     providePrimeNG({ theme: { preset: Aura } }),
+     provideNgxJsonForms(),
+     // ...your existing providers
+   ]
+   ```
+4. Adds `@import 'primeicons/primeicons.css';` to the project's
+   global styles file (`src/styles.css` / `.scss` / `.sass` / `.less`).
+
+Pick a different theme preset with `--theme=material|lara|nora` (default
+`aura`). The schematic is idempotent and lenient — if it can't safely
+patch a file (for instance: non-standard project structure) it prints
+copy-pasteable instructions instead of failing.
+
+Verified end-to-end on a vanilla `ng new` Angular 21 app:
+- Tarball installed cleanly
+- `ng add` ran the schematic
+- All three providers landed in `app.config.ts`
+- `primeicons` import landed in `styles.css`
+- `ng build --configuration=production` succeeded
+
+### Notes for maintainers
+
+- Schematic source: `packages/primeng/schematics/`
+- Compiled to: `packages/primeng/schematics-compiled/` (git-ignored,
+  produced by `nx run primeng:build-schematics`)
+- Shipped via ng-packagr `assets` into `dist/packages/primeng/schematics/`
+- Build order matters — run `nx run primeng:build-schematics` BEFORE
+  `nx build primeng`. Using `dependsOn` here pollutes ng-packagr's TS
+  context and breaks partial compilation; CI runs them as two sequential
+  steps instead (see `.github/workflows/release.yml`).
+- `schematics/package.json` ships in the tarball (whitelisted via
+  `scripts/fix-npmignore.mjs` because ng-packagr's generated
+  `.npmignore` excludes nested package.json files by default). It
+  contains only `"type": "commonjs"` so Node resolves the compiled
+  schematic as CJS — the parent package is ESM.
+
+[1.3.0]: https://github.com/Raghav-Pal-dev/ngx-json-forms/releases/tag/v1.3.0
+
 ## [1.2.0] — 2026-05-24
 
 ### Added — three Tier-1 enhancements from the roadmap

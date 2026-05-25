@@ -28,6 +28,25 @@
       },
       "defaultConfiguration": "production"
     },
+    "build-schematics": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/packages/primeng/schematics-compiled"],
+      "options": {
+        "commands": [
+          "tsc -p packages/primeng/schematics/tsconfig.schematics.json"
+        ],
+        "parallel": false
+      }
+    },
+    "post-build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "node packages/primeng/scripts/fix-npmignore.mjs"
+        ],
+        "parallel": false
+      }
+    },
     "nx-release-publish": {
       "options": {
         "packageRoot": "dist/{projectRoot}"
