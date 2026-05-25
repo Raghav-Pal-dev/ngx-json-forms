@@ -490,6 +490,42 @@ describe('presets', () => {
     });
   });
 
+  describe('captcha (1.16.0)', () => {
+    it('produces captcha renderer with sitekey + sensible defaults', () => {
+      const f = presets.captcha({ sitekey: '1x00000000000000000000AA' });
+      expect(f.config.attributes.inputType).toBe('captcha');
+      expect(f.config.attributes.sitekey).toBe('1x00000000000000000000AA');
+      expect(f.config.attributes.captchaTheme).toBe('auto');
+      expect(f.config.attributes.captchaSize).toBe('normal');
+      expect(f.formControlName).toBe('captchaToken');
+      expect(f.validations?.rules?.required).toBe(true);
+    });
+
+    it('honours custom formControlName + theme + size + action', () => {
+      const f = presets.captcha({
+        sitekey: 'real-key',
+        formControlName: 'cfToken',
+        theme: 'dark',
+        size: 'flexible',
+        action: 'signup',
+      });
+      expect(f.formControlName).toBe('cfToken');
+      expect(f.config.attributes.captchaTheme).toBe('dark');
+      expect(f.config.attributes.captchaSize).toBe('flexible');
+      expect(f.config.attributes.captchaAction).toBe('signup');
+    });
+
+    it('uses a human-friendly required message', () => {
+      const f = presets.captcha({ sitekey: 'k' });
+      expect(f.validations?.messages?.required).toBe('Please complete the captcha');
+    });
+
+    it('allows opting out of required (rare but valid for optional anti-bot)', () => {
+      const f = presets.captcha({ sitekey: 'k', required: false });
+      expect(f.validations?.rules?.required).toBe(false);
+    });
+  });
+
   describe('email', () => {
     it('produces a text input with email validation + envelope icon', () => {
       const f = presets.email({ formControlName: 'workEmail' });

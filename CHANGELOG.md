@@ -4,6 +4,82 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.16.0] — 2026-05-25
+
+### Added — `captcha` field type + `<ngx-captcha>` + `presets.captcha()`
+
+Cloudflare Turnstile wrapper for public-facing forms (signup,
+contact, login, lead-gen). Loads the Turnstile script lazily on
+first mount — **zero bundle cost**, no new npm dep. The form value
+is the verification token (string) which your backend MUST verify
+against Cloudflare's `/siteverify` endpoint before trusting the
+submission.
+
+Why Turnstile and not hCaptcha or reCAPTCHA:
+- Free, no rate limits
+- No third-party cookies / no IP logging by default (GDPR-friendly)
+- Smaller and faster than reCAPTCHA
+- Cloudflare ships public **test sitekeys** so you can dev locally
+  without dashboard signup
+
+For consumers who specifically need hCaptcha / reCAPTCHA: register
+your own component via `FieldRegistry.registerRenderer('captcha',
+YourImpl)`. We pick one default rather than carry the surface area
+of three.
+
+```ts
+import { presets, defineForm } from '@ngx-json-forms/core';
+
+defineForm<{ email: string; message: string; captchaToken: string }>([
+  presets.email({ formControlName: 'email', label: 'Email', required: true }),
+  presets.text({  formControlName: 'message', label: 'Message', required: true, minLength: 10 }),
+
+  // Dev: '1x00000000000000000000AA' always passes.
+  // Prod: create a real sitekey at https://dash.cloudflare.com → Turnstile.
+  presets.captcha({
+    sitekey: '1x00000000000000000000AA',
+    action: 'contact',
+  }),
+  presets.submit({ label: 'Send' }),
+]);
+```
+
+**Test sitekeys (no setup, no signup):**
+
+| Sitekey                          | Behaviour                       |
+|----------------------------------|---------------------------------|
+| `1x00000000000000000000AA`       | Always passes (visible widget)  |
+| `2x00000000000000000000AB`       | Always fails                    |
+| `3x00000000000000000000FF`       | Forces interactive challenge    |
+
+**Options on `presets.captcha(...)`:**
+
+| Option            | Default          | Description                                          |
+|-------------------|------------------|------------------------------------------------------|
+| `sitekey`         | —                | Required. Turnstile sitekey from CF dashboard.       |
+| `formControlName` | `'captchaToken'` | Where the token lands in the form value.             |
+| `label`           | —                | Field label above the widget.                        |
+| `theme`           | `'auto'`         | `'light' \| 'dark' \| 'auto'` (follows system).      |
+| `size`            | `'normal'`       | `'normal' \| 'compact' \| 'flexible'`.               |
+| `action`          | —                | Analytics action label (e.g. `'signup'`).            |
+| `required`        | `true`           | Whether token is required for valid form.            |
+| `columnSpan`      | `12`             | PrimeFlex column span.                               |
+
+**Implementation notes:**
+- Script loaded once and shared across all `<ngx-captcha>` instances
+  on the page (idempotent `loadTurnstileOnce()` with a module-level
+  promise cache).
+- On `writeValue(null)` (e.g. `form.reset()`), the widget resets so
+  the user has to solve a fresh challenge.
+- The widget is removed cleanly on destroy via `turnstile.remove()`.
+- If the Turnstile script fails to load (offline / CSP blocks it),
+  an inline warning replaces the widget instead of crashing the
+  form.
+
+Live demo: `/captcha` route in the StackBlitz playground.
+
+---
+
 ## [1.15.0] — 2026-05-25
 
 ### Added — `markdown` field type + `<ngx-markdown-editor>` + `presets.markdown()`

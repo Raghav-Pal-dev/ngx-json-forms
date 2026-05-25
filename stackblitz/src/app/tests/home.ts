@@ -30,6 +30,7 @@ import { RouterLink } from '@angular/router';
         <li><a routerLink="/tree-select">Tree select</a> — hierarchical single / multiple / checkbox tree (1.13.0)</li>
         <li><a routerLink="/time-slots">Time slots</a> — appointment-style button grid (1.14.0)</li>
         <li><a routerLink="/markdown">Markdown</a> — editor + live preview, needs <code>marked</code> (1.15.0)</li>
+        <li><a routerLink="/captcha">Captcha</a> — Cloudflare Turnstile (zero bundle cost) (1.16.0)</li>
       </ul>
     </div>
   `,

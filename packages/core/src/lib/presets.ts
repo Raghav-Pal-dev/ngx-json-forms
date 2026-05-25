@@ -996,6 +996,71 @@ export const presets = {
     };
   },
 
+  /**
+   * Cloudflare Turnstile captcha for public-facing forms (signup,
+   * contact, login, lead gen). Loads the Turnstile script lazily on
+   * first mount — zero bundle cost. The form value is the
+   * verification token (string) which your backend MUST verify
+   * against `https://challenges.cloudflare.com/turnstile/v0/siteverify`
+   * before trusting the submission.
+   *
+   * Cloudflare ships public **test sitekeys** for development:
+   *   - `1x00000000000000000000AA` — always passes (visible)
+   *   - `2x00000000000000000000AB` — always fails
+   *   - `3x00000000000000000000FF` — forces interactive
+   *
+   * Create a real sitekey at https://dash.cloudflare.com → Turnstile.
+   *
+   * @example
+   *   presets.captcha({ sitekey: '1x00000000000000000000AA' });
+   *   presets.captcha({
+   *     sitekey: 'YOUR_REAL_SITE_KEY',
+   *     formControlName: 'cfToken',
+   *     theme: 'dark',
+   *     size: 'flexible',
+   *     action: 'signup',
+   *   });
+   *
+   * @since 1.16.0
+   */
+  captcha(opts: {
+    formControlName?: string;
+    label?: string;
+    /** Required. Turnstile sitekey from Cloudflare dashboard. */
+    sitekey: string;
+    theme?: 'light' | 'dark' | 'auto';
+    size?: 'normal' | 'compact' | 'flexible';
+    /** Analytics action label (e.g. 'signup', 'contact'). */
+    action?: string;
+    required?: boolean;
+    columnSpan?: number;
+  }): FormField {
+    return {
+      formControlName: opts.formControlName ?? 'captchaToken',
+      label: opts.label,
+      config: {
+        attributes: {
+          inputType: 'captcha',
+          sitekey: opts.sitekey,
+          captchaTheme: opts.theme ?? 'auto',
+          captchaSize: opts.size ?? 'normal',
+          captchaAction: opts.action,
+          acceptedEvents: ['change', 'blur'],
+        },
+      },
+      validations: {
+        rules: {
+          // Captcha is almost always required to be solvable, so on by default.
+          required: opts.required ?? true,
+        },
+        messages: {
+          required: 'Please complete the captcha',
+        },
+      },
+      layout: { columnSpan: opts.columnSpan ?? 12 },
+    };
+  },
+
   /** Submit button with sensible defaults. */
   submit(opts: { formControlName?: string; label?: string; columnSpan?: number } = {}): FormField {
     return {

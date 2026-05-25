@@ -33,6 +33,7 @@ export type InputType =
   | 'treeSelect'
   | 'timeSlots'
   | 'markdown'
+  | 'captcha'
   | 'staticText'
   | 'divider'
   | 'button'
@@ -336,6 +337,16 @@ export interface FieldAttributes {
   suffix?: string;
   /** Permit clearing the value to null/empty. Default true. */
   allowEmpty?: boolean;
+
+  // ── captcha (1.16.0, Cloudflare Turnstile) ──
+  /** Turnstile sitekey. Required. `1x00000000000000000000AA` always passes (dev). */
+  sitekey?: string;
+  /** Captcha theme. `'auto'` follows the system preference. */
+  captchaTheme?: 'light' | 'dark' | 'auto';
+  /** Captcha widget size. */
+  captchaSize?: 'normal' | 'compact' | 'flexible';
+  /** Optional action label for analytics / risk scoring. */
+  captchaAction?: string;
 
   // ── markdown (1.15.0) ──
   /** Layout for markdown editor: 'split' | 'editor' | 'preview'. */

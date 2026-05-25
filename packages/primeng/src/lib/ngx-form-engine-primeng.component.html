@@ -688,6 +688,19 @@
               </p-autocomplete>
             }
 
+            <!-- captcha (1.16.0) — Cloudflare Turnstile widget.
+                 Value: verification token (string) or null. Verify
+                 server-side via cloudflare /siteverify. -->
+            @case ('captcha') {
+              <ngx-captcha
+                [formControlName]="field.formControlName!"
+                [sitekey]="field.config.attributes.sitekey ?? ''"
+                [theme]="field.config.attributes.captchaTheme ?? 'auto'"
+                [size]="field.config.attributes.captchaSize ?? 'normal'"
+                [action]="field.config.attributes.captchaAction"
+              />
+            }
+
             <!-- markdown (1.15.0) — textarea + live HTML preview -->
             @case ('markdown') {
               <ngx-markdown-editor

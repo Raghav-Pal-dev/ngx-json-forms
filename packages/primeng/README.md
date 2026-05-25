@@ -140,7 +140,8 @@ export class ProfileForm {
 (base64 + preview), `slider`, `rating`, `colorPicker`, `otp` (1.6.0),
 `currency` (1.7.0), `tagInput` (1.8.0), `signature` (1.10.0),
 `dragUpload` (1.12.0), `treeSelect` (1.13.0), `timeSlots` (1.14.0),
-`markdown` (1.15.0, requires optional peer `marked`), `staticText`,
+`markdown` (1.15.0, requires optional peer `marked`),
+`captcha` (1.16.0, Cloudflare Turnstile), `staticText`,
 `divider`, `button`, `repeater` (FormArray), `group` (nested FormGroup),
 plus any custom component registered through
 `FieldRegistry.registerRenderer()`.
