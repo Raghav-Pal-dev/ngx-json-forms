@@ -43,6 +43,7 @@ import {
   FormEngineEventType,
   FormEngineService,
   FormField,
+  FormPersistenceService,
   FormSchema,
   ImageUploadService,
 } from '@ngx-json-forms/core';
@@ -101,6 +102,10 @@ export class NgxJsonFormComponent {
   protected readonly formService = inject(FormEngineService);
   protected readonly uploadService = inject(ImageUploadService);
   protected readonly fieldRegistry = inject(FieldRegistry);
+  protected readonly persistence = inject(FormPersistenceService);
+
+  /** Unbind fn returned by FormPersistenceService.bind(), if a persistKey is active. */
+  private unbindPersistence: (() => void) | null = null;
 
   // ─── Internal State ──────────────────────────────────────────────────────
 
@@ -210,6 +215,8 @@ export class NgxJsonFormComponent {
     // Tear down anything tied to the previous form group before we rebuild.
     this.disposeOptionLoaderSubs();
     this.placeholderVisibilityMap = {};
+    this.unbindPersistence?.();
+    this.unbindPersistence = null;
 
     const group = this.formService.buildFormGroup(fields);
     this.formGroup.set(group);
@@ -217,6 +224,14 @@ export class NgxJsonFormComponent {
     // Register synchronously so prior subs are disposed BEFORE we add new
     // computed-field listeners below — otherwise register() would wipe them.
     this.formService.register(group, fields, schema);
+
+    // Auto-save / restore: when the schema declares a persistKey, bind the
+    // FormGroup to FormPersistenceService. Restore happens inside bind();
+    // subsequent value changes flow back to the storage adapter
+    // automatically. (Added in 1.2.0.)
+    if (schema?.persistKey) {
+      this.unbindPersistence = this.persistence.bind(group, schema.persistKey);
+    }
 
     for (const field of fields) {
       if (!field.formControlName) continue;

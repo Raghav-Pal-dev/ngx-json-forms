@@ -4,6 +4,58 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] — 2026-05-24
+
+### Added — three Tier-1 enhancements from the roadmap
+
+- **`defineForm<T>()`** (`@ngx-json-forms/core`) — a typed factory that
+  narrows `formControlName` to the keys of a TypeScript shape `T`. Mis-
+  spelling a control name becomes a compile error instead of a silent
+  runtime mismatch. Pure type trick, zero runtime cost (returns the
+  same array reference).
+  ```ts
+  interface Profile { firstName: string; lastName: string; email: string }
+  const fields = defineForm<Profile>([
+    { formControlName: 'firstName', config: { attributes: { inputType: 'text' } } },
+    { formControlName: 'emial', /* ❌ compile error */ ... },
+  ]);
+  ```
+  Layout / non-form-control fields (\`divider\`, \`staticText\`, \`button\`)
+  stay untyped — they don't have to match a key of \`T\`.
+
+- **`<ngx-json-form-debug>`** (`@ngx-json-forms/primeng`) — a drop-in
+  devtool panel that shows the live form value, validity, dirty/touched
+  status, and per-field errors. Floating bottom-right by default
+  (\`[position]="'inline'"\` to embed in flow). Useful while authoring
+  schemas; safe to leave out of production.
+  ```html
+  <ngx-json-form [fieldsInput]="fields()" />
+  <ngx-json-form-debug [startOpen]="true" />
+  ```
+
+- **Auto-save / restore via \`FormSchema.persistKey\`** — set
+  \`persistKey\` on the schema and the renderer auto-binds the form to
+  \`FormPersistenceService\` on mount, restoring the previous values
+  and saving every subsequent change. Survives page reloads with no
+  extra wiring.
+  ```ts
+  const schema: FormSchema = {
+    persistKey: 'profile-form',
+    fields: [...],
+  };
+  <ngx-json-form [schema]="schema" />
+  ```
+  Default storage is \`localStorage\`; provide a custom
+  \`StorageAdapter\` via \`provideFormEngineStorage()\` to back it with
+  IndexedDB, sessionStorage, an API, etc.
+
+### Not breaking
+
+Everything in 1.2.0 is purely additive. \`fesm2022\` bundles compatible
+with all existing 1.x consumers.
+
+[1.2.0]: https://github.com/Raghav-Pal-dev/ngx-json-forms/releases/tag/v1.2.0
+
 ## [1.1.2] — 2026-05-24
 
 ### Changed

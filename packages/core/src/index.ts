@@ -6,3 +6,4 @@ export * from './lib/async-validator-registry.service';
 export * from './lib/form-persistence.service';
 export * from './lib/providers';
 export * from './lib/presets';
+export * from './lib/define-form';
