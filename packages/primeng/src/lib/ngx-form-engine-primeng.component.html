@@ -366,6 +366,45 @@
         </div>
       }
 
+      <!-- ── Drag Upload (1.12.0) ──
+           PrimeNG fileupload's advanced mode renders a full drop zone
+           with file queue + per-file remove + Upload/Cancel buttons.
+           We hand the picked File[] off to the parent via the same
+           `uploadHandler` event the basic mode uses, so the existing
+           ImageUploadService path keeps working for image previews. -->
+      @case ('dragUpload') {
+        <p-fileUpload
+          mode="advanced"
+          customUpload
+          [id]="inputId(field, idSuffix)"
+          [multiple]="field.config.attributes.multiple ?? true"
+          [accept]="field.config.attributes.accept ?? '*/*'"
+          [maxFileSize]="field.config.attributes.maxFileSize ?? 5000000"
+          [fileLimit]="field.config.attributes.fileLimit ?? 0"
+          [auto]="field.config.attributes.auto ?? false"
+          [chooseLabel]="field.config.attributes.chooseLabel ?? 'Choose'"
+          [uploadLabel]="field.config.attributes.uploadLabel ?? 'Upload'"
+          [cancelLabel]="field.config.attributes.cancelLabel ?? 'Cancel'"
+          [chooseIcon]="field.config.attributes.chooseIcon ?? 'pi pi-folder-open'"
+          (uploadHandler)="onEvent(field, $event, 'uploadHandler')"
+          (onSelect)="onEvent(field, $event, 'select')"
+          (onRemove)="onEvent(field, $event, 'remove')"
+          (onClear)="onEvent(field, $event, 'clear')"
+        >
+          <ng-template #empty>
+            <div class="ngx-drag-empty">
+              <i class="pi pi-cloud-upload ngx-drag-icon"></i>
+              <p>
+                {{
+                  field.config.attributes.dragDropLabel ??
+                  'Drag and drop files here to upload'
+                }}
+              </p>
+            </div>
+          </ng-template>
+        </p-fileUpload>
+      }
+
       <!-- ── Static Text ── -->
       @case ('staticText') {
         <span

@@ -304,6 +304,51 @@ describe('presets', () => {
     });
   });
 
+  describe('dragUpload (1.12.0)', () => {
+    it('produces dragUpload renderer with multi-file defaults', () => {
+      const f = presets.dragUpload({ formControlName: 'attachments' });
+      expect(f.config.attributes.inputType).toBe('dragUpload');
+      expect(f.config.attributes.multiple).toBe(true);
+      expect(f.config.attributes.accept).toBe('*/*');
+      expect(f.config.attributes.maxFileSize).toBe(5 * 1024 * 1024);
+      expect(f.config.attributes.fileLimit).toBe(0);
+      expect(f.config.attributes.auto).toBe(false);
+      expect(f.config.attributes.acceptedEvents).toContain('uploadHandler');
+    });
+
+    it('honours single-image-only avatar config', () => {
+      const f = presets.dragUpload({
+        formControlName: 'avatar',
+        accept: 'image/*',
+        multiple: false,
+        maxFileSize: 2 * 1024 * 1024,
+        auto: true,
+      });
+      expect(f.config.attributes.multiple).toBe(false);
+      expect(f.config.attributes.accept).toBe('image/*');
+      expect(f.config.attributes.maxFileSize).toBe(2 * 1024 * 1024);
+      expect(f.config.attributes.auto).toBe(true);
+    });
+
+    it('passes through custom labels for i18n', () => {
+      const f = presets.dragUpload({
+        formControlName: 'docs',
+        chooseLabel: 'Sélectionner',
+        uploadLabel: 'Téléverser',
+        cancelLabel: 'Annuler',
+        dragDropLabel: 'Glissez-déposez vos fichiers ici',
+      });
+      expect(f.config.attributes.chooseLabel).toBe('Sélectionner');
+      expect(f.config.attributes.uploadLabel).toBe('Téléverser');
+      expect(f.config.attributes.dragDropLabel).toBe('Glissez-déposez vos fichiers ici');
+    });
+
+    it('omits required by default; adds when requested', () => {
+      expect(presets.dragUpload({ formControlName: 'd' }).validations?.rules?.required).toBeUndefined();
+      expect(presets.dragUpload({ formControlName: 'd', required: true }).validations?.rules?.required).toBe(true);
+    });
+  });
+
   describe('email', () => {
     it('produces a text input with email validation + envelope icon', () => {
       const f = presets.email({ formControlName: 'workEmail' });

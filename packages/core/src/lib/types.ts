@@ -29,6 +29,7 @@ export type InputType =
   | 'currency'
   | 'tagInput'
   | 'signature'
+  | 'dragUpload'
   | 'staticText'
   | 'divider'
   | 'button'
@@ -207,6 +208,16 @@ export interface FieldAttributes {
   chooseLabel?: string;
   chooseIcon?: string;
   isInline?: boolean;
+  /** Drag-upload (1.12.0): max number of files. Default 0 = unlimited. */
+  fileLimit?: number;
+  /** Drag-upload (1.12.0): label on the Upload button. */
+  uploadLabel?: string;
+  /** Drag-upload (1.12.0): label on the Cancel button. */
+  cancelLabel?: string;
+  /** Drag-upload (1.12.0): instructional text shown inside the drop zone. */
+  dragDropLabel?: string;
+  /** Drag-upload (1.12.0): when true, auto-uploads on file selection. Default false. */
+  auto?: boolean;
 
   // ── Button ──
   icon?: string;

@@ -4,6 +4,80 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0] — 2026-05-25
+
+### Added — `dragUpload` field type + `presets.dragUpload()`
+
+A proper drag-and-drop file zone — drop targets, file queue with
+per-file remove buttons, Upload / Cancel actions, the works.
+Existing `fileUpload` (button-only with image preview list) stays
+exactly as it was — `dragUpload` is a separate, additive renderer
+so nothing breaks for current consumers.
+
+Wraps `<p-fileUpload mode="advanced" customUpload>`, so the
+`uploadHandler` event fires with `{ files: File[] }` — wire it
+into your `(formChange)` handler and POST the files yourself
+(no upload URL needed in the engine itself).
+
+```ts
+import { presets, defineForm } from '@ngx-json-forms/core';
+
+defineForm<{ title: string; attachments: unknown; avatar: unknown }>([
+  presets.text({ formControlName: 'title', label: 'Title', required: true }),
+
+  // Default: multi-file, any type, 5 MB cap per file.
+  presets.dragUpload({ formControlName: 'attachments', label: 'Attachments' }),
+
+  // Avatar — single image, 2 MB cap, auto-upload on pick.
+  presets.dragUpload({
+    formControlName: 'avatar',
+    label: 'Avatar',
+    accept: 'image/*',
+    multiple: false,
+    maxFileSize: 2 * 1024 * 1024,
+    auto: true,
+  }),
+
+  // PDF-only, 5 files max, French labels (i18n example).
+  presets.dragUpload({
+    formControlName: 'docs',
+    accept: '.pdf',
+    fileLimit: 5,
+    chooseLabel: 'Sélectionner',
+    uploadLabel: 'Téléverser',
+    cancelLabel: 'Annuler',
+    dragDropLabel: 'Glissez-déposez vos fichiers ici',
+  }),
+]);
+```
+
+**Options on `presets.dragUpload(...)`:**
+
+| Option              | Default                       | Description                                  |
+|---------------------|-------------------------------|----------------------------------------------|
+| `formControlName`   | —                             | Required.                                    |
+| `label`             | —                             | Field label.                                 |
+| `multiple`          | `true`                        | Allow multi-file selection.                  |
+| `accept`            | all files                     | MIME / extension allowlist (e.g. `image/*`). |
+| `maxFileSize`       | `5 * 1024 * 1024` (5 MB)      | Per-file size cap in bytes.                  |
+| `fileLimit`         | `0`                           | Max number of files; `0` = unlimited.        |
+| `auto`              | `false`                       | Auto-upload on file selection.               |
+| `chooseLabel`       | `'Choose'`                    | Button label.                                |
+| `uploadLabel`       | `'Upload'`                    | Button label.                                |
+| `cancelLabel`       | `'Cancel'`                    | Button label.                                |
+| `dragDropLabel`     | `'Drag and drop files here…'` | Empty-state message inside the drop zone.    |
+| `chooseIcon`        | `'pi pi-folder-open'`         | Choose-button icon.                          |
+| `required`          | `false`                       | Whether at least one file is required.       |
+| `columnSpan`        | `12`                          | PrimeFlex column span.                       |
+
+The empty-state UI (cloud icon + instructional text) is styled via
+the new `.ngx-drag-empty` / `.ngx-drag-icon` classes — override
+them in your global CSS if you want a different look.
+
+Live demo: `/drag-upload` route in the StackBlitz playground.
+
+---
+
 ## [1.11.0] — 2026-05-25
 
 ### Added — `presets.address()` composite field

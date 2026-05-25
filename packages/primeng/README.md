@@ -139,8 +139,8 @@ export class ProfileForm {
 `toggle` (with optional card layout), `checkbox`, `radio`, `fileUpload`
 (base64 + preview), `slider`, `rating`, `colorPicker`, `otp` (1.6.0),
 `currency` (1.7.0), `tagInput` (1.8.0), `signature` (1.10.0),
-`staticText`, `divider`, `button`, `repeater` (FormArray),
-`group` (nested FormGroup),
+`dragUpload` (1.12.0), `staticText`, `divider`, `button`,
+`repeater` (FormArray), `group` (nested FormGroup),
 plus any custom component registered through
 `FieldRegistry.registerRenderer()`.
 

@@ -707,6 +707,78 @@ export const presets = {
     };
   },
 
+  /**
+   * Drag-and-drop file zone (`<p-fileUpload mode="advanced">`).
+   * Renders a proper dropzone with file queue, per-file remove,
+   * and Upload / Cancel buttons. The `uploadHandler` event fires
+   * with `{ files: File[] }` — wire it to your `(formChange)` /
+   * `(formSubmit)` handler and POST the files yourself.
+   *
+   * Defaults: multiple files, accept everything, 5 MB per file, no
+   * file-count limit, manual upload (no `auto`).
+   *
+   * @example
+   *   presets.dragUpload({ formControlName: 'attachments' });
+   *   presets.dragUpload({
+   *     formControlName: 'avatar',
+   *     label: 'Avatar',
+   *     accept: 'image/*',
+   *     multiple: false,
+   *     maxFileSize: 1024 * 1024 * 2,
+   *     auto: true,
+   *   });
+   *
+   * @since 1.12.0
+   */
+  dragUpload(opts: {
+    formControlName: string;
+    label?: string;
+    /** Allow multiple files. Defaults to true. */
+    multiple?: boolean;
+    /** MIME / file-extension allowlist (e.g. 'image/*' or '.pdf,.docx'). Defaults to all files. */
+    accept?: string;
+    /** Max size per file in bytes. Defaults to 5 MB. */
+    maxFileSize?: number;
+    /** Max total number of files. `0` = unlimited (default). */
+    fileLimit?: number;
+    /** Auto-upload on file selection. Defaults to false. */
+    auto?: boolean;
+    chooseLabel?: string;
+    uploadLabel?: string;
+    cancelLabel?: string;
+    dragDropLabel?: string;
+    chooseIcon?: string;
+    required?: boolean;
+    columnSpan?: number;
+  }): FormField {
+    return {
+      formControlName: opts.formControlName,
+      label: opts.label,
+      config: {
+        attributes: {
+          inputType: 'dragUpload',
+          multiple: opts.multiple ?? true,
+          accept: opts.accept ?? '*/*',
+          maxFileSize: opts.maxFileSize ?? 5 * 1024 * 1024,
+          fileLimit: opts.fileLimit ?? 0,
+          auto: opts.auto ?? false,
+          chooseLabel: opts.chooseLabel ?? 'Choose',
+          uploadLabel: opts.uploadLabel ?? 'Upload',
+          cancelLabel: opts.cancelLabel ?? 'Cancel',
+          dragDropLabel: opts.dragDropLabel ?? 'Drag and drop files here to upload',
+          chooseIcon: opts.chooseIcon ?? 'pi pi-folder-open',
+          acceptedEvents: ['uploadHandler', 'select', 'remove', 'clear', 'change'],
+        },
+      },
+      validations: {
+        rules: {
+          ...(opts.required ? { required: true } : {}),
+        },
+      },
+      layout: { columnSpan: opts.columnSpan ?? 12 },
+    };
+  },
+
   /** Submit button with sensible defaults. */
   submit(opts: { formControlName?: string; label?: string; columnSpan?: number } = {}): FormField {
     return {
