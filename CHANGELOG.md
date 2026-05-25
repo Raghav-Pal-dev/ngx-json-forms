@@ -4,6 +4,59 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] — 2026-05-25
+
+### Added — `tagInput` field type + `presets.tagInput()`
+
+Chip-style multi-token entry. Type a value, press <kbd>Enter</kbd>
+(or the configured separator), and it becomes a chip; click the X to
+remove. The bound form value is a plain `string[]` — no
+`{label, value}` object wrapping to unwind on submit.
+
+Backed by `<p-autocomplete multiple typeahead="false">` because
+PrimeNG dropped `<p-chips>` in v21.
+
+```ts
+import { presets, defineForm } from '@ngx-json-forms/core';
+
+defineForm<{ title: string; tags: string[]; invitees: string[] }>([
+  presets.text({ formControlName: 'title', label: 'Post title', required: true }),
+
+  presets.tagInput({ formControlName: 'tags', label: 'Tags' }),
+
+  // Comma-separated invitee list, 1–10 emails required.
+  presets.tagInput({
+    formControlName: 'invitees',
+    label: 'Invite team members',
+    placeholder: 'jane@acme.com, john@acme.com',
+    separator: ',',
+    required: true,
+    minTags: 1,
+    maxTags: 10,
+  }),
+]);
+```
+
+**Options on `presets.tagInput(...)`:**
+
+| Option            | Default | Description                                       |
+|-------------------|---------|---------------------------------------------------|
+| `formControlName` | —       | Required.                                         |
+| `label`           | —       | Field label.                                      |
+| `placeholder`     | —       | Greyed hint inside the input area.                |
+| `separator`       | —       | Char that auto-commits when typed (e.g. `','`).   |
+| `unique`          | `true`  | Reject duplicate tags.                            |
+| `addOnBlur`       | `true`  | Commit pending text as a tag on blur.             |
+| `addOnTab`        | `true`  | Commit pending text as a tag on Tab.              |
+| `required`        | `false` | Whether the array must be non-empty.              |
+| `minTags`         | —       | Minimum tag count (maps to array `minLength`).    |
+| `maxTags`         | —       | Maximum tag count (maps to array `maxLength`).    |
+| `columnSpan`      | `12`    | PrimeFlex column span.                            |
+
+Live demo: `/tag-input` route in the StackBlitz playground.
+
+---
+
 ## [1.7.0] — 2026-05-25
 
 ### Added — `currency` field type + `presets.currency()`

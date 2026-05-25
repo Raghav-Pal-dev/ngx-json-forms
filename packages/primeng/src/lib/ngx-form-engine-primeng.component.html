@@ -649,6 +649,34 @@
               </p-autocomplete>
             }
 
+            <!-- tagInput (1.8.0) — chip-style multi-string entry.
+                 PrimeNG dropped <p-chips> in v21, so this wraps
+                 <p-autocomplete multiple typeahead="false"> with no
+                 suggestions. The bound value is a plain string[]. -->
+            @case ('tagInput') {
+              <p-autocomplete
+                [id]="inputId(field, idSuffix)"
+                [inputId]="inputId(field, idSuffix)"
+                [formControlName]="field.formControlName!"
+                [placeholder]="field.config.attributes.placeholder ?? ''"
+                [multiple]="true"
+                [typeahead]="false"
+                [suggestions]="[]"
+                [unique]="field.config.attributes.unique ?? true"
+                [addOnBlur]="field.config.attributes.addOnBlur ?? true"
+                [addOnTab]="field.config.attributes.addOnTab ?? true"
+                [separator]="$any(field.config.attributes.separator)"
+                [showClear]="field.config.attributes.showClear ?? false"
+                [tabindex]="field.tabIndex ?? 0"
+                appendTo="body"
+                (onAdd)="onEvent(field, $event, 'add')"
+                (onUnselect)="onEvent(field, $event, 'remove')"
+                (onFocus)="onEvent(field, $event, 'focus')"
+                (onBlur)="onEvent(field, $event, 'blur')"
+                (onClear)="onEvent(field, $event, 'clear')"
+              />
+            }
+
             <!-- toggle -->
             @case ('toggle') {
               <p-toggleswitch

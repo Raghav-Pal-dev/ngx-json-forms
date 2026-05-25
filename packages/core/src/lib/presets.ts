@@ -260,6 +260,70 @@ export const presets = {
     };
   },
 
+  /**
+   * Free-form chip / token input. Typing then pressing Enter (or the
+   * configured separator) commits the text as a chip; clicking the
+   * chip's X removes it. The form value is a plain `string[]` — no
+   * `{label, value}` wrapping. Backed by PrimeNG `<p-autocomplete
+   * multiple typeahead="false">` since `<p-chips>` was removed in v21.
+   *
+   * Use cases: tags, keywords, emails-to-invite, allowlist domains.
+   *
+   * @example
+   *   presets.tagInput({ formControlName: 'tags', label: 'Tags' });
+   *   presets.tagInput({
+   *     formControlName: 'invitees',
+   *     label: 'Invitees',
+   *     placeholder: 'jane@acme.com, john@acme.com',
+   *     separator: ',',
+   *   });
+   *
+   * @since 1.8.0
+   */
+  tagInput(opts: {
+    formControlName: string;
+    label?: string;
+    placeholder?: string;
+    /** Char/regex string that auto-commits when typed (e.g. ','). */
+    separator?: string;
+    /** Reject duplicate tags. Defaults true. */
+    unique?: boolean;
+    /** Commit current input as a tag on blur. Defaults true. */
+    addOnBlur?: boolean;
+    /** Commit current input as a tag on Tab. Defaults true. */
+    addOnTab?: boolean;
+    required?: boolean;
+    /** Minimum number of tags required (uses minLength on the array). */
+    minTags?: number;
+    /** Maximum number of tags allowed (uses maxLength on the array). */
+    maxTags?: number;
+    columnSpan?: number;
+  }): FormField {
+    return {
+      formControlName: opts.formControlName,
+      label: opts.label,
+      placeholder: opts.placeholder ?? '',
+      config: {
+        attributes: {
+          inputType: 'tagInput',
+          separator: opts.separator,
+          unique: opts.unique ?? true,
+          addOnBlur: opts.addOnBlur ?? true,
+          addOnTab: opts.addOnTab ?? true,
+          acceptedEvents: ['add', 'remove', 'change', 'blur'],
+        },
+      },
+      validations: {
+        rules: {
+          ...(opts.required ? { required: true } : {}),
+          ...(opts.minTags !== undefined ? { minLength: opts.minTags } : {}),
+          ...(opts.maxTags !== undefined ? { maxLength: opts.maxTags } : {}),
+        },
+      },
+      layout: { columnSpan: opts.columnSpan ?? 12 },
+    };
+  },
+
   /** Submit button with sensible defaults. */
   submit(opts: { formControlName?: string; label?: string; columnSpan?: number } = {}): FormField {
     return {

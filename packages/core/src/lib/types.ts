@@ -27,6 +27,7 @@ export type InputType =
   | 'slider'
   | 'otp'
   | 'currency'
+  | 'tagInput'
   | 'staticText'
   | 'divider'
   | 'button'
@@ -320,6 +321,16 @@ export interface FieldAttributes {
   suffix?: string;
   /** Permit clearing the value to null/empty. Default true. */
   allowEmpty?: boolean;
+
+  // ── tagInput (1.8.0) ──
+  /** Separator regex/string that splits typed text into tags (e.g. ',' or `/[,;\s]/`). */
+  separator?: string;
+  /** Add the current input as a tag on blur (default true for tagInput). */
+  addOnBlur?: boolean;
+  /** Add the current input as a tag on Tab (default true for tagInput). */
+  addOnTab?: boolean;
+  /** Reject duplicate tags. Default true. */
+  unique?: boolean;
 
   // ── Color picker ──
   inline?: boolean;

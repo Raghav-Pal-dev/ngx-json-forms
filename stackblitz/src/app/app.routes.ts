@@ -10,4 +10,5 @@ export const routes: Routes = [
   { path: 'custom-validator', loadComponent: () => import('./tests/custom-validator').then(m => m.CustomValidatorComponent) },
   { path: 'otp',             loadComponent: () => import('./tests/otp').then(m => m.OtpComponent) },
   { path: 'currency',        loadComponent: () => import('./tests/currency').then(m => m.CurrencyComponent) },
+  { path: 'tag-input',       loadComponent: () => import('./tests/tag-input').then(m => m.TagInputComponent) },
 ];

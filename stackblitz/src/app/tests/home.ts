@@ -22,6 +22,7 @@ import { RouterLink } from '@angular/router';
         <li><a routerLink="/custom-validator">Custom validator</a> — inline async validator</li>
         <li><a routerLink="/otp">OTP</a> — verification code / PIN / backup code (1.6.0)</li>
         <li><a routerLink="/currency">Currency</a> — locale-aware USD / EUR / INR / JPY (1.7.0)</li>
+        <li><a routerLink="/tag-input">Tag input</a> — chip-style tokens / emails (1.8.0)</li>
       </ul>
     </div>
   `,

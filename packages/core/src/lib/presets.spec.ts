@@ -88,6 +88,48 @@ describe('presets', () => {
     });
   });
 
+  describe('tagInput (1.8.0)', () => {
+    it('defaults: unique, addOnBlur, addOnTab, accepts add/remove/blur events', () => {
+      const f = presets.tagInput({ formControlName: 'tags' });
+      expect(f.config.attributes.inputType).toBe('tagInput');
+      expect(f.config.attributes.unique).toBe(true);
+      expect(f.config.attributes.addOnBlur).toBe(true);
+      expect(f.config.attributes.addOnTab).toBe(true);
+      expect(f.config.attributes.acceptedEvents).toContain('add');
+      expect(f.config.attributes.acceptedEvents).toContain('remove');
+    });
+
+    it('honours separator + non-unique', () => {
+      const f = presets.tagInput({
+        formControlName: 'tags',
+        separator: ',',
+        unique: false,
+      });
+      expect(f.config.attributes.separator).toBe(',');
+      expect(f.config.attributes.unique).toBe(false);
+    });
+
+    it('maps minTags / maxTags to minLength / maxLength validators', () => {
+      const f = presets.tagInput({
+        formControlName: 'invitees',
+        minTags: 1,
+        maxTags: 10,
+      });
+      expect(f.validations?.rules?.minLength).toBe(1);
+      expect(f.validations?.rules?.maxLength).toBe(10);
+    });
+
+    it('omits required when not asked (opt-in)', () => {
+      const f = presets.tagInput({ formControlName: 'tags' });
+      expect(f.validations?.rules?.required).toBeUndefined();
+    });
+
+    it('adds required when requested', () => {
+      const f = presets.tagInput({ formControlName: 'tags', required: true });
+      expect(f.validations?.rules?.required).toBe(true);
+    });
+  });
+
   describe('email', () => {
     it('produces a text input with email validation + envelope icon', () => {
       const f = presets.email({ formControlName: 'workEmail' });
