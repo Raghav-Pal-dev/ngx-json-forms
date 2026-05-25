@@ -23,6 +23,7 @@ import { RouterLink } from '@angular/router';
         <li><a routerLink="/otp">OTP</a> — verification code / PIN / backup code (1.6.0)</li>
         <li><a routerLink="/currency">Currency</a> — locale-aware USD / EUR / INR / JPY (1.7.0)</li>
         <li><a routerLink="/tag-input">Tag input</a> — chip-style tokens / emails (1.8.0)</li>
+        <li><a routerLink="/date-range">Date range</a> — check-in / check-out picker + endAfterStart validator (1.9.0)</li>
       </ul>
     </div>
   `,

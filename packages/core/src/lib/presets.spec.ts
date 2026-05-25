@@ -130,6 +130,79 @@ describe('presets', () => {
     });
   });
 
+  describe('dateRange (1.9.0)', () => {
+    it('produces a datePicker with selectionMode=range + 2 calendars + button bar', () => {
+      const f = presets.dateRange({ formControlName: 'stay' });
+      expect(f.config.attributes.inputType).toBe('datePicker');
+      expect(f.config.attributes.selectionMode).toBe('range');
+      expect(f.config.attributes.numberOfMonths).toBe(2);
+      expect(f.config.attributes.showButtonBar).toBe(true);
+      expect(f.config.attributes.showIcon).toBe(true);
+    });
+
+    it('honours minToday + custom dateFormat', () => {
+      const f = presets.dateRange({
+        formControlName: 'period',
+        minToday: true,
+        dateFormat: 'yy-mm-dd',
+      });
+      expect(f.config.attributes.minToday).toBe(true);
+      expect(f.config.attributes.dateFormat).toBe('yy-mm-dd');
+    });
+
+    it('omits required by default (range often optional)', () => {
+      const f = presets.dateRange({ formControlName: 'stay' });
+      expect(f.validations?.rules?.required).toBeUndefined();
+    });
+  });
+
+  describe('endAfterStart (1.9.0)', () => {
+    it('returns true (passes) when range tuple is empty / mid-selection', () => {
+      const v = presets.endAfterStart({ formControlName: 'stay' });
+      expect(v.validate({ stay: [] })).toBe(true);
+      const start = new Date('2026-06-01');
+      expect(v.validate({ stay: [start, null] })).toBe(true);
+    });
+
+    it('returns true (passes) when end is strictly after start', () => {
+      const v = presets.endAfterStart({ formControlName: 'stay' });
+      const start = new Date('2026-06-01');
+      const end = new Date('2026-06-05');
+      expect(v.validate({ stay: [start, end] })).toBe(true);
+    });
+
+    it('returns false (fails) when end equals start under strict (default)', () => {
+      const v = presets.endAfterStart({ formControlName: 'stay' });
+      const d = new Date('2026-06-01');
+      expect(v.validate({ stay: [d, d] })).toBe(false);
+    });
+
+    it('returns true when end equals start under strict=false', () => {
+      const v = presets.endAfterStart({ formControlName: 'stay', strict: false });
+      const d = new Date('2026-06-01');
+      expect(v.validate({ stay: [d, d] })).toBe(true);
+    });
+
+    it('supports two-control mode with startControlName + endControlName', () => {
+      const v = presets.endAfterStart({
+        startControlName: 'start',
+        endControlName: 'end',
+      });
+      expect(v.appliesTo).toEqual(['start', 'end']);
+      expect(v.validate({ start: '2026-06-01', end: '2026-06-05' })).toBe(true);
+      expect(v.validate({ start: '2026-06-05', end: '2026-06-01' })).toBe(false);
+    });
+
+    it('passes (defers) when a side is null/undefined — required validators handle missing', () => {
+      const v = presets.endAfterStart({
+        startControlName: 'start',
+        endControlName: 'end',
+      });
+      expect(v.validate({ start: null, end: '2026-06-05' })).toBe(true);
+      expect(v.validate({ start: '2026-06-01', end: undefined })).toBe(true);
+    });
+  });
+
   describe('email', () => {
     it('produces a text input with email validation + envelope icon', () => {
       const f = presets.email({ formControlName: 'workEmail' });

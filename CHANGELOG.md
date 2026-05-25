@@ -4,6 +4,82 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] — 2026-05-25
+
+### Added — `presets.dateRange()` + `presets.endAfterStart()` cross-field validator
+
+A focused convenience layer over the existing `datePicker` renderer
+for the "check-in / check-out", "reporting period", "billing window"
+pattern. No new InputType — `dateRange` is a configured `datePicker`
+(`selectionMode: 'range'`, 2 calendars, button bar), so anything that
+already works for `datePicker` continues to work.
+
+Bound value is `[Date, Date | null]` — the second entry is `null`
+while the user is mid-selection.
+
+```ts
+import { presets, FormSchema } from '@ngx-json-forms/core';
+
+const schema: FormSchema = {
+  fields: [
+    presets.dateRange({
+      formControlName: 'stay',
+      label: 'Hotel stay',
+      minToday: true,        // no past dates
+      required: true,
+    }),
+    presets.dateRange({
+      formControlName: 'reporting',
+      label: 'Reporting period',
+      dateFormat: 'yy-mm-dd',
+    }),
+    presets.submit({ label: 'Book' }),
+  ],
+  crossFieldValidators: [
+    // Default: end strictly > start (rejects same-day).
+    presets.endAfterStart({ formControlName: 'stay' }),
+
+    // strict: false → allow same-day (end >= start).
+    presets.endAfterStart({ formControlName: 'reporting', strict: false }),
+
+    // Two-control mode (separate start/end pickers):
+    // presets.endAfterStart({ startControlName: 'from', endControlName: 'to' }),
+  ],
+};
+```
+
+**`presets.dateRange(...)` options:**
+
+| Option            | Default | Description                                          |
+|-------------------|---------|------------------------------------------------------|
+| `formControlName` | —       | Required.                                            |
+| `label`           | —       | Field label.                                         |
+| `dateFormat`      | —       | PrimeNG format (`'mm/dd/yy'`, `'yy-mm-dd'`, …).      |
+| `minToday`        | `false` | Block past dates.                                    |
+| `maxToday`        | `false` | Block future dates.                                  |
+| `minOffsetDays`   | —       | Offset from today for the minimum date.              |
+| `maxOffsetDays`   | —       | Offset from today for the maximum date.              |
+| `numberOfMonths`  | `2`     | Side-by-side calendars.                              |
+| `showButtonBar`   | `true`  | Show Today / Clear bar.                              |
+| `showIcon`        | `true`  | Show calendar icon next to input.                    |
+| `required`        | `false` | Whether the range is required.                       |
+| `columnSpan`      | `12`    | PrimeFlex column span.                               |
+
+**`presets.endAfterStart(...)` options:**
+
+| Option              | Default          | Description                                            |
+|---------------------|------------------|--------------------------------------------------------|
+| `formControlName`   | —                | Range control (value: `[Date, Date \| null]`).         |
+| `startControlName`  | —                | Start control (two-control mode).                      |
+| `endControlName`    | —                | End control (two-control mode).                        |
+| `strict`            | `true`           | `true` → end > start. `false` → end >= start.          |
+| `name`              | `'endAfterStart'`| Error key under `errors['crossField:<name>']`.         |
+| `message`           | (sensible default)| Inline error message.                                 |
+
+Live demo: `/date-range` route in the StackBlitz playground.
+
+---
+
 ## [1.8.0] — 2026-05-25
 
 ### Added — `tagInput` field type + `presets.tagInput()`

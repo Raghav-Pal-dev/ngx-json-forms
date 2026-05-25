@@ -11,4 +11,5 @@ export const routes: Routes = [
   { path: 'otp',             loadComponent: () => import('./tests/otp').then(m => m.OtpComponent) },
   { path: 'currency',        loadComponent: () => import('./tests/currency').then(m => m.CurrencyComponent) },
   { path: 'tag-input',       loadComponent: () => import('./tests/tag-input').then(m => m.TagInputComponent) },
+  { path: 'date-range',      loadComponent: () => import('./tests/date-range').then(m => m.DateRangeComponent) },
 ];
