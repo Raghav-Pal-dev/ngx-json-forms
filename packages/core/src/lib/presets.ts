@@ -193,6 +193,73 @@ export const presets = {
     };
   },
 
+  /**
+   * Localised currency input (PrimeNG `<p-inputnumber mode="currency">`).
+   * Defaults to USD with `en-US` locale, 2 fraction digits, min 0, no
+   * max. Pass `currency: 'EUR' | 'INR' | ...` (ISO 4217) and `locale:
+   * 'de-DE' | 'ja-JP' | ...` (BCP 47) to localise the symbol and
+   * grouping separators.
+   *
+   * @example
+   *   presets.currency({ formControlName: 'price', label: 'Price', currency: 'USD' });
+   *   presets.currency({ formControlName: 'amount', currency: 'INR', locale: 'en-IN' });
+   *   presets.currency({ formControlName: 'fees', currency: 'JPY', maxFractionDigits: 0 });
+   *
+   * @since 1.7.0
+   */
+  currency(opts: {
+    formControlName: string;
+    label?: string;
+    placeholder?: string;
+    /** ISO 4217 currency code. Defaults to 'USD'. */
+    currency?: string;
+    /** BCP 47 locale tag. Defaults to 'en-US'. */
+    locale?: string;
+    /** Symbol style. Defaults to 'symbol'. */
+    currencyDisplay?: 'symbol' | 'code' | 'name';
+    min?: number;
+    max?: number;
+    /** Fraction-digit lower bound. Defaults to 2. */
+    minFractionDigits?: number;
+    /** Fraction-digit upper bound. Defaults to 2. */
+    maxFractionDigits?: number;
+    /** Show +/- spinner buttons. Defaults to false. */
+    showButtons?: boolean;
+    required?: boolean;
+    columnSpan?: number;
+  }): FormField {
+    const min = opts.min ?? 0;
+    return {
+      formControlName: opts.formControlName,
+      label: opts.label,
+      placeholder: opts.placeholder ?? '',
+      config: {
+        attributes: {
+          inputType: 'currency',
+          mode: 'currency',
+          currency: opts.currency ?? 'USD',
+          locale: opts.locale ?? 'en-US',
+          currencyDisplay: opts.currencyDisplay ?? 'symbol',
+          min,
+          ...(opts.max !== undefined ? { max: opts.max } : {}),
+          minFractionDigits: opts.minFractionDigits ?? 2,
+          maxFractionDigits: opts.maxFractionDigits ?? 2,
+          showButtons: opts.showButtons ?? false,
+          useGrouping: true,
+          acceptedEvents: ['change', 'blur'],
+        },
+      },
+      validations: {
+        rules: {
+          required: opts.required ?? true,
+          min,
+          ...(opts.max !== undefined ? { max: opts.max } : {}),
+        },
+      },
+      layout: { columnSpan: opts.columnSpan ?? 12 },
+    };
+  },
+
   /** Submit button with sensible defaults. */
   submit(opts: { formControlName?: string; label?: string; columnSpan?: number } = {}): FormField {
     return {

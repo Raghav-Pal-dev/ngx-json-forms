@@ -9,4 +9,5 @@ export const routes: Routes = [
   { path: 'computed',        loadComponent: () => import('./tests/computed').then(m => m.ComputedComponent) },
   { path: 'custom-validator', loadComponent: () => import('./tests/custom-validator').then(m => m.CustomValidatorComponent) },
   { path: 'otp',             loadComponent: () => import('./tests/otp').then(m => m.OtpComponent) },
+  { path: 'currency',        loadComponent: () => import('./tests/currency').then(m => m.CurrencyComponent) },
 ];

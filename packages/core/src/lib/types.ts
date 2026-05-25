@@ -26,6 +26,7 @@ export type InputType =
   | 'rating'
   | 'slider'
   | 'otp'
+  | 'currency'
   | 'staticText'
   | 'divider'
   | 'button'
@@ -295,6 +296,30 @@ export interface FieldAttributes {
   mask?: boolean;
   /** When true, only digits 0–9 are accepted. */
   integerOnly?: boolean;
+
+  // ── Currency / Number (1.7.0) ──
+  /** PrimeNG InputNumber mode: 'decimal' (plain) | 'currency'. Used by `currency` field. */
+  mode?: 'decimal' | 'currency' | string;
+  /** ISO 4217 currency code (e.g. 'USD', 'EUR', 'INR'). Required when mode='currency'. */
+  currency?: string;
+  /** How to display the currency: 'symbol' (€) | 'code' (EUR) | 'name' (euro). Default 'symbol'. */
+  currencyDisplay?: 'symbol' | 'code' | 'name' | string;
+  /** BCP 47 locale tag (e.g. 'en-US', 'de-DE', 'ja-JP'). Defaults to the browser locale. */
+  locale?: string;
+  /** Lower bound of fraction digits. */
+  minFractionDigits?: number;
+  /** Upper bound of fraction digits. */
+  maxFractionDigits?: number;
+  /** Use grouping separators (e.g. 1,234,567). Default true. */
+  useGrouping?: boolean;
+  /** Show +/- spinner buttons. */
+  showButtons?: boolean;
+  /** Static prefix shown before the value (e.g. '$'). */
+  prefix?: string;
+  /** Static suffix shown after the value (e.g. ' USD'). */
+  suffix?: string;
+  /** Permit clearing the value to null/empty. Default true. */
+  allowEmpty?: boolean;
 
   // ── Color picker ──
   inline?: boolean;

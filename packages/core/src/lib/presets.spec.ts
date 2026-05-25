@@ -39,6 +39,55 @@ describe('presets', () => {
     });
   });
 
+  describe('currency (1.7.0)', () => {
+    it('defaults to USD / en-US / 2 fraction digits / min 0', () => {
+      const f = presets.currency({ formControlName: 'price' });
+      expect(f.config.attributes.inputType).toBe('currency');
+      expect(f.config.attributes.mode).toBe('currency');
+      expect(f.config.attributes.currency).toBe('USD');
+      expect(f.config.attributes.locale).toBe('en-US');
+      expect(f.config.attributes.currencyDisplay).toBe('symbol');
+      expect(f.config.attributes.minFractionDigits).toBe(2);
+      expect(f.config.attributes.maxFractionDigits).toBe(2);
+      expect(f.config.attributes.min).toBe(0);
+      expect(f.validations?.rules?.min).toBe(0);
+      expect(f.validations?.rules?.required).toBe(true);
+    });
+
+    it('honours a foreign currency + locale (e.g. INR / en-IN)', () => {
+      const f = presets.currency({
+        formControlName: 'amount',
+        currency: 'INR',
+        locale: 'en-IN',
+      });
+      expect(f.config.attributes.currency).toBe('INR');
+      expect(f.config.attributes.locale).toBe('en-IN');
+    });
+
+    it('drops fraction digits for zero-decimal currencies (JPY)', () => {
+      const f = presets.currency({
+        formControlName: 'fee',
+        currency: 'JPY',
+        locale: 'ja-JP',
+        minFractionDigits: 0,
+        maxFractionDigits: 0,
+      });
+      expect(f.config.attributes.minFractionDigits).toBe(0);
+      expect(f.config.attributes.maxFractionDigits).toBe(0);
+    });
+
+    it('passes max bound through to both attributes and validator', () => {
+      const f = presets.currency({ formControlName: 'cap', max: 10000 });
+      expect(f.config.attributes.max).toBe(10000);
+      expect(f.validations?.rules?.max).toBe(10000);
+    });
+
+    it('emits change + blur events by default', () => {
+      const f = presets.currency({ formControlName: 'p' });
+      expect(f.config.attributes.acceptedEvents).toEqual(['change', 'blur']);
+    });
+  });
+
   describe('email', () => {
     it('produces a text input with email validation + envelope icon', () => {
       const f = presets.email({ formControlName: 'workEmail' });

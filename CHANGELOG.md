@@ -4,6 +4,75 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] — 2026-05-25
+
+### Added — `currency` field type + `presets.currency()`
+
+Localised currency input backed by PrimeNG's
+`<p-inputnumber mode="currency">`. Handles currency-symbol prefix,
+locale-aware grouping (1,234,567 vs 1.234.567 vs 1,23,4567), fraction
+digits, optional spinner buttons, min/max bounds — all in one preset.
+
+```ts
+import { presets, defineForm } from '@ngx-json-forms/core';
+
+defineForm<{ priceUsd: number; priceEur: number; priceJpy: number }>([
+  // Default: USD, en-US, 2 fraction digits, min 0.
+  presets.currency({ formControlName: 'priceUsd', label: 'Price (USD)' }),
+
+  // EUR with German locale — comma as decimal, dot as thousands.
+  presets.currency({
+    formControlName: 'priceEur',
+    label: 'Price (EUR)',
+    currency: 'EUR',
+    locale: 'de-DE',
+  }),
+
+  // INR with Indian grouping (1,00,000 not 100,000).
+  presets.currency({
+    formControlName: 'priceInr',
+    currency: 'INR',
+    locale: 'en-IN',
+  }),
+
+  // JPY — zero-decimal currency, capped.
+  presets.currency({
+    formControlName: 'priceJpy',
+    currency: 'JPY',
+    locale: 'ja-JP',
+    minFractionDigits: 0,
+    maxFractionDigits: 0,
+    max: 1_000_000,
+  }),
+]);
+```
+
+**Options on `presets.currency(...)`:**
+
+| Option              | Default     | Description                                       |
+|---------------------|-------------|---------------------------------------------------|
+| `formControlName`   | —           | Required.                                         |
+| `label`             | —           | Field label.                                      |
+| `currency`          | `'USD'`     | ISO 4217 code (USD, EUR, INR, JPY, GBP, …).       |
+| `locale`            | `'en-US'`   | BCP 47 tag — drives grouping + decimal separator. |
+| `currencyDisplay`   | `'symbol'`  | `'symbol'` (€) \| `'code'` (EUR) \| `'name'`.     |
+| `min`               | `0`         | Lower bound (negatives need `min: -Infinity`).    |
+| `max`               | —           | Upper bound.                                      |
+| `minFractionDigits` | `2`         | Drop to `0` for JPY/KRW/etc.                      |
+| `maxFractionDigits` | `2`         | Match `minFractionDigits` for fixed-decimals.     |
+| `showButtons`       | `false`     | +/- spinner buttons next to the input.            |
+| `required`          | `true`      | Whether the field is required.                    |
+| `columnSpan`        | `12`        | PrimeFlex column span.                            |
+
+You can also hand-roll the FormField directly — every prop is on
+`FieldAttributes` (`mode`, `currency`, `locale`, `currencyDisplay`,
+`minFractionDigits`, `maxFractionDigits`, `useGrouping`, `showButtons`,
+`prefix`, `suffix`, `allowEmpty`).
+
+Live demo: `/currency` route in the StackBlitz playground.
+
+---
+
 ## [1.6.0] — 2026-05-25
 
 ### Added — `otp` field type + `presets.otp()`

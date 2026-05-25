@@ -480,6 +480,35 @@
               </p-password>
             }
 
+            <!-- currency (1.7.0) -->
+            @case ('currency') {
+              <p-inputnumber
+                [inputId]="inputId(field, idSuffix)"
+                [formControlName]="field.formControlName!"
+                [mode]="$any(field.config.attributes.mode ?? 'currency')"
+                [currency]="field.config.attributes.currency ?? 'USD'"
+                [locale]="field.config.attributes.locale ?? 'en-US'"
+                [currencyDisplay]="$any(field.config.attributes.currencyDisplay ?? 'symbol')"
+                [min]="field.config.attributes.min"
+                [max]="field.config.attributes.max"
+                [step]="field.config.attributes.step ?? 1"
+                [minFractionDigits]="field.config.attributes.minFractionDigits"
+                [maxFractionDigits]="field.config.attributes.maxFractionDigits"
+                [useGrouping]="field.config.attributes.useGrouping ?? true"
+                [showButtons]="field.config.attributes.showButtons ?? false"
+                [prefix]="field.config.attributes.prefix"
+                [suffix]="field.config.attributes.suffix"
+                [allowEmpty]="field.config.attributes.allowEmpty ?? true"
+                [showClear]="field.config.attributes.showClear ?? false"
+                [placeholder]="placeholderFor(field) ?? ''"
+                [tabindex]="field.tabIndex ?? 0"
+                (onInput)="onEvent(field, $event, 'change')"
+                (onFocus)="onEvent(field, $event, 'focus')"
+                (onBlur)="onEvent(field, $event, 'blur')"
+                (onClear)="onEvent(field, $event, 'clear')"
+              />
+            }
+
             <!-- otp (1.6.0) -->
             @case ('otp') {
               <p-inputotp

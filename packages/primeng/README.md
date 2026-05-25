@@ -138,7 +138,8 @@ export class ProfileForm {
 `dependentDropdown` (cascading), `datePicker`, `time`, `month`, `year`,
 `toggle` (with optional card layout), `checkbox`, `radio`, `fileUpload`
 (base64 + preview), `slider`, `rating`, `colorPicker`, `otp` (1.6.0),
-`staticText`, `divider`, `button`, `repeater` (FormArray), `group` (nested FormGroup),
+`currency` (1.7.0), `staticText`, `divider`, `button`, `repeater` (FormArray),
+`group` (nested FormGroup),
 plus any custom component registered through
 `FieldRegistry.registerRenderer()`.
 
