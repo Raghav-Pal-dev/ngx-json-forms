@@ -1,106 +1,324 @@
-# New Nx Repository
+# ngx-json-forms
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+A data-driven, declarative Angular form engine. Define your entire form as a JSON config — the library handles rendering, validation, layout, conditional logic, repeaters, wizards, and events. Works with multiple UI libraries via adapters.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+## Packages
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/js?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
-## Finish your Nx platform setup
+| Package | Description | npm |
+|---|---|---|
+| `@ngx-json-forms/core` | Types, form builder, validation engine, registries, services | [![npm](https://img.shields.io/npm/v/@ngx-json-forms/core)](https://www.npmjs.com/package/@ngx-json-forms/core) |
+| `@ngx-json-forms/primeng` | PrimeNG adapter (renderer + stepper) | [![npm](https://img.shields.io/npm/v/@ngx-json-forms/primeng)](https://www.npmjs.com/package/@ngx-json-forms/primeng) |
 
-🚀 [Finish setting up your workspace](https://cloud.nx.app/connect/S3VY7zT35e) to get faster builds with remote caching, distributed task execution, and self-healing CI. [Learn more about Nx Cloud](https://nx.dev/ci/intro/why-nx-cloud).
-## Generate a library
+## Quick Start (PrimeNG)
 
-```sh
-npx nx g @nx/js:lib packages/pkg1 --publishable --importPath=@my-org/pkg1
+```bash
+npm install @ngx-json-forms/core @ngx-json-forms/primeng primeng
 ```
 
-## Run tasks
+```ts
+import { NgxJsonFormComponent } from '@ngx-json-forms/primeng';
+import { FormEngineService, FormField, FormEngineEvent } from '@ngx-json-forms/core';
 
-To build the library use:
+@Component({
+  imports: [NgxJsonFormComponent],
+  template: `
+    <ngx-json-form
+      formTitle="My Form"
+      [fieldsInput]="fields"
+      (formSubmit)="onSubmit($event)"
+      (formChange)="onChange($event)" />
+  `
+})
+export class AppComponent {
+  fields: FormField[] = [
+    {
+      formControlName: 'name',
+      label: 'Full Name',
+      placeholder: 'Enter name',
+      config: { attributes: { inputType: 'text', acceptedEvents: ['change', 'blur'] } },
+      validations: { rules: { required: true, minLength: 2 } },
+      layout: { columnSpan: 6, order: 1 },
+    },
+    {
+      formControlName: 'submit',
+      btnLabel: 'Submit',
+      config: { attributes: { inputType: 'button', buttonRole: 'submit', acceptedEvents: ['click'] } },
+      layout: { columnSpan: 3, order: 2 },
+    },
+  ];
 
-```sh
-npx nx build pkg1
+  onSubmit(e: FormEngineEvent) {}
+  onChange(e: FormEngineEvent) {}
+}
 ```
 
-To run any task with Nx use:
+## Supported Field Types (PrimeNG adapter)
 
-```sh
-npx nx <target> <project-name>
+| `inputType` | Component |
+|---|---|
+| `text` | `pInputText` (also handles `email`, `number`, `url`) |
+| `password` / `confirmPassword` | `p-password` |
+| `textarea` | `p-textarea` |
+| `editor` | `p-editor` (Quill-based rich text) |
+| `select` | `p-select` |
+| `multiSelect` | `p-multiselect` |
+| `autocomplete` | `p-autocomplete` |
+| `dependentDropdown` | `p-cascadeselect` (cascading levels) |
+| `toggle` | `p-toggleswitch` (supports `cardLayout`) |
+| `checkbox` | `p-checkbox` |
+| `radio` | `p-radiobutton` |
+| `datePicker` | `p-datepicker` |
+| `time` / `month` / `year` | `p-datepicker` view variants |
+| `fileUpload` | `p-fileupload` with base64 preview |
+| `slider` | `p-slider` |
+| `rating` | `p-rating` |
+| `colorPicker` | `p-colorpicker` |
+| `staticText` | Inline HTML span |
+| `divider` | `p-divider` |
+| `button` | `pButton` (`buttonRole`: `submit` / `reset` / `cancel` / `custom`) |
+| `repeater` | FormArray rendered as repeating row template |
+| `group` | Nested FormGroup |
+| _any custom_ | Component registered via `FieldRegistry.registerRenderer()` |
+
+## FormField Schema
+
+```ts
+interface FormField {
+  formControlName?: string;
+  label?: string;
+  placeholder?: string;
+  floatLabel?: boolean;
+  floatVariant?: 'on' | 'in' | 'over';
+  btnLabel?: string;
+  labelIcon?: string;
+  labelIconPos?: 'left' | 'right';
+  tabIndex?: number;
+  transient?: boolean;                 // omit from submit payload
+  computed?: { deps: string[]; fn: string }; // derived field via FieldRegistry
+  config: { attributes: FieldAttributes };
+  validations?: {
+    rules?: { required, minLength, maxLength, min, max, pattern, email, matches, custom };
+    messages?: { [ruleName]: string };
+    asyncValidators?: string[];        // tokens registered via AsyncValidatorRegistry
+  };
+  layout?: { columnSpan: number; order?: number; wrapperClass?: string; wrapperStyle?: Record<string, string> };
+  showWhen?: ConditionTree;            // conditional visibility
+  disableWhen?: ConditionTree;         // conditional disable
+}
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+## External Control via `FormEngineService`
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+```ts
+const svc = inject(FormEngineService);
 
-## Versioning and releasing
+svc.setValue('name', 'Alice');
+svc.patchValue({ name: 'Alice', country: 'IN' });
+svc.reset();
+svc.disable('name');
+svc.enableForm();
+svc.updateFieldAttributes('country', { options: newOptions, loading: false });
+svc.updateFieldValidations('name', { rules: { required: false } });
+svc.addField(newField);
+svc.removeField('name');
 
-To version and release the library use
+// Repeater (FormArray) APIs
+svc.addArrayItem('contacts', { email: 'a@b.com' });
+svc.removeArrayItem('contacts', 0);
+svc.moveArrayItem('contacts', 0, 1);
 
-```
-npx nx release
-```
+// Wizard APIs
+svc.goToStep(0);
+svc.nextStep();           // validates current step first
+svc.prevStep();
+svc.isStepValid(0);
 
-Pass `--dry-run` to see what would happen without actually releasing the library.
-
-[Learn more about Nx release &raquo;](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Keep TypeScript project references up to date
-
-Nx automatically updates TypeScript [project references](https://www.typescriptlang.org/docs/handbook/project-references.html) in `tsconfig.json` files to ensure they remain accurate based on your project dependencies (`import` or `require` statements). This sync is automatically done when running tasks such as `build` or `typecheck`, which require updated references to function correctly.
-
-To manually trigger the process to sync the project graph dependencies information to the TypeScript project references, run the following command:
-
-```sh
-npx nx sync
-```
-
-You can enforce that the TypeScript project references are always in the correct state when running in CI by adding a step to your CI job configuration that runs the following command:
-
-```sh
-npx nx sync:check
+const isValid = svc.markAllAsTouchedAndValidate();
+const payload = svc.buildSubmitPayload();   // strips `transient` fields
 ```
 
-[Learn more about nx sync](https://nx.dev/reference/nx-commands#sync)
+## Conditional Fields (`showWhen` / `disableWhen`)
 
-## Nx Cloud
-
-Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
-
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-### Set up CI (non-Github Actions CI)
-
-**Note:** This is only required if your CI provider is not GitHub Actions.
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
+```ts
+{
+  formControlName: 'vatNumber',
+  showWhen: {
+    conditions: [{ field: 'isCompany', operator: 'eq', value: true }],
+    logic: 'and',
+  },
+  disableWhen: {
+    conditions: [{ field: 'status', operator: 'in', value: ['locked', 'archived'] }],
+  },
+}
 ```
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Operators: `eq` `neq` `gt` `gte` `lt` `lte` `in` `notIn` `truthy` `falsy` `contains` `matches`
 
-## Install Nx Console
+Dotted paths are supported (`user.address.city`).
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+## Repeater (FormArray)
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+```ts
+{
+  formControlName: 'contacts',
+  label: 'Contacts',
+  config: {
+    attributes: {
+      inputType: 'repeater',
+      itemFields: [
+        { formControlName: 'name',  label: 'Name',  config: { attributes: { inputType: 'text' } }, layout: { columnSpan: 6 } },
+        { formControlName: 'email', label: 'Email', config: { attributes: { inputType: 'text', type: 'email' } }, layout: { columnSpan: 6 } },
+      ],
+      minRows: 1,
+      maxRows: 5,
+      addLabel: 'Add contact',
+    },
+  },
+}
+```
 
-## Useful links
+## Wizard / Stepper
 
-Learn more:
+```ts
+import { NgxJsonFormStepperComponent } from '@ngx-json-forms/primeng';
+import { FormSchema } from '@ngx-json-forms/core';
 
-- [Learn more about this workspace setup](https://nx.dev/nx-api/js?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+const schema: FormSchema = {
+  formId: 'onboarding',
+  steps: [
+    { id: 'basics',   title: 'Basics',   fields: [...] },
+    { id: 'address',  title: 'Address',  fields: [...] },
+    { id: 'review',   title: 'Review',   fields: [...], skipValidation: true },
+  ],
+};
+```
 
-And join the Nx community:
+```html
+<ngx-json-form-stepper
+  [schema]="schema"
+  submitLabel="Create account"
+  (formSubmit)="onComplete($event)" />
+```
 
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Custom Field Renderers
+
+Register your own component once and reference it by `inputType` from JSON:
+
+```ts
+import { FieldRegistry } from '@ngx-json-forms/core';
+
+const registry = inject(FieldRegistry);
+registry.registerRenderer('signaturePad', MySignaturePadComponent);
+```
+
+Your component must accept `field` and `formGroup` as inputs.
+
+## Async Options Loader
+
+Drop in cascading or remote-loaded options:
+
+```ts
+registry.registerOptionsLoader('cities', async ({ state }) => {
+  const res = await fetch(`/api/cities?state=${state}`);
+  return res.json();
+});
+```
+
+```ts
+{
+  formControlName: 'city',
+  config: {
+    attributes: {
+      inputType: 'select',
+      optionsLoader: 'cities',
+      optionsDependsOn: ['state'],
+      optionLabel: 'name', optionValue: 'id',
+    },
+  },
+}
+```
+
+## Computed Fields
+
+```ts
+registry.registerComputation('fullName',
+  ({ firstName, lastName }) => `${firstName ?? ''} ${lastName ?? ''}`.trim()
+);
+```
+
+```ts
+{
+  formControlName: 'fullName',
+  label: 'Full Name',
+  computed: { deps: ['firstName', 'lastName'], fn: 'fullName' },
+  config: { attributes: { inputType: 'text' } },
+}
+```
+
+## Async Validators
+
+```ts
+import { AsyncValidatorRegistry } from '@ngx-json-forms/core';
+
+const v = inject(AsyncValidatorRegistry);
+v.registerAsync('uniqueUsername', usernameAvailableValidator);
+
+// JSON: validations: { asyncValidators: ['uniqueUsername'] }
+```
+
+## Cross-field Validators
+
+```ts
+const schema: FormSchema = {
+  fields: [...],
+  crossFieldValidators: [
+    {
+      name: 'passwordsMatch',
+      message: 'Passwords must match',
+      appliesTo: ['confirm'],
+      validate: (v) => v['password'] === v['confirm'],
+    },
+  ],
+};
+```
+
+## Persistence
+
+```ts
+import { FormPersistenceService } from '@ngx-json-forms/core';
+
+const persist = inject(FormPersistenceService);
+persist.bind(formGroup, 'onboarding-draft'); // auto save/restore
+```
+
+## i18n
+
+```ts
+import { FORM_ENGINE_TRANSLATE } from '@ngx-json-forms/core';
+
+providers: [
+  { provide: FORM_ENGINE_TRANSLATE, useValue: (key, params) => myI18n.t(key, params) },
+]
+```
+
+The default keys: `form.errors.required` `form.errors.email` `form.errors.minLength`
+`form.errors.maxLength` `form.errors.min` `form.errors.max` `form.errors.pattern` `form.errors.matches`.
+
+## Writing a Custom Adapter
+
+1. Install `@ngx-json-forms/core`
+2. Inject `FormEngineService` and `ImageUploadService`
+3. Call `formService.buildFormGroup(fields)` to get the `FormGroup`
+4. Render your own `@switch` template over `field.config.attributes.inputType`
+5. Call `formService.register(formGroup, fields, schema?)` after build
+
+See `@ngx-json-forms/primeng` as a reference implementation.
+
+## Requirements
+
+- Angular `>=19.0.0`
+- `@angular/forms` `>=19.0.0`
+
+## License
+
+MIT
