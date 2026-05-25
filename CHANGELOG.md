@@ -4,6 +4,94 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] — 2026-05-25
+
+### Added — `ng g @ngx-json-forms/primeng:form <name>` scaffold
+
+Generates a fully typed standalone Angular component pre-wired with a
+`defineForm<T>()` schema, built from a comma-separated field list.
+Common field names (`email`, `password`, `phone`, `remember`, …) are
+auto-mapped to the right preset; the rest become text inputs. A
+submit button is always added at the end.
+
+```bash
+ng g @ngx-json-forms/primeng:form login --fields=email,password,remember
+```
+
+Produces `src/app/forms/login/login.ts`:
+
+```ts
+interface LoginValues {
+  email: string;
+  password: string;
+  remember: boolean;
+}
+
+@Component({
+  selector: 'app-login',
+  imports: [NgxJsonFormComponent, NgxJsonFormDebugComponent, JsonPipe],
+  template: \`
+    <ngx-json-form [fieldsInput]="fields" (formSubmit)="onSubmit($event)" />
+    <ngx-json-form-debug />
+    ...
+  \`,
+})
+export class LoginComponent {
+  protected readonly fields = defineForm<LoginValues>([
+    presets.email({ formControlName: 'email', label: 'Email' }),
+    presets.password({ formControlName: 'password', label: 'Password', strong: true }),
+    { /* remember toggle */ },
+    presets.submit({ formControlName: 'submit', label: 'Submit' }),
+  ]);
+
+  protected readonly last = signal<FormEngineEvent | null>(null);
+
+  protected onSubmit(e: FormEngineEvent): void {
+    this.last.set(e);
+    // TODO: send e.values to your backend.
+  }
+  protected onChange(e: FormEngineEvent): void { this.last.set(e); }
+}
+```
+
+The schematic also prints a copy-pasteable route snippet you can drop
+into `app.routes.ts`.
+
+**Field-name inference:**
+
+| Name pattern                                  | Maps to                                |
+|-----------------------------------------------|----------------------------------------|
+| `email`, `e-mail`, `*mail`                    | `presets.email(...)` + email validator |
+| `password`, `passwd`, `pwd`                   | `presets.password(...)` + strength meter |
+| `phone`, `mobile`, `tel`, `whatsapp`, `cell`  | `presets.phone(...)` + tel keyfilter   |
+| `*name` (firstName, lastName, name, …)        | `presets.text({ required, minLength: 2 })` |
+| `remember*`, `subscribe*`, `accept*`, `agree*`, `enable*`, `optIn*`, `notify*`, `*terms`, `newsletter` | toggle (boolean) |
+| `submit`, `save`, `create`, `continue`, `signup`, `signin`, `login`, `register`, `send` | submit button |
+| anything else                                 | `presets.text(...)`                    |
+
+**Options:**
+
+```bash
+ng g @ngx-json-forms/primeng:form profile \\
+  --fields=firstName,lastName,email,phone,subscribe,save \\
+  --path=src/app/screens
+```
+
+`--fields` defaults to `firstName,lastName,email,submit`. `--path`
+defaults to `src/app/forms`. The generator refuses to overwrite an
+existing file.
+
+### Build pipeline
+
+Release + CI workflows now also run `nx run primeng:post-build` after
+the main build to whitelist `schematics/package.json` in the generated
+`.npmignore`. (Without it, `ng add` / `ng g` fail at the consumer with
+"exports is not defined in ES module scope" because Node treats the
+compiled CommonJS schematic as ESM under the parent package's
+`"type": "module"`.)
+
+[1.5.0]: https://github.com/Raghav-Pal-dev/ngx-json-forms/releases/tag/v1.5.0
+
 ## [1.4.0] — 2026-05-25
 
 ### Added — `formFieldsFromJsonSchema(schema)` interop

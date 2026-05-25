@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "ngx-json-forms-primeng-form",
+  "title": "@ngx-json-forms/primeng:form",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the form (e.g. 'login', 'signup-form', 'profile'). Used for file, class, and selector names.",
+      "$default": { "$source": "argv", "index": 0 }
+    },
+    "fields": {
+      "type": "string",
+      "description": "Comma-separated list of field names. Common names (email, password, phone, …) auto-pick the right preset; the rest become text inputs. Always includes a submit button at the end.",
+      "default": "firstName,lastName,email,submit"
+    },
+    "path": {
+      "type": "string",
+      "description": "Directory under the project root to generate the component in.",
+      "default": "src/app/forms"
+    }
+  },
+  "required": ["name"]
+}

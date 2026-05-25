@@ -33,3 +33,7 @@ jobs:
 
       - name: Build all projects
         run: npx nx run-many --target=build --all
+
+      # Whitelist schematics/package.json in the generated .npmignore.
+      - name: Patch primeng .npmignore for schematics
+        run: npx nx run primeng:post-build

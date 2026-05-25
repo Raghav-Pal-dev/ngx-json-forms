@@ -69,6 +69,13 @@ jobs:
       - name: Build packages
         run: npx nx run-many --target=build --projects=core,primeng
 
+      # ng-packagr's generated .npmignore excludes nested package.json
+      # files; we whitelist schematics/package.json so Node treats the
+      # compiled schematic as CommonJS at install time. Without this,
+      # `ng add` and `ng g` fail with "exports is not defined".
+      - name: Patch primeng .npmignore for schematics
+        run: npx nx run primeng:post-build
+
       - name: Publish @ngx-json-forms/core
         run: npm publish --access public --provenance
         working-directory: dist/packages/core

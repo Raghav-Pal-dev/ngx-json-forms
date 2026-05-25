@@ -5,6 +5,12 @@
       "description": "Install @ngx-json-forms/primeng + its peer dependencies and wire up the Angular providers (animations, PrimeNG theme, primeicons CSS).",
       "factory": "./ng-add/index#ngAdd",
       "schema": "./ng-add/schema.json"
+    },
+    "form": {
+      "description": "Scaffold a standalone Angular component pre-wired with a typed defineForm<T>() schema. Usage: ng g @ngx-json-forms/primeng:form <name> --fields=email,password,remember",
+      "factory": "./form/index#generateForm",
+      "schema": "./form/schema.json",
+      "aliases": ["f"]
     }
   }
 }
