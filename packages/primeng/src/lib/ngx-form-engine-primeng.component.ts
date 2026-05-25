@@ -42,6 +42,7 @@ import { TreeSelectModule } from 'primeng/treeselect';
 
 import { SignaturePadComponent } from './signature-pad.component';
 import { TimeSlotsComponent } from './time-slots.component';
+import { MarkdownEditorComponent } from './markdown-editor.component';
 
 import {
   FieldRegistry,
@@ -93,6 +94,7 @@ import {
     TreeSelectModule,
     SignaturePadComponent,
     TimeSlotsComponent,
+    MarkdownEditorComponent,
   ],
 })
 export class NgxJsonFormComponent {

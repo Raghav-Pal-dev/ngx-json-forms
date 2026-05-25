@@ -32,6 +32,7 @@ export type InputType =
   | 'dragUpload'
   | 'treeSelect'
   | 'timeSlots'
+  | 'markdown'
   | 'staticText'
   | 'divider'
   | 'button'
@@ -335,6 +336,10 @@ export interface FieldAttributes {
   suffix?: string;
   /** Permit clearing the value to null/empty. Default true. */
   allowEmpty?: boolean;
+
+  // ── markdown (1.15.0) ──
+  /** Layout for markdown editor: 'split' | 'editor' | 'preview'. */
+  mdLayout?: 'split' | 'editor' | 'preview';
 
   // ── timeSlots (1.14.0) ──
   /** Available time slots: `string[]` or `{ value, label?, disabled? }[]`. */

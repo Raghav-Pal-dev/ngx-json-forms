@@ -934,6 +934,68 @@ export const presets = {
     };
   },
 
+  /**
+   * Markdown editor with live preview. Wraps the
+   * `<ngx-markdown-editor>` component which dynamic-imports the
+   * `marked` library on first render.
+   *
+   * **Requires the `marked` peer dep**: `npm install marked`.
+   * Without it the preview pane shows an install hint instead of
+   * rendered HTML; the editor textarea still works for value
+   * capture.
+   *
+   * Layouts:
+   *   - `'split'`   — textarea + preview side-by-side (default)
+   *   - `'editor'`  — textarea only
+   *   - `'preview'` — preview only (read-only render)
+   *
+   * @example
+   *   presets.markdown({ formControlName: 'bio', label: 'Bio' });
+   *   presets.markdown({
+   *     formControlName: 'readme',
+   *     label: 'README',
+   *     layout: 'split',
+   *     rows: 12,
+   *   });
+   *
+   * @since 1.15.0
+   */
+  markdown(opts: {
+    formControlName: string;
+    label?: string;
+    placeholder?: string;
+    /** Layout. Defaults to 'split'. */
+    layout?: 'split' | 'editor' | 'preview';
+    /** Textarea row count. Defaults to 8. */
+    rows?: number;
+    required?: boolean;
+    minLength?: number;
+    maxLength?: number;
+    columnSpan?: number;
+  }): FormField {
+    return {
+      formControlName: opts.formControlName,
+      label: opts.label,
+      placeholder: opts.placeholder ?? 'Write markdown…',
+      config: {
+        attributes: {
+          inputType: 'markdown',
+          mdLayout: opts.layout ?? 'split',
+          rows: opts.rows ?? 8,
+          acceptedEvents: ['change', 'blur'],
+        },
+      },
+      validations: {
+        rules: {
+          ...(opts.required ? { required: true } : {}),
+          ...(opts.minLength !== undefined ? { minLength: opts.minLength } : {}),
+          ...(opts.maxLength !== undefined ? { maxLength: opts.maxLength } : {}),
+        },
+      },
+      layout: { columnSpan: opts.columnSpan ?? 12 },
+    };
+  },
+
   /** Submit button with sensible defaults. */
   submit(opts: { formControlName?: string; label?: string; columnSpan?: number } = {}): FormField {
     return {

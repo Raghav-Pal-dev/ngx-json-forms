@@ -1,6 +1,6 @@
 {
   "name": "@ngx-json-forms/primeng",
-  "version": "1.14.0",
+  "version": "1.15.0",
   "schematics": "./schematics/collection.json",
   "ng-add": {
     "save": "dependencies"
@@ -48,9 +48,15 @@
     "@angular/common": ">=19.0.0",
     "@angular/core": ">=19.0.0",
     "@angular/forms": ">=19.0.0",
-    "@ngx-json-forms/core": "^1.14.0",
+    "@ngx-json-forms/core": "^1.15.0",
     "primeng": ">=19.0.0",
-    "rxjs": "~7.8.0"
+    "rxjs": "~7.8.0",
+    "marked": ">=12.0.0"
+  },
+  "peerDependenciesMeta": {
+    "marked": {
+      "optional": true
+    }
   },
   "sideEffects": false
 }

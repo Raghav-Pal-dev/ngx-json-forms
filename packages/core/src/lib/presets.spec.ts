@@ -461,6 +461,35 @@ describe('presets', () => {
     });
   });
 
+  describe('markdown (1.15.0)', () => {
+    it('defaults to split layout with 8 rows', () => {
+      const f = presets.markdown({ formControlName: 'bio' });
+      expect(f.config.attributes.inputType).toBe('markdown');
+      expect(f.config.attributes.mdLayout).toBe('split');
+      expect(f.config.attributes.rows).toBe(8);
+    });
+
+    it('honours editor-only / preview-only layouts', () => {
+      expect(presets.markdown({ formControlName: 'x', layout: 'editor' }).config.attributes.mdLayout).toBe('editor');
+      expect(presets.markdown({ formControlName: 'x', layout: 'preview' }).config.attributes.mdLayout).toBe('preview');
+    });
+
+    it('maps minLength / maxLength to validators for character counts', () => {
+      const f = presets.markdown({
+        formControlName: 'bio',
+        minLength: 10,
+        maxLength: 500,
+      });
+      expect(f.validations?.rules?.minLength).toBe(10);
+      expect(f.validations?.rules?.maxLength).toBe(500);
+    });
+
+    it('omits required by default; adds when requested', () => {
+      expect(presets.markdown({ formControlName: 'm' }).validations?.rules?.required).toBeUndefined();
+      expect(presets.markdown({ formControlName: 'm', required: true }).validations?.rules?.required).toBe(true);
+    });
+  });
+
   describe('email', () => {
     it('produces a text input with email validation + envelope icon', () => {
       const f = presets.email({ formControlName: 'workEmail' });

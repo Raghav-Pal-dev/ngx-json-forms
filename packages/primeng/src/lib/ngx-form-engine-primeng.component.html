@@ -688,6 +688,16 @@
               </p-autocomplete>
             }
 
+            <!-- markdown (1.15.0) — textarea + live HTML preview -->
+            @case ('markdown') {
+              <ngx-markdown-editor
+                [formControlName]="field.formControlName!"
+                [layout]="field.config.attributes.mdLayout ?? 'split'"
+                [rows]="field.config.attributes.rows ?? 8"
+                [placeholder]="field.config.attributes.placeholder ?? 'Write markdown…'"
+              />
+            }
+
             <!-- timeSlots (1.14.0) — clickable grid for appointment booking -->
             @case ('timeSlots') {
               <ngx-time-slots

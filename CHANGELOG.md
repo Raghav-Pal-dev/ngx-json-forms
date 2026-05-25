@@ -4,6 +4,68 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.15.0] — 2026-05-25
+
+### Added — `markdown` field type + `<ngx-markdown-editor>` + `presets.markdown()`
+
+Markdown editor with live preview — textarea on one side, rendered
+HTML on the other (or either alone, see `layout`). Use for bios,
+post bodies, comments, READMEs, anywhere you want users to write
+formatted text without the weight of a full rich-text editor.
+
+```ts
+import { presets, defineForm } from '@ngx-json-forms/core';
+
+defineForm<{ title: string; bio: string }>([
+  presets.text({ formControlName: 'title', label: 'Title', required: true }),
+
+  presets.markdown({
+    formControlName: 'bio',
+    label: 'Bio',
+    rows: 8,                  // textarea height
+    minLength: 10,
+    maxLength: 1000,
+    required: true,
+  }),
+]);
+```
+
+**`marked` is now an OPTIONAL peer dep** of `@ngx-json-forms/primeng`.
+The component dynamic-imports it on first render — consumers who
+never touch `markdown` pay zero load cost. Without the dep
+installed, the preview pane shows an install hint
+(`npm install marked`) instead of crashing. The editor textarea
+still functions normally so values still bind / submit.
+
+To enable preview rendering:
+
+```bash
+npm install marked
+```
+
+**Options on `presets.markdown(...)`:**
+
+| Option            | Default         | Description                                            |
+|-------------------|-----------------|--------------------------------------------------------|
+| `formControlName` | —               | Required.                                              |
+| `label`           | —               | Field label.                                           |
+| `placeholder`     | `'Write markdown…'` | Hint inside the textarea.                          |
+| `layout`          | `'split'`       | `'split' \| 'editor' \| 'preview'`.                    |
+| `rows`            | `8`             | Textarea row count.                                    |
+| `minLength`       | —               | Character lower bound.                                 |
+| `maxLength`       | —               | Character upper bound.                                 |
+| `required`        | `false`         | Whether the field is required.                         |
+| `columnSpan`      | `12`            | PrimeFlex column span.                                 |
+
+Security note: the editor doesn't apply additional HTML sanitisation
+beyond what `marked` and Angular's `[innerHTML]` provide. For
+high-trust contexts where users can paste raw HTML, wire your own
+`DOMPurify` step at the consumer level.
+
+Live demo: `/markdown` route in the StackBlitz playground.
+
+---
+
 ## [1.14.0] — 2026-05-25
 
 ### Added — `timeSlots` field type + `<ngx-time-slots>` + `presets.timeSlots()`
