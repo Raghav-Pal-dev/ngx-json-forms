@@ -23,6 +23,12 @@ export default [
           ignoredDependencies: [
             '@angular-devkit/schematics',
             '@angular-devkit/core',
+            // `quill` is declared as an OPTIONAL peer dep because the `editor`
+            // field renders PrimeNG's <p-editor>, which dynamic-imports quill
+            // at runtime. Our own source never imports quill directly, so the
+            // dependency checker can't see a usage — but the peer dep is real
+            // and needed by consumers who use the editor field.
+            'quill',
           ],
         },
       ],

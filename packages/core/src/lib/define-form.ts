@@ -35,6 +35,22 @@ export type TypedFormField<T> = Omit<FormField, 'formControlName'> & {
  * Layout / non-form-control fields (e.g. `divider`, `staticText`, `button`)
  * stay untyped — they don't have to match a key of `T`.
  */
-export function defineForm<T>(fields: TypedFormField<T>[]): FormField[] {
-  return fields as FormField[];
+/**
+ * The parameter type accepts both:
+ *   - `TypedFormField<T>` — fields you wrote inline (gets the keyof T narrowing)
+ *   - `FormField` — values from `presets.*()` factories which intentionally
+ *     return the wide `FormField` shape (the preset doesn't know about T)
+ *
+ * Mixing the two is by far the most common pattern (preset + inline override),
+ * so accepting both keeps the call-site ergonomic without losing type safety
+ * for the inline values.
+ *
+ * Discovered during the tester pass: rejecting `FormField` made every
+ * `defineForm<T>([presets.text({...}), ...])` invocation a compile error.
+ * (Reported as Tier-1 BUG #1.)
+ */
+export function defineForm<T>(
+  fields: ReadonlyArray<TypedFormField<T> | FormField>
+): FormField[] {
+  return fields as unknown as FormField[];
 }

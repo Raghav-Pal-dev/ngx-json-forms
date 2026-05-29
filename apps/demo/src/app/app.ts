@@ -4,6 +4,8 @@ import {
 } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { NgxJsonFormComponent } from '@ngx-json-forms/primeng';
 import {
   FieldRegistry,
@@ -305,11 +307,19 @@ const DEFAULT_FIELDS: FormField[] = [
   templateUrl: './app.html',
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgxJsonFormComponent, JsonPipe, FormsModule],
+  imports: [NgxJsonFormComponent, JsonPipe, FormsModule, RouterOutlet],
 })
 export class App implements OnInit {
   protected readonly formService = inject(FormEngineService);
   private readonly fieldRegistry = inject(FieldRegistry);
+  private readonly router = inject(Router);
+
+  /**
+   * True when on /tester* — landing page hidden, router-outlet visible.
+   * A signal (not a method) so the OnPush template re-renders on every
+   * NavigationEnd, not only when other inputs change.
+   */
+  protected readonly isTesterRoute = signal<boolean>(this.router.url.startsWith('/tester'));
 
   // ─── Form state ──────────────────────────────────────────────────────────
   protected readonly activeFields = signal<FormField[]>([...DEFAULT_FIELDS]);
@@ -328,6 +338,12 @@ export class App implements OnInit {
   protected readonly editorJson = signal(JSON.stringify(DEFAULT_FIELDS, null, 2));
   protected readonly editorError = signal<string | null>(null);
   protected readonly editorDirty = signal(false);
+
+  constructor() {
+    this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe((e) => this.isTesterRoute.set(e.urlAfterRedirects.startsWith('/tester')));
+  }
 
   ngOnInit(): void {
     this.fieldRegistry.registerComputation('fullName', (deps) => {

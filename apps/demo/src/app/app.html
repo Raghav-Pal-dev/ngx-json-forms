@@ -1,3 +1,6 @@
+@if (isTesterRoute()) {
+  <router-outlet />
+} @else {
 <!-- ─── Nav ─────────────────────────────────────────────────────── -->
 <nav class="topnav">
   <div class="topnav-inner">
@@ -276,3 +279,4 @@
     </div>
   </div>
 </footer>
+}

@@ -4,6 +4,53 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.20.0] — 2026-05-29
+
+A polish + bug-fix release from a full real-consumer audit of every field
+type. No breaking changes.
+
+### Fixed
+
+- **Multi-form computed fields.** `FormEngineService` subscriptions are now
+  scoped per `FormGroup`. Previously, rendering a second form on the same page
+  (e.g. an `<ngx-json-form-stepper>` next to a normal `<ngx-json-form>`) tore
+  down the first form's computed-field subscriptions, silently freezing its
+  computed values. Each form now disposes only its own subscriptions.
+- **Placeholders.** Resolved from either `field.placeholder` **or**
+  `field.config.attributes.placeholder` for every field type (previously
+  some types only read one location); styled with PrimeNG's own
+  `--p-form-field-placeholder-color` token instead of full text color, so a
+  placeholder no longer looks like entered text.
+- **Unified focus state.** All fields now focus with one color (the theme
+  primary, via PrimeNG's focus tokens) and one design. Removed a hardcoded
+  blue ring and stray inner rings that made text inputs, password, and native
+  widgets (select/autocomplete/phone) focus in three different colors.
+- **Select / MultiSelect.** Stripped the host element's duplicate border
+  (PrimeNG v21 moved it there), eliminating a thick double border; all wrapped
+  controls now share a uniform `2.5rem` height.
+- **Date / time / month / year / range pickers.** Removed the inner input's
+  duplicate border; the date variants now use the inline calendar icon
+  (`iconDisplay="input"`), matching the time picker — no more grey trigger box.
+- **Autocomplete.** Full-width inside the input group; single border that
+  wraps the dropdown chevron; transparent trigger matching select; built-in
+  client-side filtering for static `suggestions` arrays; fixed a loader that
+  could stick on after repeated dropdown clicks.
+- **phone (intl).** Restored the country-select border and matched the
+  standard `2.5rem` field height.
+- **File upload.** Basic upload preview thumbnail now renders; drag-and-drop
+  no longer rejects valid files when `accept` is `*/*`, and auto-uploads on
+  drop.
+- **confirmPassword** now renders full-width with the same chrome as
+  `password`. **Checkbox** defaults to binary (boolean) mode. **Repeater**
+  delete button is vertically aligned with its row inputs.
+
+### Changed / Added
+
+- `optionGroupChildren` now accepts `string | string[]` — the array form is
+  required by multi-level `dependentDropdown` (`<p-cascadeselect>`).
+- Repeater gained an `addIcon` attribute (default `pi pi-plus`) so the
+  add-row button icon is configurable.
+
 ## [1.19.0] — 2026-05-25
 
 ### Added — `code` field type + `<ngx-code-editor>` + `presets.code()`

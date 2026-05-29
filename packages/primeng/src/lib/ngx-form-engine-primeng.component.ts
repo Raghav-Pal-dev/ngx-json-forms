@@ -143,6 +143,19 @@ export class NgxJsonFormComponent {
   /** Subscriptions for async option re-loads; disposed on every rebuild. */
   private optionLoaderSubs: Subscription[] = [];
 
+  /**
+   * Snapshot of the original `suggestions` array for each autocomplete field.
+   * Auto-populated on the first `completeMethod` event so that subsequent
+   * client-side filtering doesn't shrink the source list. Keyed by form
+   * control name.
+   *
+   * F31: without this, an autocomplete with a static `suggestions: string[]`
+   * would never filter as the user types — PrimeNG's API expects the consumer
+   * to mutate `suggestions` in response to `completeMethod`, but if no handler
+   * does that the spinner runs forever and the panel stays stale.
+   */
+  private autocompleteSourceMap = new Map<string, unknown[]>();
+
   // ─── Derived ─────────────────────────────────────────────────────────────
 
   readonly visibleFields = computed(() => {
@@ -170,17 +183,29 @@ export class NgxJsonFormComponent {
   protected placeholderVisibilityMap: Record<string, ReturnType<typeof computed>> = {};
 
   /**
+   * The placeholder string for a field, regardless of where the consumer
+   * declared it. Historically some field types read `field.placeholder`
+   * (top-level, what the presets set) and others read
+   * `field.config.attributes.placeholder`. Checking both means a placeholder
+   * shows up no matter which spot the consumer used. (F38)
+   */
+  private placeholderText(field: FormField): string | null {
+    return field.placeholder ?? field.config.attributes.placeholder ?? null;
+  }
+
+  /**
    * Resolve the placeholder string to render for a field. Safe for nested
    * fields (repeater itemFields, group groupFields) whose formControlName
    * isn't pre-registered in `placeholderVisibilityMap` — those fall back to
-   * the raw `field.placeholder` since they don't participate in floatLabel.
+   * the raw placeholder text since they don't participate in floatLabel.
    */
   protected placeholderFor(field: FormField): string | null {
+    const text = this.placeholderText(field);
     const name = field.formControlName;
-    if (!name) return field.placeholder ?? null;
+    if (!name) return text;
     const sig = this.placeholderVisibilityMap[name];
-    if (!sig) return field.placeholder ?? null;
-    return sig() ? (field.placeholder ?? null) : null;
+    if (!sig) return text;
+    return sig() ? text : null;
   }
 
   readonly errorMap = computed(() => {
@@ -222,9 +247,19 @@ export class NgxJsonFormComponent {
       this.buildForm(sorted, schemaIn ?? undefined);
     });
 
+    /**
+     * Re-sync from the service when external code mutates fields via
+     * `updateFieldAttributes()` etc. — but ONLY when this component is
+     * the active one in the singleton service. Without this gate two
+     * `<ngx-json-form>` instances on the same page would clobber each
+     * other: form B's register() updates service.fields() and form A's
+     * effect would then overwrite its local fields with B's. (See QA
+     * pass: multi-form collision was the root of L3/L5/U5.)
+     */
     effect(() => {
       this.formService.patchTick();
       if (!this.ready()) return;
+      if (this.formService.formGroup() !== this.formGroup()) return;
       this.fields.set(this.formService.fields());
       this.uploadService.syncPreviews(this.fields(), this.formGroup());
     });
@@ -309,6 +344,60 @@ export class NgxJsonFormComponent {
     const opts = await this.formService.resolveDependentOptions(a.optionsLoader, context, formValue);
     this.asyncOptions.update((m) => ({ ...m, [field.formControlName!]: opts }));
     this.formService.updateFieldAttributes(field.formControlName, { loading: false, options: opts });
+  }
+
+  /**
+   * Atomic / self-styled controls shouldn't be wrapped in the full-width
+   * `<p-inputgroup>` chrome that plain text inputs use. The template adds a
+   * `.ngx-field-atomic` class to the inner div when this returns true; the
+   * SCSS strips the inputgroup chrome under that class.
+   *
+   * Two categories:
+   *   1. Small atomic controls (toggle/checkbox/radio/slider/rating/colorPicker)
+   *      that have their own intrinsic dimensions.
+   *   2. Composite fields with their own visual chrome (otp, tagInput,
+   *      signature, dragUpload, imageCrop, treeSelect, timeSlots, markdown,
+   *      code, phoneIntl, captcha) — wrapping these in inputgroup produces
+   *      a stray light "outer box" around the field.
+   *
+   * (We use a class instead of `:has(p-toggleswitch)` because Angular's
+   * emulated-CSS compiler strips `:has(...)` selectors combined with
+   * `::ng-deep`.)
+   */
+  protected isAtomicControl(field: FormField): boolean {
+    const t = field.config.attributes.inputType;
+    return (
+      // Small atomic controls
+      t === 'toggle' || t === 'checkbox' || t === 'radio' ||
+      t === 'slider' || t === 'rating' || t === 'colorPicker' ||
+      // Self-styled composite fields (added F19)
+      t === 'otp' || t === 'tagInput' || t === 'signature' ||
+      t === 'dragUpload' || t === 'imageCrop' || t === 'treeSelect' ||
+      t === 'timeSlots' || t === 'markdown' || t === 'code' ||
+      t === 'phoneIntl' || t === 'captcha' || t === 'currency' ||
+      // F36: autocomplete is a complete PrimeNG widget — its input already
+      // has a border and the dropdown button joins it. Wrapping it in our
+      // inputgroup produced a double border + pushed the chevron to a new
+      // row. Treat it as self-styled so PrimeNG's native layout stands.
+      t === 'autocomplete'
+    );
+  }
+
+  // Normalize the `accept` attribute for <p-fileUpload>. PrimeNG's internal
+  // validator treats the literal universal-wildcard string (star slash star)
+  // as a MIME type to match: it splits on the slash and compares each half,
+  // so any real file fails validation with "Invalid file type, allowed
+  // file types: ...". The HTML spec says an empty/omitted `accept` means
+  // no restriction — so we map the universal wildcard (and empty/whitespace)
+  // to `null` to bypass PrimeNG's check.
+  //
+  // F33: previously the dragUpload default was the universal wildcard, which
+  // made every drop fail until the consumer explicitly listed every MIME type.
+  // (Block comment, not JSDoc — JSDoc closes on the slash-star sequence.)
+  protected acceptForUpload(raw: string | undefined | null): string | undefined {
+    const v = (raw ?? '').trim();
+    if (!v || v === '*/*' || v === '*') return undefined;
+    return v;
   }
 
   // ─── Field Registry resolver (used by custom inputType) ──────────────────
@@ -430,6 +519,44 @@ export class NgxJsonFormComponent {
         () => this.emitChange(field, 'uploadHandler', event)
       );
       return;
+    }
+
+    // F31: default client-side filter for static `suggestions` arrays. Runs
+    // before the acceptedEvents gate so the panel filters even if the
+    // consumer never listed 'complete' in acceptedEvents. Consumers needing
+    // async lookups can opt out by setting `attributes.staticFilter: false`
+    // and handling the event themselves.
+    if (
+      type === 'complete' &&
+      field.config.attributes.inputType === 'autocomplete' &&
+      field.config.attributes['staticFilter'] !== false
+    ) {
+      const fcn = field.formControlName!;
+      if (!this.autocompleteSourceMap.has(fcn)) {
+        this.autocompleteSourceMap.set(
+          fcn,
+          [...((field.config.attributes.suggestions as unknown[]) ?? [])],
+        );
+      }
+      const source = this.autocompleteSourceMap.get(fcn) ?? [];
+      const q = String((event as { query?: string }).query ?? '').toLowerCase();
+      const labelKey = field.config.attributes.optionLabel ?? 'label';
+      // F37: ALWAYS return a fresh array (note the `[...source]` for the empty-
+      // query branch). PrimeNG's `suggestions` is a setter that resets its
+      // `loading` flag via handleSuggestionsChange() — but Angular only invokes
+      // the setter when the bound value changes by reference (===). Returning
+      // the same `source` reference on a repeat dropdown-click (empty query)
+      // meant the setter never fired, so PrimeNG's spinner got stuck on after
+      // a few clicks. A new array reference every time guarantees the reset.
+      const filtered = q
+        ? source.filter((item) => {
+            const label = typeof item === 'string'
+              ? item
+              : (item as Record<string, unknown>)[labelKey];
+            return String(label ?? '').toLowerCase().includes(q);
+          })
+        : [...source];
+      this.formService.updateFieldAttributes(fcn, { suggestions: filtered });
     }
 
     if (type === 'inputKeydown' && field.config.attributes.inputType === 'autocomplete') {

@@ -1,3 +1,192 @@
+// Faux-disabled submit button: looks disabled but click still fires so the
+// engine can markAllAsTouched() and surface required-field errors. Without
+// this users had no way to discover what was required without filling
+// every field. (Fix for L1 in QA pass: validation discoverability.)
+.ngx-button-faux-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  // Don't dim further on hover — the click still works, but the visual
+  // shouldn't lie about being "active".
+}
+
+// Atomic controls (toggle, checkbox, radio, slider, rating, colorPicker)
+// inherit a full-width <p-inputgroup> wrapper from the @default render path,
+// which gives them a horizontal bar + border that doesn't match their actual
+// dimensions. Strip the wrapper chrome so the control sits naturally next to
+// its label. The `.ngx-field-atomic` marker class is set by the template via
+// `isAtomicControl()` — we use the class instead of `:has(p-toggleswitch)`
+// because Angular's component-CSS compiler strips `:has(...)` selectors
+// combined with `::ng-deep`.
+// Atomic strip rule (F27 fix): strip ONLY the chrome (border, bg, padding) —
+// keep `width: 100%` so the field still fills its allocated columnSpan column.
+// Previous version used `width: auto` which made currency/otp/tagInput/etc.
+// shrink to content width and ignore `columnSpan: 6`.
+//
+// The small controls (toggle/checkbox/radio) sit naturally at the start of
+// the full-width row, just like in a regular vertical form layout.
+.ngx-field-atomic ::ng-deep p-inputgroup,
+.ngx-field-atomic ::ng-deep .p-inputgroup,
+.ngx-field-atomic ::ng-deep p-inputgroup:focus-within,
+.ngx-field-atomic ::ng-deep .p-inputgroup:focus-within,
+.ngx-field-atomic ::ng-deep p-inputgroup:hover,
+.ngx-field-atomic ::ng-deep .p-inputgroup:hover {
+  display: flex !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding: 0 !important;
+  width: 100% !important;
+}
+// Strip child addons — Aura's `.p-inputgroup-addon-default` ships its own
+// border + bg which would still bleed through the inputgroup transparency.
+.ngx-field-atomic ::ng-deep .p-inputgroup-addon {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding: 0 !important;
+}
+
+// Slider needs explicit width — Aura's default `display: flex` on the host
+// without a width collapses to 0×3px inside our flex inputgroup. Give it
+// the full inner-field width so users can actually drag the handle.
+.ngx-field-atomic ::ng-deep p-slider,
+.ngx-field-atomic ::ng-deep p-slider .p-slider {
+  display: block;
+  width: 100%;
+  min-width: 12rem;
+}
+.ngx-field-atomic ::ng-deep p-slider .p-slider {
+  margin-block: 0.5rem;
+}
+
+// Rating: Aura defaults to ~14px icons — too small to be a usable hit target.
+// Bump to 24px so users can actually click each star.
+.ngx-field-atomic ::ng-deep p-rating .p-rating-icon,
+.ngx-field-atomic ::ng-deep p-rating .p-rating-on,
+.ngx-field-atomic ::ng-deep p-rating .p-rating-off {
+  font-size: 1.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.ngx-field-atomic ::ng-deep p-rating {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+// OTP cells (1.20.0 fix): the Aura theme's cell borders are barely visible
+// against the input background, so consumers read 6 distinct boxes as a
+// single fat bar. Force a clear border + spacing. Also let the row wrap so
+// 8-cell backup codes don't overflow narrow form columns.
+:host ::ng-deep p-inputotp {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+:host ::ng-deep p-inputotp .p-inputotp-input {
+  width: 2.5rem !important;
+  text-align: center;
+  border: 1px solid var(--p-inputtext-border-color, #d4d4d8);
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+}
+:host ::ng-deep p-inputotp .p-inputotp-input:focus {
+  border-color: var(--p-primary-color, #2563eb);
+  outline: 2px solid var(--p-primary-color, #2563eb);
+  outline-offset: 1px;
+}
+
+// Date picker overlay (1.20.0 fix v2 — F15): the previous version forced
+// `display: block !important` on the motion wrapper AND panel. That made the
+// panel visible during close animations, producing a flicker every time the
+// user clicked off. Instead, scope the override to ONLY when the motion
+// wrapper actually has its "open" state — let PrimeNG's normal open/close
+// animation handle visibility. Aura's default panel styling is already fine.
+:host ::ng-deep p-datepicker .p-datepicker-panel {
+  background: var(--p-content-background, #fff);
+  border: 1px solid var(--p-content-border-color, #e5e7eb);
+  border-radius: 6px;
+  padding: 0.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;  // ensure it sits above other form fields
+}
+
+// tagInput (1.8.0+) chip-style entry. PrimeNG's <p-autocomplete multiple>
+// renders empty at ~21px which looks like a progress bar — force min-height
+// to match other inputs so users actually see the field. ::ng-deep needed
+// because PrimeNG's internal markup isn't scoped by our view-encapsulated
+// _ngcontent attribute.
+:host ::ng-deep p-autocomplete {
+  display: block;
+  min-height: 2.5rem;
+}
+:host ::ng-deep p-autocomplete .p-autocomplete,
+:host ::ng-deep p-autocomplete .p-autocomplete-multiple {
+  min-height: 2.5rem;
+  align-items: center;
+  padding-block: 0.25rem;
+}
+
+// F36: single-mode autocomplete renders as PrimeNG's native widget (it's in
+// isAtomicControl(), so our inputgroup chrome is stripped). PrimeNG ships:
+//   .p-autocomplete { display: inline-flex }
+//   .p-autocomplete:has(.p-autocomplete-dropdown) .p-autocomplete-input {
+//       flex: 1 1 auto; width: 1% }
+// i.e. input + chevron sit inline by design. We only need the host to fill
+// the column width (PrimeNG's inline-flex shrinks to content otherwise).
+// `display: flex` keeps the children inline AND lets `width: 100%` stretch
+// the host across the form column.
+// F46: put the border on the HOST so it wraps the input AND the dropdown
+// chevron as one rounded box — exactly like <p-select>. Natively PrimeNG
+// borders the INPUT (with squared right corners) and joins a bordered dropdown
+// button; but F45 stripped the button's border, leaving the chevron hanging
+// outside the input's border. Bordering the host (and clearing the input's
+// own border below) fixes that.
+:host ::ng-deep p-autocomplete {
+  display: flex;
+  width: 100%;
+  min-height: 2.5rem;
+  border: 1px solid var(--p-inputtext-border-color, var(--p-surface-border, #d4d4d8));
+  border-radius: var(--p-inputtext-border-radius, 6px);
+  background: var(--p-inputtext-background, #fff);
+}
+:host ::ng-deep p-autocomplete:focus-within {
+  border-color: var(--p-primary-color, #10b981);
+}
+// Strip the input's own border/background (the host owns the chrome now) and
+// undo PrimeNG's squared-right-corner rule so nothing peeks past the host edge.
+// Keep PrimeNG's flex sizing (`width: 1%` shrink) so the input + chevron share
+// the row without the input forcing the chevron out.
+:host ::ng-deep p-autocomplete .p-autocomplete-input {
+  flex: 1 1 auto;
+  width: 1%;
+  min-width: 0;
+  border: none !important;
+  border-radius: var(--p-inputtext-border-radius, 6px) !important;
+  background: transparent !important;
+}
+// Multi-mode (tagInput) chip container fills the host.
+:host ::ng-deep p-autocomplete .p-autocomplete-input-multiple {
+  flex: 1 1 auto;
+  width: 100%;
+}
+// F45: the autocomplete dropdown trigger ships a filled grey background +
+// border (a distinct shaded box), whereas <p-select> / <p-multiselect> render
+// their chevron transparently. Strip the background/border so the autocomplete
+// chevron matches the plain select chevron.
+:host ::ng-deep p-autocomplete .p-autocomplete-dropdown {
+  background: transparent !important;
+  border: none !important;
+  color: var(--p-text-muted-color, #71717a);
+}
+:host ::ng-deep p-autocomplete .p-autocomplete-dropdown:hover {
+  background: transparent !important;
+  color: var(--p-text-color, #111827);
+}
+
 // ─── Grid ────────────────────────────────────────────────────────────────────
 
 .ngx-form-grid {
@@ -64,16 +253,48 @@
   .p-inputgroup {
     border: 1px solid var(--p-surface-border, #d1d5db);
     border-radius: 8px;
-    background: #fff;
-    transition: all 0.2s;
+    background: var(--p-content-background, var(--p-form-field-background, #fff));
+    color: var(--p-form-field-color, var(--p-text-color, #111827));
     display: flex;
     align-items: stretch;
+    // F43: uniform field height. Left to their own devices the wrapped
+    // controls render at different heights — text input ~37px, select /
+    // multiselect ~34px, while the atomic autocomplete sits at PrimeNG's
+    // standard 2.5rem (40px). Pin the wrapper to 2.5rem (border-box so the
+    // 1px border is included) and let the inner control stretch (align-items:
+    // stretch above) so every field lines up at 40px, matching the atomic
+    // widgets.
+    min-height: 2.5rem;
+    box-sizing: border-box;
+    // F25 revert: keep the wrapper border because PrimeNG's input directive
+    // doesn't paint its own border inside an inputgroup. Without it the
+    // text/email/password/phone inputs vanish.
+    //
+    // F41/F42: ONE focus appearance for every field. Previously the inputgroup
+    // had TWO competing focus rules — `:focus-within` used the theme primary
+    // while `:has(input:focus)` hardcoded BLUE — so text inputs went blue,
+    // password went cyan (its inner input's own ring), and native widgets
+    // (select / autocomplete / phone-intl) went green.
+    //
+    // F42: PrimeNG's NATIVE form fields focus with a primary-colored BORDER and
+    // NO box-shadow ring (its `--p-*-focus-ring-shadow` tokens resolve to
+    // `none`). We were adding a 3px green glow on top, so inputgroup-wrapped
+    // fields looked haloed while native fields (phone-intl, autocomplete…) had
+    // just a border. Drop the glow and change only the border-color — now the
+    // wrapper matches PrimeNG's native focus exactly.
+    &:focus-within {
+      border-color: var(--p-primary-color, #10b981);
+    }
 
     p-inputgroup-addon, .p-inputgroup-addon {
       background: transparent !important;
       border: none !important;
-      color: #9ca3af;
-      padding: 0.75rem 0.5rem 0.75rem 1rem;
+      color: var(--p-text-muted-color, #9ca3af);
+      // F43: NO vertical padding — the addon's 0.75rem top/bottom padding was
+      // forcing icon fields (email, phone) to ~44px while plain fields sat at
+      // the 2.5rem (40px) min-height. `align-items: center` + the wrapper's
+      // align-items: stretch vertically centers the icon within 40px instead.
+      padding: 0 0.5rem 0 1rem;
       display: flex;
       align-items: center;
 
@@ -86,17 +307,120 @@
       padding-top: 1rem;
     }
 
-    &:has(input:focus), &:has(textarea:focus), &:has(.p-focus) {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-    }
-
     > .p-inputtext, > .p-textarea, p-select > .p-select, p-multiselect > .p-multiselect, p-autocomplete > .p-autocomplete, p-datepicker > .p-datepicker {
       border: none !important;
       background: transparent !important;
+      // Inherit the group's themed color so text stays readable on the
+      // themed background (critical for dark mode — without this PrimeNG's
+      // default light text would sit on the now-light group background).
+      color: var(--p-form-field-color, var(--p-text-color, #111827)) !important;
       box-shadow: none !important;
+      // F41: the wrapper owns the single focus ring — kill the inner control's
+      // own outline/ring so we don't stack two differently-styled indicators.
+      outline: none !important;
       flex: 1 1 auto;
       min-width: 0;
+    }
+
+    // F41: p-password renders its <input> as a GRANDCHILD (p-password > input),
+    // so the direct-child rule above doesn't reach it — that stray inner focus
+    // ring was the cyan outline on the password fields. Strip it; the wrapper's
+    // :focus-within ring covers it.
+    .p-password input.p-inputtext {
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+
+    // F43: in PrimeNG v21 the <p-select> / <p-multiselect> HOST element carries
+    // the border + focus ring (there's no inner `.p-select` child like older
+    // versions), so the `p-select > .p-select` selector above never matched and
+    // the host's 1px border stacked on top of the wrapper's 1px border — a
+    // visibly THICK double border, especially on focus. Strip the host chrome
+    // so only the single wrapper border shows, plus let the label fill the
+    // wrapper height so its text centers at the uniform 2.5rem.
+    //
+    // F44: DIRECT CHILDREN ONLY. The earlier descendant selector
+    // (`p-select.p-select`) also matched the <p-select> the phone-intl widget
+    // nests for its country code and wiped that field's border — leaving the
+    // number input bordered but the country box borderless. The phone select
+    // is nested (not a direct inputgroup child), so `> p-select` skips it and
+    // it keeps its own native border.
+    > p-select, > p-multiselect {
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      outline: none !important;
+      align-items: center;
+      min-height: 100%;
+    }
+
+    // F44: the date/time/month/year pickers render their <input> as a grandchild
+    // (p-datepicker > input.p-datepicker-input) that carries its OWN border,
+    // which stacked on the wrapper border — the same thick double border select
+    // had. Strip the inner input's chrome so only the single wrapper border
+    // shows. (The text-color rule below still applies via `input.p-inputtext`.)
+    .p-datepicker-input {
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+
+    // The native <input> / <textarea> inside the wrappers above is the
+    // element that actually displays the caret + text. PrimeNG paints it
+    // with its dark-mode foreground when system pref is dark, which can
+    // look invisible against the group's themed surface. Force it to
+    // inherit so the group's color rule wins.
+    input.p-inputtext, textarea.p-textarea,
+    .p-select .p-select-label, .p-multiselect .p-multiselect-label,
+    .p-autocomplete .p-autocomplete-input {
+      color: inherit !important;
+      background: transparent !important;
+    }
+
+    // F38 / F39: placeholder must read as a hint, not as entered text. The
+    // `color: inherit !important` above (needed so typed text is legible on
+    // the themed group background) otherwise bleeds the full foreground color
+    // into:
+    //   1. the native ::placeholder pseudo on <input>/<textarea>, and
+    //   2. the <span> PrimeNG uses to show a Select/MultiSelect's empty-state
+    //      label (it carries `.p-placeholder` when nothing is picked).
+    // Restore PrimeNG's *own* placeholder token so the color exactly matches
+    // its native widgets: every Aura form-field component derives its
+    // placeholder color from `{form.field.placeholder.color}` →
+    // `--p-form-field-placeholder-color` (surface.400). Using that token
+    // (rather than a hand-picked grey) means the placeholder also tracks any
+    // theme/preset the consumer applies. The `.p-placeholder`-qualified
+    // selectors are MORE specific than the inherit rule above, so they win
+    // regardless of source order.
+    // F40: dial the placeholder back so it reads as a faint hint — smaller,
+    // lighter weight, and more muted than the form-field token. We start from
+    // PrimeNG's `--p-form-field-placeholder-color` (so theme overrides still
+    // flow through) but fall back to the lighter `surface.400` and lean on
+    // `font-size`/`font-weight` to soften it further.
+    //   - size:   0.9em (relative → scales with the field's own font size)
+    //   - weight: 300 (light) so it doesn't compete with entered text
+    //   - color:  lighter muted grey
+    $ph-color: var(--p-form-field-placeholder-color, var(--p-surface-400, #94a3b8));
+    $ph-size: 12px;
+    $ph-weight: 400;
+    $ph-opacity: 0.85;
+    input.p-inputtext::placeholder,
+    textarea.p-textarea::placeholder,
+    .p-autocomplete .p-autocomplete-input::placeholder {
+      color: $ph-color !important;
+      opacity: $ph-opacity; // more muted; also undoes Firefox's default dim
+      font-size: $ph-size;
+      font-weight: $ph-weight;
+    }
+    .p-select .p-select-label.p-placeholder,
+    .p-multiselect .p-multiselect-label.p-placeholder {
+      color: $ph-color !important;
+      opacity: $ph-opacity;
+      font-size: $ph-size;
+      font-weight: $ph-weight;
     }
     // When the input group contains a select/multiselect, make the addon absolute
     // so the select element can take 100% width. This ensures the overlay panel
@@ -142,7 +466,9 @@
     padding: 0.9rem 1rem;
     border: 1px solid var(--p-surface-border, #e5e7eb);
     border-radius: 8px;
-    background: #fff;
+    // Theme-aware background: dark mode picks up p-content-background.
+    background: var(--p-content-background, #fff);
+    color: var(--p-text-color, #111827);
     margin-bottom: 0.75rem;
 
     .ngx-toggle-card-icon {
@@ -221,7 +547,10 @@
 
 ::ng-deep {
   .p-select-overlay, .p-multiselect-overlay, .p-autocomplete-overlay {
-    background: #fff !important;
+    // Use the PrimeNG overlay token so the popup matches dark/light mode
+    // instead of always being white.
+    background: var(--p-overlay-select-background, var(--p-content-background, #fff)) !important;
+    color: var(--p-overlay-select-color, var(--p-text-color, #111827)) !important;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05) !important;
     border: 1px solid var(--p-surface-border, #e5e7eb) !important;
     border-radius: 8px !important;
@@ -255,8 +584,10 @@
         background: var(--p-surface-hover, #f3f4f6) !important;
       }
       &[data-p-highlight="true"], &.p-select-option-selected {
-        background: #f1f5f9 !important;
-        color: var(--p-primary-700, #334155) !important;
+        // Selected option uses the PrimeNG highlight token so it stays
+        // readable in both light and dark themes.
+        background: var(--p-select-option-selected-background, var(--p-primary-100, #f1f5f9)) !important;
+        color: var(--p-select-option-selected-color, var(--p-primary-700, #334155)) !important;
         font-weight: 500;
       }
     }
@@ -377,6 +708,17 @@
 }
 
 .ngx-preview-img {
+  // F32: fill the .ngx-image-wrapper (80×80, position: relative). Template
+  // uses Angular's `fill` directive only for the `[ngSrc]` branch; the
+  // base64 `[src]` branch has no NgOptimizedImage layout, so the <img>
+  // would render at natural dimensions and overflow the 80px wrapper —
+  // user sees just a blank card (the corner of a giant image gets clipped
+  // to whatever pixel is at 0,0). Force absolute + 100% so both branches
+  // size consistently.
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   transition: opacity 0.25s ease;
 
@@ -407,7 +749,9 @@
   padding: 0.9rem 1rem;
   border: 1px solid var(--p-surface-border, #e5e7eb);
   border-radius: 10px;
-  background: #fff;
+  // Theme-aware surface so toggle cards stay readable in dark mode.
+  background: var(--p-content-background, #fff);
+  color: var(--p-text-color, #111827);
   width: 100%;
   transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 
@@ -451,14 +795,18 @@
 
 // ─── Radio ───────────────────────────────────────────────────────────────────
 
+// F28: was `display: flex` which made each radio item stretch full-width when
+// inside the flex inputgroup wrapper. `inline-flex` keeps items at content
+// width so they line up neatly across the row with a consistent gap.
 .ngx-radio-item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.35rem;
+  margin: 0 1.25rem 0.35rem 0;
   font-size: 0.875rem;
   color: var(--p-text-color, #374151);
 }
+.ngx-radio-item:last-child { margin-right: 0; }
 
 // ─── Field Group (nested) ────────────────────────────────────────────────────
 
@@ -487,7 +835,12 @@
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0.5rem;
-  align-items: start;
+  // F46: center the delete button against the fields column. With `start` the
+  // 40px trash button pinned to the very top, lining up with the field LABELS
+  // instead of the inputs. The fields column (label + input + reserved error
+  // line) is the tall item that sets the row height; centering the shorter
+  // delete button within it lands it right next to the inputs.
+  align-items: center;
   padding: 0.75rem;
   border: 1px solid var(--p-surface-border, #e5e7eb);
   border-radius: 10px;
@@ -502,7 +855,8 @@
 }
 
 .ngx-repeater-remove {
-  margin-top: 0.2rem;
+  // F46: alignment is handled by the row's `align-items: center` now.
+  align-self: center;
 }
 
 .ngx-repeater-add {

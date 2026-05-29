@@ -125,14 +125,24 @@ function patchAppConfig(options: NgAddSchema): Rule {
       newImports +
       src.slice(lastImportEnd);
 
-    // Insert providers — find `providers: [` and append our entries
+    // Insert providers — find `providers: [` and append our entries.
+    // darkModeSelector is set explicitly so PrimeNG's Aura theme doesn't
+    // auto-flip on system prefers-color-scheme. Without this, users on a
+    // dark-mode OS see white-bg inputs with white text (invisible) because
+    // PrimeNG flips foreground colors but consumer/page surfaces don't
+    // change in lockstep. Dark mode becomes opt-in via `.app-dark` on body.
     const providersRegex = /(providers\s*:\s*\[)/;
     if (providersRegex.test(src)) {
       src = src.replace(
         providersRegex,
         `$1\n` +
           `    provideAnimationsAsync(),\n` +
-          `    providePrimeNG({ theme: { preset: ${themeImportName} } }),\n` +
+          `    providePrimeNG({\n` +
+          `      theme: {\n` +
+          `        preset: ${themeImportName},\n` +
+          `        options: { darkModeSelector: '.app-dark' },\n` +
+          `      },\n` +
+          `    }),\n` +
           `    provideNgxJsonForms(),`,
       );
     } else {

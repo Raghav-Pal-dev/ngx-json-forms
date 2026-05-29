@@ -84,6 +84,8 @@
 .ngx-stepper-actions {
   display: flex;
   justify-content: space-between;
+  gap: 0.75rem;
   border-top: 1px solid var(--p-surface-border, #e5e7eb);
   padding-top: 1rem;
+  padding-right: 0.5rem;  // F11: Next button text was clipping at the right edge
 }

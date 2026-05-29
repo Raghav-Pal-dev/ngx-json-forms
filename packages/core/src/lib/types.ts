@@ -179,7 +179,14 @@ export interface FieldAttributes {
   optionLabel?: string;
   optionValue?: string;
   optionGroupLabel?: string;
-  optionGroupChildren?: string;
+  /**
+   * Child-array key(s) for grouped/cascading options. A single string for a
+   * one-level option group; a string[] for a multi-level <p-cascadeselect>
+   * (dependentDropdown), one key per level e.g. `['states', 'cities']`. The
+   * renderer defaults to `['children']`. (Fixed: was `string`-only, which
+   * rejected the array form the cascade actually requires.)
+   */
+  optionGroupChildren?: string | string[];
   filter?: boolean;
   filterBy?: string;
   filterPlaceholder?: string;
@@ -305,6 +312,13 @@ export interface FieldAttributes {
   // ── Checkbox / Radio ──
   name?: string;
   label?: string;
+  /**
+   * Checkbox-only: single boolean checkbox (`true`/`false` value).
+   * Defaults to `true` for unbound checkboxes; set to `false` only when the
+   * checkbox is part of a multi-value group where the FormControl holds an
+   * array and each box contributes a `value`.
+   */
+  binary?: boolean;
 
   // ── Key filter ──
   keyfilter?: 'int' | 'pint' | 'num' | 'pnum' | 'money' | 'hex' | 'email' | 'alpha' | 'alphanum' | string;

@@ -83,8 +83,26 @@ export class FormEngineService {
   private readonly _activeStepIndex = signal(0);
   readonly _patchTick = signal(0);
 
-  /** Track every subscription created during build so we can tear them down */
-  private subs: Subscription[] = [];
+  /**
+   * Subscriptions created during build (form value/status bridges + computed
+   * field deps), keyed BY the FormGroup they belong to.
+   *
+   * This service is a `providedIn: 'root'` singleton shared by every
+   * `<ngx-json-form>` on the page (so the debug panel can read the active
+   * form). Previously `subs` was one flat array and `disposeSubs()` wiped it
+   * wholesale — so a SECOND form registering (e.g. a wizard/stepper rendered
+   * alongside a normal form) tore down the FIRST form's computed-field
+   * subscriptions, silently breaking its computed values. Keying by FormGroup
+   * means each form only disposes its OWN subscriptions.
+   */
+  private subsByForm = new Map<FormGroup, Subscription[]>();
+
+  /** Append subscriptions to a specific form's bucket. */
+  private trackSub(formGroup: FormGroup, ...subs: Subscription[]): void {
+    const arr = this.subsByForm.get(formGroup) ?? [];
+    arr.push(...subs);
+    this.subsByForm.set(formGroup, arr);
+  }
 
   // ─── Public Signals ──────────────────────────────────────────────────────
 
@@ -117,14 +135,16 @@ export class FormEngineService {
    * repeated calls during hot schema swaps don't leak.
    */
   register(formGroup: FormGroup, fields: FormField[], schema?: FormSchema): void {
-    this.disposeSubs();
+    // Only tear down THIS form's prior subscriptions — not every form's.
+    this.disposeSubs(formGroup);
     this._formGroup.set(formGroup);
     this._fields.set(fields);
     if (schema) this._schema.set(schema);
 
     // Bridge native reactive-form changes into the signal world so any
     // consumer reading formValue / formValid recomputes on every keystroke.
-    this.subs.push(
+    this.trackSub(
+      formGroup,
       formGroup.valueChanges.subscribe(() => this.bumpPatch()),
       formGroup.statusChanges.subscribe(() => this.bumpPatch())
     );
@@ -286,12 +306,12 @@ export class FormEngineService {
         this.bumpPatch();
       };
 
-      // Initial pass + subscribe to dep changes
+      // Initial pass + subscribe to dep changes (scoped to this form group).
       recompute();
       for (const dep of field.computed.deps) {
         const depCtrl = formGroup.get(dep);
         if (!depCtrl) continue;
-        this.subs.push(depCtrl.valueChanges.subscribe(() => recompute()));
+        this.trackSub(formGroup, depCtrl.valueChanges.subscribe(() => recompute()));
       }
     }
   }
@@ -637,8 +657,20 @@ export class FormEngineService {
 
   // ─── Cleanup ─────────────────────────────────────────────────────────────
 
-  private disposeSubs(): void {
-    for (const s of this.subs) s.unsubscribe();
-    this.subs = [];
+  /**
+   * Dispose subscriptions. Pass a `formGroup` to tear down only that form's
+   * subscriptions (used on re-register so coexisting forms are untouched);
+   * omit it to dispose every form's (full teardown via `clear()`).
+   */
+  private disposeSubs(formGroup?: FormGroup): void {
+    if (formGroup) {
+      for (const s of this.subsByForm.get(formGroup) ?? []) s.unsubscribe();
+      this.subsByForm.delete(formGroup);
+      return;
+    }
+    for (const arr of this.subsByForm.values()) {
+      for (const s of arr) s.unsubscribe();
+    }
+    this.subsByForm.clear();
   }
 }

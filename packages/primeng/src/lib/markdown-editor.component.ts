@@ -52,14 +52,21 @@ type MarkedLib = { parse: (md: string, opts?: { async?: false }) => string };
   ],
   styles: [
     `
-      :host { display: block; }
+      :host { display: block; width: 100%; }
       .ngx-md-shell {
         display: grid;
         gap: 0.75rem;
+        width: 100%;
+        min-width: 0;  // F11: prevent grid blowout that left a ghost column
       }
-      .ngx-md-shell.layout-split { grid-template-columns: 1fr 1fr; }
+      .ngx-md-shell.layout-split {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      }
       .ngx-md-shell.layout-editor,
-      .ngx-md-shell.layout-preview { grid-template-columns: 1fr; }
+      .ngx-md-shell.layout-preview {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .ngx-md-shell textarea { width: 100%; min-width: 0; }
       .ngx-md-preview {
         padding: 0.75rem;
         border: 1px solid var(--p-inputtext-border-color, #d4d4d8);

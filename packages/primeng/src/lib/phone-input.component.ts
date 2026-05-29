@@ -97,21 +97,42 @@ interface CountryOption {
   ],
   styles: [
     `
-      :host { display: block; }
+      /* F28: host needs explicit width because inside the inputgroup flex
+         container, a block host without an explicit width shrinks to
+         content. Block-display only fills block-level parents, not flex. */
+      :host { display: block; width: 100%; }
       .ngx-phone-row {
         display: flex;
         gap: 0.5rem;
+        width: 100%;
       }
       .ngx-phone-country {
-        flex: 0 0 12rem;
-        min-width: 8rem;
+        flex: 0 0 8rem;
+        min-width: 6rem;
+        max-width: 10rem;
       }
       .ngx-phone-number {
-        flex: 1;
-        min-width: 0;
+        flex: 1 1 12rem;
+        min-width: 8rem;
       }
       .ngx-phone-number input {
         width: 100%;
+      }
+      /* F45: pin both controls to the engine's uniform 2.5rem (40px) field
+         height. Left alone PrimeNG renders them at ~37px, so the phone-intl
+         row looked shorter than every other field next to it.
+         NOTE: the ngx-phone-country class is on the p-select host element and
+         the ngx-phone-number class is on the input itself — they are the
+         elements themselves, not parents, so target them directly (an earlier
+         descendant selector matched nothing). align-items keeps the select
+         label vertically centered at the taller height. */
+      .ngx-phone-country,
+      .ngx-phone-number {
+        min-height: 2.5rem;
+      }
+      :host ::ng-deep .ngx-phone-country .p-select-label {
+        display: flex;
+        align-items: center;
       }
       .ngx-phone-warn {
         margin-top: 0.5rem;
@@ -170,8 +191,17 @@ export class PhoneInputComponent implements ControlValueAccessor {
   protected readonly libMissing = signal(false);
   protected readonly disabledSig = signal(false);
 
-  /** Selected country (ISO 3166-1 alpha-2). */
-  protected country = 'US';
+  /**
+   * Selected country (ISO 3166-1 alpha-2). Must be a signal — otherwise the
+   * constructor's `this.country = this.defaultCountry()` would lock in the
+   * input's *initial* default value (often 'US') even if the consumer
+   * passed `[defaultCountry]="'IN'"`. Inputs aren't propagated until the
+   * first CD cycle, AFTER the constructor runs. (L7 fix.)
+   */
+  protected readonly countrySig = signal<string>('US');
+  /** Plain accessor used by the ngModel binding on the <p-select>. */
+  protected get country(): string { return this.countrySig(); }
+  protected set country(v: string) { this.countrySig.set(v); }
   /** What the user has typed for the national portion. Display-formatted. */
   protected readonly national = signal<string>('');
   /** Raw fallback for when the lib is missing. */
@@ -186,15 +216,25 @@ export class PhoneInputComponent implements ControlValueAccessor {
   private onTouched: () => void = () => undefined;
 
   constructor() {
-    this.country = this.defaultCountry();
     void this.loadLib();
+
+    // Sync `defaultCountry` input → country signal. Runs every time the
+    // input changes (also on first propagation, which is what `Country
+    // override` actually relies on). The check `if (n empty)` prevents
+    // us from clobbering a country the user just picked.
+    effect(() => {
+      const dc = this.defaultCountry();
+      if (!this.national()) {
+        this.countrySig.set(dc);
+      }
+    });
 
     // When the user (or initial writeValue) changes country, re-format
     // the national digits we have under the new country's rules.
     effect(() => {
       const lib = this.lib;
       if (!lib) return;
-      const c = this.country;
+      const c = this.countrySig();
       const n = this.national();
       if (!n) {
         this.emit(null);

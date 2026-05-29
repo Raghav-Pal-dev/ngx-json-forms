@@ -48,6 +48,9 @@ import { ButtonModule } from 'primeng/button';
       :host {
         display: block;
         position: relative;
+        /* F28: explicit width — see phone-input. Block-display doesn't
+           fill a flex parent without width: 100%. */
+        width: 100%;
       }
       .pad-shell {
         border: 1px solid var(--p-inputtext-border-color, #d4d4d8);
@@ -66,7 +69,7 @@ import { ButtonModule } from 'primeng/button';
         display: flex;
         justify-content: flex-end;
         gap: 0.5rem;
-        padding: 0.5rem 0.25rem 0;
+        padding: 0.5rem 0.5rem 0 0.25rem;
       }
       .pad-actions[hidden] { display: none; }
     `,

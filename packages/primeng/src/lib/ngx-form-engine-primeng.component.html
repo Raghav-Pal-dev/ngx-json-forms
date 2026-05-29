@@ -118,7 +118,10 @@
               }
             </label>
           }
-          <div class="ngx-field-inner">
+          <div
+            class="ngx-field-inner"
+            [class.ngx-field-atomic]="isAtomicControl(field)"
+          >
             <ng-container
               [ngTemplateOutlet]="fieldTpl"
               [ngTemplateOutletContext]="{ $implicit: field, formGroup: formGroup() }"
@@ -177,19 +180,32 @@
         />
       }
 
-      <!-- ── Group (nested FormGroup) ── -->
+      <!-- ── Group (nested FormGroup) ──
+           BUG-FIX (1.20.0): previously used `[attr.formGroupName]` which is
+           a plain HTML attribute, NOT the Reactive Forms directive. Sub-fields
+           tried to look up their controls at the OUTER FormGroup and threw
+           "Cannot find control with name: line1" (236 errors/page on
+           presets.address()). Solution: compute the inner FormGroup via
+           `fg.get(formControlName)` and pass it as the ngTemplateOutlet
+           context so each sub-field's `[formGroup]="fg"` resolves to the
+           nested group. -->
       @case ('group') {
-        <fieldset
-          class="ngx-field-group"
-          [attr.formGroupName]="field.formControlName"
-        >
-          @for (sub of field.config.attributes.groupFields ?? []; track sub.formControlName ?? $index) {
-            <div class="ngx-field-group-row">
-              <ng-container
-                [ngTemplateOutlet]="fieldTpl"
-                [ngTemplateOutletContext]="{ $implicit: sub, formGroup: formGroup() }"
-              />
-            </div>
+        @let innerFg = $any(fg.get(field.formControlName!));
+        <fieldset class="ngx-field-group">
+          @if (innerFg) {
+            <!-- Gate the inner render until the nested FormGroup actually
+                 exists on the parent. Without this, child formControlName
+                 directives query ControlContainer one CD tick BEFORE
+                 the parent's ngOnChanges registers the inner group, and
+                 throw NG01050 "Cannot find control" 8x per fieldset. -->
+            @for (sub of field.config.attributes.groupFields ?? []; track sub.formControlName ?? $index) {
+              <div class="ngx-field-group-row">
+                <ng-container
+                  [ngTemplateOutlet]="fieldTpl"
+                  [ngTemplateOutletContext]="{ $implicit: sub, formGroup: innerFg }"
+                />
+              </div>
+            }
           }
         </fieldset>
       }
@@ -246,7 +262,7 @@
             pButton
             type="button"
             class="ngx-repeater-add"
-            [icon]="'pi pi-plus'"
+            [icon]="$any(field.config.attributes['addIcon'] ?? 'pi pi-plus')"
             [label]="field.config.attributes.addLabel ?? 'Add row'"
             [text]="true"
             (click)="addRepeaterRow(field)"
@@ -267,7 +283,7 @@
           [optionGroupChildren]="
             $any(field.config.attributes.optionGroupChildren ?? ['children'])
           "
-          [placeholder]="field.placeholder ?? ''"
+          [placeholder]="placeholderFor(field) ?? ''"
           appendTo="body"
           (onChange)="onEvent(field, $event, 'change')"
           (onShow)="onEvent(field, $event, 'show')"
@@ -284,19 +300,6 @@
         ></p-editor>
       }
 
-      <!-- ── Confirm password ── -->
-      @case ('confirmPassword') {
-        <p-password
-          [inputId]="inputId(field, idSuffix)"
-          [formControlName]="field.formControlName!"
-          [feedback]="false"
-          [toggleMask]="field.config.attributes.toggleMask ?? true"
-          [placeholder]="field.placeholder ?? ''"
-          appendTo="body"
-          (onBlur)="onEvent(field, $event, 'blur')"
-        />
-      }
-
       <!-- ── File Upload ── -->
       @case ('fileUpload') {
         <div>
@@ -309,7 +312,7 @@
               [id]="inputId(field, idSuffix)"
               [multiple]="field.config.attributes.multiple"
               [chooseIcon]="field.config.attributes.chooseIcon ?? 'pi pi-upload'"
-              [accept]="field.config.attributes.accept ?? 'image/*'"
+              [accept]="acceptForUpload(field.config.attributes.accept ?? 'image/*')"
               [maxFileSize]="field.config.attributes.maxFileSize ?? 1000000"
               [auto]="true"
               [chooseLabel]="field.config.attributes.chooseLabel ?? 'Upload'"
@@ -378,10 +381,10 @@
           customUpload
           [id]="inputId(field, idSuffix)"
           [multiple]="field.config.attributes.multiple ?? true"
-          [accept]="field.config.attributes.accept ?? '*/*'"
+          [accept]="acceptForUpload(field.config.attributes.accept)"
           [maxFileSize]="field.config.attributes.maxFileSize ?? 5000000"
           [fileLimit]="field.config.attributes.fileLimit ?? 0"
-          [auto]="field.config.attributes.auto ?? false"
+          [auto]="field.config.attributes.auto ?? true"
           [chooseLabel]="field.config.attributes.chooseLabel ?? 'Choose'"
           [uploadLabel]="field.config.attributes.uploadLabel ?? 'Upload'"
           [cancelLabel]="field.config.attributes.cancelLabel ?? 'Cancel'"
@@ -437,11 +440,18 @@
             [icon]="field.config.attributes.icon ?? ''"
             [iconPos]="field.config.attributes.iconPosition ?? 'left'"
             [tabindex]="field.tabIndex ?? 0"
-            [disabled]="
-              field.config.attributes.buttonRole === 'submit' ||
-              field.config.attributes.type === 'submit'
-                ? !formValid()
-                : !!field.config.attributes.disabled
+            [disabled]="!!field.config.attributes.disabled"
+            [class.ngx-button-faux-disabled]="
+              (field.config.attributes.buttonRole === 'submit' ||
+                field.config.attributes.type === 'submit') &&
+              !formValid()
+            "
+            [attr.aria-disabled]="
+              (field.config.attributes.buttonRole === 'submit' ||
+                field.config.attributes.type === 'submit') &&
+              !formValid()
+                ? 'true'
+                : null
             "
             [class.p-button-outlined]="
               field.config.attributes.variant === 'secondary'
@@ -501,7 +511,7 @@
                 [formControlName]="field.formControlName!"
                 [feedback]="field.config.attributes.feedback"
                 [toggleMask]="field.config.attributes.toggleMask"
-                [placeholder]="field.config.attributes.placeholder ?? ''"
+                [placeholder]="placeholderFor(field) ?? ''"
                 appendTo="body"
                 (onBlur)="onEvent(field, $event, 'blur')"
                 (onFocus)="onEvent(field, $event, 'focus')"
@@ -517,6 +527,23 @@
                   />
                 }
               </p-password>
+            }
+
+            <!-- confirmPassword: identical chrome to `password` so the two
+                 fields sit visually balanced next to each other. The match
+                 validator is wired by the core service via
+                 validations.rules.matches — renderer stays presentation-only. -->
+            @case ('confirmPassword') {
+              <p-password
+                [inputId]="inputId(field, idSuffix)"
+                [formControlName]="field.formControlName!"
+                [feedback]="false"
+                [toggleMask]="field.config.attributes.toggleMask ?? true"
+                [placeholder]="placeholderFor(field) ?? ''"
+                appendTo="body"
+                (onBlur)="onEvent(field, $event, 'blur')"
+                (onFocus)="onEvent(field, $event, 'focus')"
+              />
             }
 
             <!-- currency (1.7.0) -->
@@ -571,7 +598,7 @@
                 [rows]="field.config.attributes.rows ?? 3"
                 [cols]="field.config.attributes.cols ?? 30"
                 [autoResize]="field.config.attributes.autoResize"
-                [placeholder]="field.config.attributes.placeholder ?? ''"
+                [placeholder]="placeholderFor(field) ?? ''"
                 (change)="onEvent(field, $event)"
                 (input)="onEvent(field, $event)"
                 (focus)="onEvent(field, $event)"
@@ -602,6 +629,7 @@
                 "
                 [lazy]="field.config.attributes.lazy"
                 [emptyMessage]="field.config.attributes.emptyMessage"
+                [scrollHeight]="field.config.attributes.scrollHeight ?? '15rem'"
                 appendTo="body"
                 (onChange)="onEvent(field, $event, 'change')"
                 (onFocus)="onEvent(field, $event, 'focus')"
@@ -631,7 +659,7 @@
                 [options]="$any(optionsFor(field))"
                 [optionLabel]="field.config.attributes.optionLabel"
                 [optionValue]="field.config.attributes.optionValue"
-                [placeholder]="field.config.attributes.placeholder ?? ''"
+                [placeholder]="placeholderFor(field) ?? ''"
                 [filter]="field.config.attributes.filter"
                 [showClear]="field.config.attributes.showClear"
                 [selectionLimit]="field.config.attributes.selectionLimit"
@@ -641,7 +669,7 @@
                 [virtualScrollItemSize]="
                   field.config.attributes.virtualScrollItemSize
                 "
-                [scrollHeight]="field.config.attributes.scrollHeight"
+                [scrollHeight]="field.config.attributes.scrollHeight ?? '15rem'"
                 appendTo="body"
                 (onChange)="onEvent(field, $event, 'change')"
                 (onFocus)="onEvent(field, $event, 'focus')"
@@ -660,7 +688,7 @@
                 [id]="inputId(field, idSuffix)"
                 [inputId]="inputId(field, idSuffix)"
                 [formControlName]="field.formControlName!"
-                [placeholder]="field.config.attributes.placeholder ?? ''"
+                [placeholder]="placeholderFor(field) ?? ''"
                 [suggestions]="field.config.attributes.suggestions"
                 [optionLabel]="field.config.attributes.optionLabel"
                 [multiple]="field.config.attributes.multiple"
@@ -674,7 +702,7 @@
                 [virtualScrollItemSize]="
                   field.config.attributes.virtualScrollItemSize
                 "
-                [scrollHeight]="field.config.attributes.scrollHeight"
+                [scrollHeight]="field.config.attributes.scrollHeight ?? '15rem'"
                 appendTo="body"
                 (completeMethod)="onEvent(field, $event, 'complete')"
                 (onSelect)="onEvent(field, $event, 'select')"
@@ -705,7 +733,7 @@
               <ngx-phone-input
                 [formControlName]="field.formControlName!"
                 [defaultCountry]="field.config.attributes.defaultCountry ?? 'US'"
-                [placeholder]="field.config.attributes.placeholder ?? ''"
+                [placeholder]="placeholderFor(field) ?? ''"
               />
             }
 
@@ -740,7 +768,7 @@
                 [formControlName]="field.formControlName!"
                 [layout]="field.config.attributes.mdLayout ?? 'split'"
                 [rows]="field.config.attributes.rows ?? 8"
-                [placeholder]="field.config.attributes.placeholder ?? 'Write markdown…'"
+                [placeholder]="placeholderFor(field) ?? 'Write markdown…'"
               />
             }
 
@@ -767,7 +795,7 @@
                 [formControlName]="field.formControlName!"
                 [options]="$any(field.config.attributes.nodes ?? [])"
                 [selectionMode]="$any(field.config.attributes.treeSelectionMode ?? 'single')"
-                [placeholder]="field.config.attributes.placeholder ?? 'Select'"
+                [placeholder]="placeholderFor(field) ?? 'Select'"
                 [filter]="field.config.attributes.filter ?? false"
                 [filterBy]="field.config.attributes.filterBy ?? 'label'"
                 [filterPlaceholder]="field.config.attributes.filterPlaceholder ?? 'Search'"
@@ -811,7 +839,7 @@
                 [id]="inputId(field, idSuffix)"
                 [inputId]="inputId(field, idSuffix)"
                 [formControlName]="field.formControlName!"
-                [placeholder]="field.config.attributes.placeholder ?? ''"
+                [placeholder]="placeholderFor(field) ?? ''"
                 [multiple]="true"
                 [typeahead]="false"
                 [suggestions]="[]"
@@ -840,11 +868,18 @@
               />
             }
 
-            <!-- checkbox -->
+            <!-- checkbox
+                 F23 fix: default to `binary="true"` so a single checkbox toggles
+                 a boolean. Without it, PrimeNG treats the control as part of a
+                 multi-value group needing `[value]` + a value-collection on the
+                 FormControl — clicks just push nulls into a non-existent array.
+                 Pass `binary: false` in attributes when you actually want
+                 multi-value group behaviour. -->
             @case ('checkbox') {
               <p-checkbox
                 [inputId]="inputId(field, idSuffix)"
                 [formControlName]="field.formControlName!"
+                [binary]="field.config.attributes.binary ?? !field.config.attributes.value"
                 [name]="field.config.attributes.name ?? field.formControlName!"
                 [value]="field.config.attributes.value"
                 (onChange)="onEvent(field, $event, 'change')"
@@ -871,26 +906,30 @@
               }
             }
 
-            <!-- datePicker / time / month / year -->
+            <!-- datePicker / time / month / year
+                 F20 fix: explicitly pass `view='date'` when not set. PrimeNG v21
+                 keys its internal `currentView` switch on the input value; if we
+                 pass undefined, the day-grid `@switch` doesn't match any case
+                 and the calendar body renders empty (only header + buttonbar). -->
             @case ('datePicker') {
               <p-datepicker
                 [inputId]="inputId(field, idSuffix)"
                 [formControlName]="field.formControlName!"
-                [placeholder]="field.config.attributes.placeholder ?? ''"
+                [placeholder]="placeholderFor(field) ?? ''"
                 [showIcon]="field.config.attributes.showIcon"
+                [iconDisplay]="'input'"
                 [minDate]="minDateFor(field)!"
                 [maxDate]="maxDateFor(field)!"
-                [selectionMode]="$any(field.config.attributes.selectionMode)"
+                [selectionMode]="$any(field.config.attributes.selectionMode ?? 'single')"
                 [readonlyInput]="field.config.attributes.readonlyInput"
                 [showButtonBar]="field.config.attributes.showButtonBar"
                 [showTime]="field.config.attributes.showTime"
                 [hourFormat]="field.config.attributes.hourFormat"
                 [timeOnly]="field.config.attributes.timeOnly"
-                [view]="$any(field.config.attributes.view)"
-                [dateFormat]="field.config.attributes.dateFormat"
+                [view]="$any(field.config.attributes.view ?? 'date')"
+                [dateFormat]="field.config.attributes.dateFormat ?? 'mm/dd/yy'"
                 [numberOfMonths]="field.config.attributes.numberOfMonths ?? 1"
                 [showClear]="field.config.attributes.showClear"
-                appendTo="body"
                 (onSelect)="onEvent(field, $event, 'select')"
                 (onBlur)="onEvent(field, $event, 'blur')"
                 (onFocus)="onEvent(field, $event, 'focus')"
@@ -903,7 +942,7 @@
               <p-datepicker
                 [inputId]="inputId(field, idSuffix)"
                 [formControlName]="field.formControlName!"
-                [placeholder]="field.config.attributes.placeholder ?? ''"
+                [placeholder]="placeholderFor(field) ?? ''"
                 [showIcon]="true"
                 [iconDisplay]="'input'"
                 [timeOnly]="true"
@@ -918,8 +957,9 @@
               <p-datepicker
                 [inputId]="inputId(field, idSuffix)"
                 [formControlName]="field.formControlName!"
-                [placeholder]="field.config.attributes.placeholder ?? ''"
+                [placeholder]="placeholderFor(field) ?? ''"
                 [showIcon]="true"
+                [iconDisplay]="'input'"
                 [view]="'month'"
                 [dateFormat]="field.config.attributes.dateFormat ?? 'mm/yy'"
                 [readonlyInput]="true"
@@ -932,8 +972,9 @@
               <p-datepicker
                 [inputId]="inputId(field, idSuffix)"
                 [formControlName]="field.formControlName!"
-                [placeholder]="field.config.attributes.placeholder ?? ''"
+                [placeholder]="placeholderFor(field) ?? ''"
                 [showIcon]="true"
+                [iconDisplay]="'input'"
                 [view]="'year'"
                 [dateFormat]="field.config.attributes.dateFormat ?? 'yy'"
                 [readonlyInput]="true"
