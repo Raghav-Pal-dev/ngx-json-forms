@@ -1,6 +1,12 @@
 import { Route } from '@angular/router';
 
 export const appRoutes: Route[] = [
+  // ── Public showcase ──
+  { path: '', loadComponent: () => import('./pages/landing').then((m) => m.LandingComponent) },
+  { path: 'fields', loadComponent: () => import('./pages/gallery').then((m) => m.GalleryComponent) },
+  { path: 'fields/:id', loadComponent: () => import('./pages/field-page').then((m) => m.FieldPageComponent) },
+
+  // ── Internal QA harness (not linked from the main nav) ──
   {
     path: 'tester',
     loadComponent: () =>
@@ -30,4 +36,6 @@ export const appRoutes: Route[] = [
       { path: 'code',            loadComponent: () => import('./tester/code').then((m) => m.CodeComponent) },
     ],
   },
+
+  { path: '**', redirectTo: '' },
 ];

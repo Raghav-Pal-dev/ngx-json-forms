@@ -1,417 +1,129 @@
-import {
-  ChangeDetectionStrategy, Component, computed,
-  inject, signal, OnInit
-} from '@angular/core';
-import { JsonPipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
-import { filter } from 'rxjs/operators';
-import { NgxJsonFormComponent } from '@ngx-json-forms/primeng';
-import {
-  FieldRegistry,
-  FormEngineEvent,
-  FormEngineService,
-  FormField,
-} from '@ngx-json-forms/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 
-const DEFAULT_FIELDS: FormField[] = [
-  {
-    formControlName: 'firstName',
-    label: 'First Name',
-    placeholder: 'e.g. John',
-    config: {
-      attributes: {
-        inputType: 'text', type: 'text', visible: true,
-        fieldIcon: 'pi pi-user', fieldPos: 'left',
-        acceptedEvents: ['change', 'blur'],
-      },
-    },
-    validations: {
-      rules: { required: true, minLength: 2 },
-      messages: { required: 'First name is required', minLength: 'At least 2 characters' },
-    },
-    layout: { columnSpan: 6, order: 1 },
-  },
-  {
-    formControlName: 'lastName',
-    label: 'Last Name',
-    placeholder: 'e.g. Doe',
-    config: {
-      attributes: {
-        inputType: 'text', type: 'text', visible: true,
-        fieldIcon: 'pi pi-user', fieldPos: 'left',
-        acceptedEvents: ['change', 'blur'],
-      },
-    },
-    validations: {
-      rules: { required: true },
-      messages: { required: 'Last name is required' },
-    },
-    layout: { columnSpan: 6, order: 2 },
-  },
-  {
-    formControlName: 'email',
-    label: 'Email Address',
-    placeholder: 'john@example.com',
-    config: {
-      attributes: {
-        inputType: 'text', type: 'email', visible: true,
-        fieldIcon: 'pi pi-envelope', fieldPos: 'left',
-        acceptedEvents: ['change', 'blur'],
-      },
-    },
-    validations: {
-      rules: { required: true, email: true },
-      messages: { required: 'Email is required', email: 'Enter a valid email address' },
-    },
-    layout: { columnSpan: 6, order: 3 },
-  },
-  {
-    formControlName: 'country',
-    label: 'Country',
-    placeholder: 'Select your country',
-    config: {
-      attributes: {
-        inputType: 'select', visible: true,
-        options: [
-          { label: '🇮🇳  India', value: 'IN' },
-          { label: '🇺🇸  United States', value: 'US' },
-          { label: '🇬🇧  United Kingdom', value: 'UK' },
-          { label: '🇨🇦  Canada', value: 'CA' },
-          { label: '🇦🇺  Australia', value: 'AU' },
-          { label: '🇩🇪  Germany', value: 'DE' },
-          { label: '🇫🇷  France', value: 'FR' },
-          { label: '🇯🇵  Japan', value: 'JP' },
-        ],
-        optionLabel: 'label', optionValue: 'value',
-        filter: true, filterPlaceholder: 'Search country…',
-        showClear: true, acceptedEvents: ['change'],
-        fieldIcon: 'pi pi-globe', fieldPos: 'left',
-      },
-    },
-    validations: {
-      rules: { required: true },
-      messages: { required: 'Please select your country' },
-    },
-    layout: { columnSpan: 6, order: 4 },
-  },
-  {
-    formControlName: 'role',
-    label: 'Role',
-    placeholder: 'Select your role',
-    config: {
-      attributes: {
-        inputType: 'select', visible: true,
-        options: [
-          { label: 'Frontend Developer', value: 'frontend' },
-          { label: 'Backend Developer', value: 'backend' },
-          { label: 'Full Stack Developer', value: 'fullstack' },
-          { label: 'UI/UX Designer', value: 'designer' },
-          { label: 'Product Manager', value: 'pm' },
-          { label: 'DevOps Engineer', value: 'devops' },
-        ],
-        optionLabel: 'label', optionValue: 'value',
-        showClear: true, acceptedEvents: ['change'],
-        fieldIcon: 'pi pi-briefcase', fieldPos: 'left',
-      },
-    },
-    validations: {
-      rules: { required: true },
-      messages: { required: 'Please select your role' },
-    },
-    layout: { columnSpan: 6, order: 5 },
-  },
-  {
-    formControlName: 'skills',
-    label: 'Skills',
-    config: {
-      attributes: {
-        inputType: 'multiSelect', visible: true,
-        options: [
-          { label: 'Angular', value: 'angular' },
-          { label: 'React', value: 'react' },
-          { label: 'Vue.js', value: 'vue' },
-          { label: 'TypeScript', value: 'ts' },
-          { label: 'Node.js', value: 'node' },
-          { label: 'Python', value: 'python' },
-          { label: 'Docker', value: 'docker' },
-          { label: 'GraphQL', value: 'graphql' },
-        ],
-        optionLabel: 'label', optionValue: 'value',
-        placeholder: 'Pick your skills',
-        filter: true, showClear: true, display: 'chip',
-        acceptedEvents: ['change'],
-        fieldIcon: 'pi pi-star', fieldPos: 'left',
-      },
-    },
-    validations: {
-      rules: { required: true },
-      messages: { required: 'Please select at least one skill' },
-    },
-    layout: { columnSpan: 6, order: 6 },
-  },
-  {
-    formControlName: 'experience',
-    label: 'Years of Experience',
-    placeholder: 'Select range',
-    config: {
-      attributes: {
-        inputType: 'select', visible: true,
-        options: [
-          { label: '0–1 years', value: '0-1' },
-          { label: '1–3 years', value: '1-3' },
-          { label: '3–5 years', value: '3-5' },
-          { label: '5–10 years', value: '5-10' },
-          { label: '10+ years', value: '10+' },
-        ],
-        optionLabel: 'label', optionValue: 'value',
-        acceptedEvents: ['change'],
-        fieldIcon: 'pi pi-calendar', fieldPos: 'left',
-      },
-    },
-    layout: { columnSpan: 6, order: 7 },
-  },
-  {
-    formControlName: 'bio',
-    label: 'Short Bio',
-    config: {
-      attributes: {
-        inputType: 'textarea', visible: true,
-        placeholder: 'Tell us a little about yourself and your work…',
-        rows: 4, autoResize: true,
-        fieldIcon: 'pi pi-pencil', fieldPos: 'left',
-        acceptedEvents: ['change', 'blur'],
-      },
-    },
-    layout: { columnSpan: 12, order: 8 },
-  },
-  {
-    formControlName: 'divider1',
-    config: {
-      attributes: {
-        inputType: 'divider', visible: true,
-        dividerLayout: 'horizontal', dividerType: 'solid',
-        dividerAlign: 'center',
-        value: '<span class="divider-label">Preferences</span>',
-      },
-    },
-    layout: { columnSpan: 12, order: 9 },
-  },
-  {
-    formControlName: 'newsletter',
-    label: 'Subscribe to newsletter',
-    config: {
-      attributes: {
-        inputType: 'toggle', visible: true, value: true,
-        acceptedEvents: ['change'],
-        info: 'Get weekly updates on Angular, PrimeNG, and open-source.',
-        cardLayout: true,
-        cardIcon: 'pi pi-bell',
-        cardIconBg: '#dcfce7',
-        cardIconColor: '#16a34a',
-      },
-    },
-    layout: { columnSpan: 6, order: 10 },
-  },
-  {
-    formControlName: 'openSource',
-    label: 'Open to open-source contributions',
-    config: {
-      attributes: {
-        inputType: 'toggle', visible: true, value: false,
-        acceptedEvents: ['change'],
-        info: 'Show your interest in contributing to open-source projects.',
-        cardLayout: true,
-        cardIcon: 'pi pi-star',
-        cardIconBg: '#ede9fe',
-        cardIconColor: '#7c3aed',
-      },
-    },
-    layout: { columnSpan: 6, order: 11 },
-  },
-  {
-    formControlName: 'fullName',
-    label: 'Full Name (computed)',
-    placeholder: 'Auto-filled from first + last name',
-    transient: true,
-    computed: { deps: ['firstName', 'lastName'], fn: 'fullName' },
-    config: {
-      attributes: {
-        inputType: 'text', type: 'text', visible: true,
-        readonly: true,
-        info: 'Recomputes whenever firstName or lastName changes.',
-        fieldIcon: 'pi pi-id-card', fieldPos: 'left',
-      },
-    },
-    layout: { columnSpan: 12, order: 11.5 },
-  },
-  {
-    formControlName: 'contacts',
-    label: 'Emergency Contacts',
-    config: {
-      attributes: {
-        inputType: 'repeater',
-        minRows: 1,
-        addLabel: 'Add contact',
-        info: 'Add one or more contacts. Each row is its own FormGroup.',
-        itemFields: [
-          {
-            formControlName: 'name',
-            label: 'Name',
-            placeholder: 'e.g. Jane',
-            config: {
-              attributes: {
-                inputType: 'text', type: 'text',
-                fieldIcon: 'pi pi-user', fieldPos: 'left',
-              },
-            },
-            validations: { rules: { required: true } },
-            layout: { columnSpan: 6 },
-          },
-          {
-            formControlName: 'email',
-            label: 'Email',
-            placeholder: 'jane@example.com',
-            config: {
-              attributes: {
-                inputType: 'text', type: 'email',
-                fieldIcon: 'pi pi-envelope', fieldPos: 'left',
-              },
-            },
-            validations: { rules: { required: true, email: true } },
-            layout: { columnSpan: 6 },
-          },
-        ],
-        value: [{ name: '', email: '' }],
-      },
-    },
-    layout: { columnSpan: 12, order: 11.7 },
-  },
-  {
-    formControlName: 'submitBtn',
-    btnLabel: 'Create Profile',
-    config: {
-      attributes: {
-        inputType: 'button', visible: true,
-        buttonRole: 'submit',
-        icon: 'pi pi-arrow-right', iconPosition: 'right',
-        acceptedEvents: ['click'],
-      },
-    },
-    layout: { columnSpan: 4, order: 12, wrapperClass: 'submit-btn-wrapper' },
-  },
-];
-
+/**
+ * App shell: one sticky top nav + routed content (landing, field gallery,
+ * per-field showcase pages). The nav is the only persistent chrome.
+ */
 @Component({
   selector: 'app-root',
-  templateUrl: './app.html',
-  styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgxJsonFormComponent, JsonPipe, FormsModule, RouterOutlet],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  template: `
+    <header class="nav">
+      <a class="brand" routerLink="/">
+        <span class="brand-mark"><i class="pi pi-bolt"></i></span>
+        <span class="brand-text">ngx-json-forms</span>
+        <span class="brand-badge">v1.20</span>
+      </a>
+
+      <nav class="nav-links">
+        <a routerLink="/fields" routerLinkActive="active">Fields</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a
+          class="ghost"
+          href="https://www.npmjs.com/package/@ngx-json-forms/primeng"
+          target="_blank"
+          rel="noopener"
+          title="View on npm"
+        >
+          <i class="pi pi-box"></i><span class="hide-sm">npm</span>
+        </a>
+        <a
+          class="ghost"
+          href="https://github.com/Raghav-Pal-dev/ngx-json-forms"
+          target="_blank"
+          rel="noopener"
+          title="Star on GitHub"
+        >
+          <i class="pi pi-github"></i><span class="hide-sm">GitHub</span>
+        </a>
+        <a
+          class="cta"
+          href="https://stackblitz.com/github/Raghav-Pal-dev/ngx-json-forms/tree/main/stackblitz"
+          target="_blank"
+          rel="noopener"
+        >
+          <i class="pi pi-external-link"></i><span class="hide-sm"> Open in StackBlitz</span>
+        </a>
+      </div>
+    </header>
+
+    <main class="content"><router-outlet /></main>
+
+    <footer class="site-footer">
+      <span>MIT © {{ year }} ngx-json-forms</span>
+      <span class="dot">•</span>
+      <a href="https://www.npmjs.com/package/@ngx-json-forms/core" target="_blank" rel="noopener">@ngx-json-forms/core</a>
+      <span class="dot">•</span>
+      <a href="https://www.npmjs.com/package/@ngx-json-forms/primeng" target="_blank" rel="noopener">@ngx-json-forms/primeng</a>
+    </footer>
+  `,
+  styles: [
+    `
+      :host { min-height: 100vh; display: flex; flex-direction: column; }
+
+      .nav {
+        position: sticky; top: 0; z-index: 50;
+        display: flex; align-items: center; gap: 1.25rem;
+        height: 64px; padding: 0 clamp(1rem, 4vw, 2.5rem);
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: saturate(180%) blur(12px);
+        border-bottom: 1px solid var(--gray-200, #e5e7eb);
+      }
+      .brand { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: var(--gray-900, #111827); font-weight: 800; font-size: 1.05rem; }
+      .brand-mark {
+        display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px;
+        background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-size: 0.95rem;
+        box-shadow: 0 4px 10px -2px rgba(16, 185, 129, 0.5);
+      }
+      .brand-badge {
+        font-size: 0.7rem; font-weight: 700; color: #059669;
+        background: #ecfdf5; border: 1px solid #a7f3d0; padding: 0.1rem 0.4rem; border-radius: 999px;
+      }
+      .nav-links { display: flex; gap: 0.35rem; margin-left: 0.5rem; }
+      .nav-links a {
+        padding: 0.45rem 0.85rem; border-radius: 8px; text-decoration: none;
+        color: var(--gray-600, #4b5563); font-weight: 600; font-size: 0.92rem;
+      }
+      .nav-links a:hover { background: var(--gray-100, #f3f4f6); color: var(--gray-900, #111827); }
+      .nav-links a.active { background: #ecfdf5; color: #059669; }
+
+      .nav-actions { display: flex; align-items: center; gap: 0.5rem; margin-left: auto; }
+      .nav-actions .ghost {
+        display: inline-flex; align-items: center; gap: 0.4rem;
+        padding: 0.45rem 0.7rem; border-radius: 8px; text-decoration: none;
+        color: var(--gray-600, #4b5563); font-weight: 600; font-size: 0.88rem;
+      }
+      .nav-actions .ghost:hover { background: var(--gray-100, #f3f4f6); color: var(--gray-900, #111827); }
+      .nav-actions .cta {
+        display: inline-flex; align-items: center; gap: 0.45rem;
+        padding: 0.5rem 0.9rem; border-radius: 8px; text-decoration: none;
+        background: #111827; color: #fff; font-weight: 700; font-size: 0.88rem;
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+      }
+      .nav-actions .cta:hover { transform: translateY(-1px); box-shadow: 0 8px 18px -6px rgba(17, 24, 39, 0.5); }
+
+      .content { flex: 1 1 auto; }
+
+      .site-footer {
+        display: flex; align-items: center; justify-content: center; gap: 0.6rem; flex-wrap: wrap;
+        padding: 2rem 1rem; color: var(--gray-500, #6b7280); font-size: 0.85rem;
+        border-top: 1px solid var(--gray-200, #e5e7eb); background: var(--gray-50, #f9fafb);
+      }
+      .site-footer a { color: var(--gray-600, #4b5563); text-decoration: none; font-weight: 600; }
+      .site-footer a:hover { color: #059669; }
+      .site-footer .dot { opacity: 0.5; }
+
+      @media (max-width: 680px) {
+        .hide-sm { display: none; }
+        .nav-links { display: none; }
+      }
+    `,
+  ],
 })
-export class App implements OnInit {
-  protected readonly formService = inject(FormEngineService);
-  private readonly fieldRegistry = inject(FieldRegistry);
-  private readonly router = inject(Router);
-
-  /**
-   * True when on /tester* — landing page hidden, router-outlet visible.
-   * A signal (not a method) so the OnPush template re-renders on every
-   * NavigationEnd, not only when other inputs change.
-   */
-  protected readonly isTesterRoute = signal<boolean>(this.router.url.startsWith('/tester'));
-
-  // ─── Form state ──────────────────────────────────────────────────────────
-  protected readonly activeFields = signal<FormField[]>([...DEFAULT_FIELDS]);
-  protected readonly lastEvent = signal<FormEngineEvent | null>(null);
-  protected readonly submitted = signal(false);
-
-  // Live signals from the service (always up-to-date, no event needed)
-  protected readonly liveValid = computed(() => this.formService.formValid());
-  protected readonly liveValues = computed(() => this.formService.formValue());
-  protected readonly hasInteracted = signal(false);
-
-  // ─── Tabs ────────────────────────────────────────────────────────────────
-  protected readonly activeTab = signal<'form' | 'schema'>('form');
-
-  // ─── JSON Editor ─────────────────────────────────────────────────────────
-  protected readonly editorJson = signal(JSON.stringify(DEFAULT_FIELDS, null, 2));
-  protected readonly editorError = signal<string | null>(null);
-  protected readonly editorDirty = signal(false);
-
-  constructor() {
-    this.router.events
-      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
-      .subscribe((e) => this.isTesterRoute.set(e.urlAfterRedirects.startsWith('/tester')));
-  }
-
-  ngOnInit(): void {
-    this.fieldRegistry.registerComputation('fullName', (deps) => {
-      const f = (deps['firstName'] as string | undefined)?.trim() ?? '';
-      const l = (deps['lastName']  as string | undefined)?.trim() ?? '';
-      return [f, l].filter(Boolean).join(' ');
-    });
-  }
-
-  protected readonly schemaJson = JSON.stringify(DEFAULT_FIELDS.slice(0, 2), null, 2);
-
-  // ─── Form events ─────────────────────────────────────────────────────────
-  protected onSubmit(event: FormEngineEvent): void {
-    this.hasInteracted.set(true);
-    if (event.valid) this.submitted.set(true);
-    this.lastEvent.set(event);
-  }
-
-  protected onChange(event: FormEngineEvent): void {
-    this.hasInteracted.set(true);
-    this.lastEvent.set(event);
-  }
-
-  protected reset(): void {
-    this.submitted.set(false);
-    this.hasInteracted.set(false);
-    this.lastEvent.set(null);
-    this.formService.reset();
-  }
-
-  // ─── JSON Editor ─────────────────────────────────────────────────────────
-  protected onEditorInput(value: string): void {
-    this.editorJson.set(value);
-    this.editorDirty.set(true);
-    this.editorError.set(null);
-
-    try {
-      const parsed = JSON.parse(value) as FormField[];
-      if (!Array.isArray(parsed)) throw new Error('Root must be a JSON array');
-      this.activeFields.set(parsed);
-      this.editorError.set(null);
-      this.hasInteracted.set(false);
-      this.lastEvent.set(null);
-    } catch (e: unknown) {
-      this.editorError.set(e instanceof Error ? e.message : 'Invalid JSON');
-    }
-  }
-
-  /**
-   * Scroll the in-page demo section into view. The app builds with
-   * `<base href="/ngx-json-forms/">` for GitHub Pages, so an unmanaged
-   * `href="#demo"` anchor would resolve to a full-URL nav. Stopping the
-   * default and calling scrollIntoView keeps the user on the same page.
-   */
-  protected scrollToDemo(event: Event): void {
-    event.preventDefault();
-    document
-      .getElementById('demo')
-      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  protected resetEditor(): void {
-    const json = JSON.stringify(DEFAULT_FIELDS, null, 2);
-    this.editorJson.set(json);
-    this.editorError.set(null);
-    this.editorDirty.set(false);
-    this.activeFields.set([...DEFAULT_FIELDS]);
-    this.hasInteracted.set(false);
-    this.lastEvent.set(null);
-  }
+export class App {
+  protected readonly year = new Date().getFullYear();
 }

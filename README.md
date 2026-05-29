@@ -1,6 +1,33 @@
+<div align="center">
+
 # ngx-json-forms
 
-A data-driven, declarative Angular form engine. Define your entire form as a JSON config — the library handles rendering, validation, layout, conditional logic, repeaters, wizards, and events. Works with multiple UI libraries via adapters.
+### Build any Angular form from a JSON config — rendering, validation, layout, conditional logic, computed values, repeaters and wizards, with zero template code.
+
+[![core](https://img.shields.io/npm/v/@ngx-json-forms/core?color=10b981&label=core)](https://www.npmjs.com/package/@ngx-json-forms/core)
+[![primeng](https://img.shields.io/npm/v/@ngx-json-forms/primeng?color=10b981&label=primeng)](https://www.npmjs.com/package/@ngx-json-forms/primeng)
+[![license](https://img.shields.io/npm/l/@ngx-json-forms/core?color=64748b)](LICENSE)
+[![Angular](https://img.shields.io/badge/Angular-%E2%89%A519-dd0031?logo=angular&logoColor=white)](https://angular.dev)
+
+**[🖥 Live demo](https://raghav-pal-dev.github.io/ngx-json-forms/)** &nbsp;·&nbsp;
+**[⚡ Try on StackBlitz](https://stackblitz.com/github/Raghav-Pal-dev/ngx-json-forms/tree/main/stackblitz?file=src/app/catalog.ts)**
+
+</div>
+
+---
+
+A data-driven, declarative Angular form engine. Define your entire form as a JSON
+config — the library handles rendering, validation, layout, conditional logic,
+repeaters, wizards and events. UI-agnostic core + swappable renderer adapters.
+
+**Why?** Forms become *data* you can store, version and fetch from a backend — no more
+hand-wiring `FormGroup`s, validators, `valueChanges` subscriptions or `*ngIf` chains.
+40+ field types, all themed and validated, render from one array.
+
+👉 **Browse every field with a live preview + copy-paste config at the
+[live demo](https://raghav-pal-dev.github.io/ngx-json-forms/)**, or fork the
+[StackBlitz playground](https://stackblitz.com/github/Raghav-Pal-dev/ngx-json-forms/tree/main/stackblitz?file=src/app/catalog.ts)
+to edit and run in your browser.
 
 ## Packages
 

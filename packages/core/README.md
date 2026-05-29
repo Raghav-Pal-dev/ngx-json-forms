@@ -1,18 +1,52 @@
+<div align="center">
+
 # @ngx-json-forms/core
 
-The brain of `ngx-json-forms`: a JSON-driven Angular form engine. Hand it an
-array of `FormField` definitions and it builds a fully reactive
-`FormGroup` for you — with validation, conditional visibility, computed
-fields, wizard state, FormArray helpers, and persistence — all without
-any UI dependencies.
+### Build any Angular form from a JSON config — validation, conditional logic, computed values, wizards and repeaters, with zero template code.
 
-Pair it with a renderer adapter (e.g.
-[`@ngx-json-forms/primeng`](https://www.npmjs.com/package/@ngx-json-forms/primeng))
-to actually render the form, or write your own adapter.
+[![npm version](https://img.shields.io/npm/v/@ngx-json-forms/core?color=10b981&label=npm)](https://www.npmjs.com/package/@ngx-json-forms/core)
+[![downloads](https://img.shields.io/npm/dm/@ngx-json-forms/core?color=2563eb)](https://www.npmjs.com/package/@ngx-json-forms/core)
+[![license](https://img.shields.io/npm/l/@ngx-json-forms/core?color=64748b)](https://github.com/Raghav-Pal-dev/ngx-json-forms/blob/main/LICENSE)
+[![Angular](https://img.shields.io/badge/Angular-%E2%89%A519-dd0031?logo=angular&logoColor=white)](https://angular.dev)
 
-**Live demo:** https://raghav-pal-dev.github.io/ngx-json-forms/  
-**Try it live (StackBlitz):** [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz_small.svg)](https://stackblitz.com/github/Raghav-Pal-dev/ngx-json-forms/tree/main/stackblitz?file=src/app/tests/simple.ts) — fork a ready-made Angular 21 starter with all 6 form scenarios, edit any field def, see the form re-render instantly.  
-**Source:** https://github.com/Raghav-Pal-dev/ngx-json-forms
+**[🖥 Live demo](https://raghav-pal-dev.github.io/ngx-json-forms/)** &nbsp;·&nbsp;
+**[⚡ Try on StackBlitz](https://stackblitz.com/github/Raghav-Pal-dev/ngx-json-forms/tree/main/stackblitz?file=src/app/catalog.ts)** &nbsp;·&nbsp;
+**[📦 Source](https://github.com/Raghav-Pal-dev/ngx-json-forms)**
+
+</div>
+
+---
+
+`@ngx-json-forms/core` is the **UI-agnostic brain** of `ngx-json-forms`. Hand it an
+array of `FormField` definitions and it builds a fully reactive Angular `FormGroup`
+for you — with validation, conditional visibility, computed fields, wizard state,
+`FormArray` repeaters and persistence — **without any UI dependencies**.
+
+Pair it with a renderer adapter such as
+[`@ngx-json-forms/primeng`](https://www.npmjs.com/package/@ngx-json-forms/primeng)
+to render the form, or write your own.
+
+## Why use it?
+
+- **Forms become data.** A `FormField[]` is JSON — store it, version it, A/B-test it,
+  or fetch it from your backend and render a different form per tenant. No redeploy to
+  change a form.
+- **Stop hand-wiring `FormGroup`s.** No more `new FormGroup({...})`, manual validators,
+  `valueChanges` subscriptions, or `*ngIf` spaghetti for conditional fields.
+- **Batteries included.** Cross-field validators, async validators, computed/derived
+  fields, multi-step wizards, repeaters and auto-save are first-class — not things you
+  re-invent on every project.
+- **Bring your own UI.** The engine emits a plain reactive `FormGroup`; the renderer is
+  swappable. Use the PrimeNG adapter or build one for your design system.
+- **Standards-friendly.** Already have a **JSON Schema**? Convert it to fields with one
+  call (`formFieldsFromJsonSchema`).
+
+## Try it before you install
+
+| | |
+|---|---|
+| 🖥 **Live demo** | [raghav-pal-dev.github.io/ngx-json-forms](https://raghav-pal-dev.github.io/ngx-json-forms/) — browse every field with a live preview + copy-paste config |
+| ⚡ **StackBlitz** | [fork the playground](https://stackblitz.com/github/Raghav-Pal-dev/ngx-json-forms/tree/main/stackblitz?file=src/app/catalog.ts) — edit `catalog.ts`, watch the form re-render instantly. No install. |
 
 ## Install
 
@@ -20,27 +54,7 @@ to actually render the form, or write your own adapter.
 npm i @ngx-json-forms/core
 ```
 
-Peer dependencies: `@angular/core`, `@angular/forms`, `rxjs` (all ≥19).
-
-## One-call wiring (1.1.0+)
-
-```ts
-import { ApplicationConfig } from '@angular/core';
-import { provideNgxJsonForms } from '@ngx-json-forms/core';
-
-export const appConfig: ApplicationConfig = {
-  providers: [
-    provideNgxJsonForms({
-      // both options optional
-      // storage:   myStorageAdapter,
-      // translate: (key, params) => i18n.translate(key, params),
-    }),
-  ],
-};
-```
-
-Granular alternatives also exist: `provideFormEngineStorage(adapter)`,
-`provideFormEngineTranslator(fn)`.
+Peer dependencies: `@angular/core`, `@angular/forms`, `rxjs` (all ≥ 19).
 
 ## Quick start
 
@@ -63,7 +77,7 @@ import { FormEngineService, FormField, presets } from '@ngx-json-forms/core';
 export class ProfileForm {
   private readonly engine = inject(FormEngineService);
 
-  // Use presets for the common cases, hand-roll the rest:
+  // Presets for the common cases, hand-roll the rest:
   fields: FormField[] = [
     presets.text({  formControlName: 'firstName', label: 'First name', required: true, minLength: 2 }),
     presets.email({ formControlName: 'email',     label: 'Email' }),
@@ -73,37 +87,66 @@ export class ProfileForm {
 }
 ```
 
+> 💡 Want the form **rendered for you** (inputs, validation messages, layout)? Add
+> [`@ngx-json-forms/primeng`](https://www.npmjs.com/package/@ngx-json-forms/primeng)
+> and drop in `<ngx-json-form [fieldsInput]="fields" />`.
+
+## One-call wiring (optional)
+
+```ts
+import { provideNgxJsonForms } from '@ngx-json-forms/core';
+
+export const appConfig = {
+  providers: [
+    provideNgxJsonForms({
+      // storage:   myStorageAdapter,                              // for persistKey auto-save
+      // translate: (key, params) => i18n.translate(key, params), // localise error text
+    }),
+  ],
+};
+```
+
+Granular alternatives: `provideFormEngineStorage(adapter)`, `provideFormEngineTranslator(fn)`.
+
 ## What's in the box
 
-- **`FormEngineService`** — `buildFormGroup`, signal-based `formValue` /
-  `formValid` / `patchTick`, wizard helpers (`nextStep`, `prevStep`,
-  `goToStep`, `validateStep`), FormArray helpers (`addArrayItem`,
-  `removeArrayItem`, `moveArrayItem`), cross-field validators,
-  computed-field reactive recomputation, `buildSubmitPayload()` that
-  strips fields marked `transient`.
-- **`FieldRegistry`** — register custom renderer components, async option
-  loaders, and computed-field functions referenced by string token from
-  your JSON.
+- **`FormEngineService`** — `buildFormGroup`, signal-based `formValue` / `formValid` /
+  `patchTick`, wizard helpers (`nextStep`, `prevStep`, `goToStep`, `validateStep`),
+  `FormArray` helpers (`addArrayItem`, `removeArrayItem`, `moveArrayItem`), cross-field
+  validators, computed-field recomputation, and `buildSubmitPayload()` that strips
+  `transient` fields.
+- **`FieldRegistry`** — register custom renderer components, async option loaders, and
+  computed-field functions referenced by string token from JSON.
 - **`AsyncValidatorRegistry`** — sync + async validator tokens for
   `validations.rules.custom` / `validations.asyncValidators`.
-- **`FormPersistenceService`** — `bind(form, key)` /`save` / `load` /
-  `clear` against an injectable `StorageAdapter` (defaults to
-  `localStorage`).
-- **`ImageUploadService`** — base64 file upload with append/replace
-  semantics and preview tracking.
-- **Conditional visibility / disable** via `showWhen` / `disableWhen`
-  with operators `eq | neq | gt | gte | lt | lte | in | notIn | truthy | falsy | contains | matches`.
-- **`transient`** flag — keep a field in the live `FormGroup` but exclude
-  it from the submit payload.
-- **`computed`** field config — derive a control's value from other
-  controls via a function token.
+- **`FormPersistenceService`** — `bind(form, key)` / `save` / `load` / `clear` against an
+  injectable `StorageAdapter` (defaults to `localStorage`).
+- **Conditional visibility / disable** via `showWhen` / `disableWhen` with operators
+  `eq | neq | gt | gte | lt | lte | in | notIn | truthy | falsy | contains | matches`.
+- **`transient`** — keep a field in the live `FormGroup` but exclude it from the payload.
+- **`computed`** — derive a control's value from other controls, live.
 
-## From a standard JSON Schema (1.4.0+)
+## Computed fields (inline function)
 
-If you already have a JSON Schema document (an OpenAPI request body,
-an Ajv validator, a backend contract, etc.), drop it into
-`formFieldsFromJsonSchema` and the engine maps it to `FormField[]`
-automatically:
+```ts
+{
+  formControlName: 'fullName',
+  transient: true,                 // not in the submit payload
+  computed: {
+    deps: ['firstName', 'lastName'],
+    fn: (deps) => `${deps['firstName'] ?? ''} ${deps['lastName'] ?? ''}`.trim(),
+  },
+  config: { attributes: { inputType: 'text', readonly: true } },
+}
+```
+
+`computed.fn` also accepts a registry token (string) so a computation can be shared
+across forms.
+
+## From a standard JSON Schema
+
+Already have a JSON Schema (an OpenAPI request body, an Ajv validator, a backend
+contract)? Map it to `FormField[]` automatically:
 
 ```ts
 import { formFieldsFromJsonSchema, JsonSchema } from '@ngx-json-forms/core';
@@ -114,110 +157,41 @@ const userSchema: JsonSchema = {
   properties: {
     firstName: { type: 'string', title: 'First name', minLength: 2 },
     email:     { type: 'string', format: 'email', title: 'Email' },
-    age:       { type: 'integer', title: 'Age', minimum: 13, maximum: 120 },
-    role:      { type: 'string', title: 'Role', enum: ['admin','editor','viewer'] },
-    address: {
-      type: 'object',
-      title: 'Address',
-      properties: {
-        street: { type: 'string', title: 'Street' },
-        city:   { type: 'string', title: 'City' },
-      },
-    },
-    phones: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          kind:   { type: 'string', enum: ['home','work','mobile'] },
-          number: { type: 'string', pattern: '^[0-9]{7,}$' },
-        },
-      },
-    },
+    role:      { type: 'string', title: 'Role', enum: ['admin', 'editor', 'viewer'] },
   },
 };
 
-@Component({
-  template: `<ngx-json-form [fieldsInput]="fields" />`,
-})
-export class SignupForm {
-  fields = formFieldsFromJsonSchema(userSchema, {
-    layoutOverrides: { email: { columnSpan: 8, order: 3 } },
-  });
-}
+fields = formFieldsFromJsonSchema(userSchema);
 ```
 
-Supported JSON Schema features:
+| JSON Schema                                       | Maps to                       |
+|---------------------------------------------------|-------------------------------|
+| `string` / `format: email` / `password`           | text / email / password       |
+| `format: date` / `date-time` / `time`             | `datePicker` / `time`         |
+| `string, enum`                                    | `select`                      |
+| `number` / `integer`                              | numeric text                  |
+| `boolean`                                         | `toggle`                      |
+| `array` of `object` / of enum strings             | `repeater` / `multiSelect`    |
+| `object`                                          | `group` (nested FormGroup)    |
+| `required`, `minLength`, `pattern`, `minimum`, …  | `validations.rules`           |
 
-| JSON Schema                                  | Maps to                          |
-|----------------------------------------------|----------------------------------|
-| `type: 'string'`                             | `text` input                     |
-| `type: 'string', format: 'email'`            | text + `type=email` + email validator |
-| `type: 'string', format: 'password'`         | `password` with toggle-mask      |
-| `type: 'string', format: 'date'` / `date-time` / `time` | `datePicker` / `time`  |
-| `type: 'string', format: 'uri'` / `'tel'`    | text + `type=url` / `tel`        |
-| `type: 'string', enum: [...]`                | `select` with options            |
-| `type: 'number'` / `'integer'`               | text + `type=number`             |
-| `type: 'boolean'`                            | `toggle`                         |
-| `type: 'array'` of `'object'`                | `repeater`                       |
-| `type: 'array'` of enum strings              | `multiSelect`                    |
-| `type: 'object'`                             | `group` (nested FormGroup)       |
-| `required`, `minLength`, `maxLength`, `minimum`, `maximum`, `pattern` | `validations.rules` |
-| `title`, `description`, `default`, `readOnly`, `examples[0]` | `label`, `info`, `value`, `readonly`, `placeholder` |
-| `$ref: '#/$defs/Foo'` / `'#/definitions/Foo'` | resolved in-document             |
+> Not yet: `allOf` / `anyOf` / `oneOf`, external `$ref`s, tuple arrays. Pre-flatten with
+> `json-schema-ref-parser` for those.
 
-Not (yet) supported: `allOf`, `anyOf`, `oneOf`, external `$ref`s, tuple
-arrays, `additionalProperties`, `patternProperties`, `dependencies`.
-For those you'll need to pre-bundle / pre-flatten the schema with a
-tool like `json-schema-ref-parser` first.
-
-## Computed fields — inline functions (1.1.0+)
+## Custom translations & storage
 
 ```ts
-{
-  formControlName: 'fullName',
-  transient: true,             // don't include in the submit payload
-  computed: {
-    deps: ['firstName', 'lastName'],
-    fn: (deps) => `${deps['firstName'] ?? ''} ${deps['lastName'] ?? ''}`.trim(),
-  },
-  config: { attributes: { inputType: 'text', readonly: true } },
-}
+import { FORM_ENGINE_TRANSLATE, FORM_ENGINE_STORAGE } from '@ngx-json-forms/core';
+
+providers: [
+  { provide: FORM_ENGINE_TRANSLATE, useValue: (key, params) => yourI18n.t(key, params) },
+  { provide: FORM_ENGINE_STORAGE,   useClass: MyStorageAdapter },
+]
 ```
 
-`computed.fn` still accepts a registry token (string) for cases where
-you want to share the computation across forms — both forms work.
-
-## Custom translations
-
-Inject your own translator to localise default error messages:
-
-```ts
-import { FORM_ENGINE_TRANSLATE, TranslateFn } from '@ngx-json-forms/core';
-
-const t: TranslateFn = (key, params) => yourI18n.translate(key, params);
-
-providers: [{ provide: FORM_ENGINE_TRANSLATE, useValue: t }]
-```
-
-If you don't provide one, sensible English defaults are used
-(`"{label} is required"`, `"Enter a valid email address"`, etc.).
-
-## Custom storage
-
-```ts
-import { FORM_ENGINE_STORAGE, StorageAdapter } from '@ngx-json-forms/core';
-
-providers: [{ provide: FORM_ENGINE_STORAGE, useClass: MyStorageAdapter }]
-```
-
-## Documentation
-
-Full type definitions ship with the package. See the demo app + OVERVIEW
-in [the repo](https://github.com/Raghav-Pal-dev/ngx-json-forms) for end-to-end
-examples of every supported field type, the wizard / stepper, conditional
-fields, and repeaters.
+Without a translator, sensible English defaults are used
+(`"{label} is required"`, `"Enter a valid email address"`, …).
 
 ## License
 
-MIT
+MIT © [Raghvendrasing Pal](https://github.com/Raghav-Pal-dev)

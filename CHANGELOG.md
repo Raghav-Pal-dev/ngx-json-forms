@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.20.1] — 2026-05-29
+
+Docs-only release (no code changes).
+
+- Rebuilt the package READMEs (the npm landing pages) with a clearer value
+  proposition (why / how to use), an attractive PrimeNG-flavoured layout with
+  badges, a grouped field catalog, and prominent **live demo** + **StackBlitz**
+  links.
+- The live demo + StackBlitz playground now showcase **every** field type with a
+  live preview, copy-paste config, and one-click "Open in StackBlitz".
+
 ## [1.20.0] — 2026-05-29
 
 A polish + bug-fix release from a full real-consumer audit of every field
