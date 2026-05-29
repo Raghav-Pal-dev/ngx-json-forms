@@ -6,6 +6,7 @@
 
 [![core](https://img.shields.io/npm/v/@ngx-json-forms/core?color=10b981&label=core)](https://www.npmjs.com/package/@ngx-json-forms/core)
 [![primeng](https://img.shields.io/npm/v/@ngx-json-forms/primeng?color=10b981&label=primeng)](https://www.npmjs.com/package/@ngx-json-forms/primeng)
+[![downloads](https://img.shields.io/npm/dm/@ngx-json-forms/primeng?color=2563eb&label=downloads%2Fmo)](https://www.npmjs.com/package/@ngx-json-forms/primeng)
 [![license](https://img.shields.io/npm/l/@ngx-json-forms/core?color=64748b)](LICENSE)
 [![Angular](https://img.shields.io/badge/Angular-%E2%89%A519-dd0031?logo=angular&logoColor=white)](https://angular.dev)
 
