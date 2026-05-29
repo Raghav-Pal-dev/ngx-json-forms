@@ -12,15 +12,17 @@ export default [
         'error',
         {
           type: 'attribute',
-          prefix: 'app',
+          prefix: ['app', 'demo', 'playground', 'tester'],
           style: 'camelCase',
         },
       ],
+      // The demo uses `demo-*` for the showcase pages and `playground-*` for
+      // the QA tester scenarios — both are allowed alongside the default `app`.
       '@angular-eslint/component-selector': [
         'error',
         {
           type: 'element',
-          prefix: 'app',
+          prefix: ['app', 'demo', 'playground', 'tester'],
           style: 'kebab-case',
         },
       ],
