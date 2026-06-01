@@ -17,6 +17,20 @@
 
 ---
 
+### Install — one command for everything (PrimeNG renderer)
+
+```bash
+ng add @ngx-json-forms/primeng
+```
+
+That installs **`@ngx-json-forms/core` + `@ngx-json-forms/primeng`** plus
+PrimeNG, the Aura theme, primeicons and animations, and wires
+`provideNgxJsonFormsPrimeng()` into your `app.config.ts`. Angular ≥ 21.2.
+Already using a different UI kit? `npm i @ngx-json-forms/core` and write
+your own adapter (the core is UI-agnostic).
+
+---
+
 `@ngx-json-forms/core` is the **UI-agnostic brain** of `ngx-json-forms`. Hand it an
 array of `FormField` definitions and it builds a fully reactive Angular `FormGroup`
 for you — with validation, conditional visibility, computed fields, wizard state,

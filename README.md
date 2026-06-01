@@ -17,6 +17,18 @@
 
 ---
 
+### Install — one command for everything
+
+```bash
+ng add @ngx-json-forms/primeng
+```
+
+That installs both packages + PrimeNG + the Aura theme + primeicons + animations,
+and wires `provideNgxJsonFormsPrimeng()` into your `app.config.ts`. Angular ≥ 21.2.
+No three-step manual setup, no peer-dep dance.
+
+---
+
 A data-driven, declarative Angular form engine. Define your entire form as a JSON
 config — the library handles rendering, validation, layout, conditional logic,
 repeaters, wizards and events. UI-agnostic core + swappable renderer adapters.
@@ -48,16 +60,9 @@ wires `provideNgxJsonFormsPrimeng()` (theme + animations + form engine)
 into your `app.config.ts`. Requires Angular ≥ 21.2 — older versions will
 ERESOLVE at install time so you know to upgrade.
 
-Manual install if you prefer:
-
-```bash
-npm install @ngx-json-forms/core @ngx-json-forms/primeng \
-            primeng @primeng/themes primeicons \
-            --legacy-peer-deps
-```
+The schematic auto-writes this `app.config.ts` — one line of setup:
 
 ```ts
-// app.config.ts — one line of setup
 import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideNgxJsonFormsPrimeng } from '@ngx-json-forms/primeng';
@@ -70,41 +75,221 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
+## Try it — paste this into `app.ts`
+
+A single FormField[] that exercises every major feature: all 4 validation
+rules (with error messages), the v1.21 `inputType` aliases, conditional
+`showWhen`, the `visible` vs `isHidden` distinction, `acceptedEvents`,
+icons, info hints, and the `layout` grid (`columnSpan` + `order`).
+
 ```ts
+import { Component, signal } from '@angular/core';
+import { JsonPipe } from '@angular/common';
 import { NgxJsonFormComponent } from '@ngx-json-forms/primeng';
 import { FormField, FormEngineEvent } from '@ngx-json-forms/core';
 
 @Component({
-  imports: [NgxJsonFormComponent],
+  selector: 'app-root',
+  imports: [NgxJsonFormComponent, JsonPipe],
   template: `
     <ngx-json-form
-      formTitle="My Form"
+      formTitle="Feature showcase"
       [fieldsInput]="fields"
       (formSubmit)="onSubmit($event)"
       (formChange)="onChange($event)" />
-  `
+
+    @if (submitted(); as v) {
+      <pre>{{ v | json }}</pre>
+    }
+  `,
 })
 export class AppComponent {
+  submitted = signal<unknown>(null);
+
   fields: FormField[] = [
+    /* ── All four validation rules on one field, custom error messages ──
+       required, minLength, maxLength, pattern — all auto-rendered below.
+       `acceptedEvents` lists which DOM events bubble to (formChange).      */
     {
-      formControlName: 'name',
-      label: 'Full Name',
-      placeholder: 'Enter name',
-      config: { attributes: { inputType: 'text', acceptedEvents: ['change', 'blur'] } },
-      validations: { rules: { required: true, minLength: 2 } },
-      layout: { columnSpan: 6, order: 1 },
+      formControlName: 'username',
+      label: 'Username',
+      placeholder: 'lowercase, 3–12 chars, [a-z0-9_]',
+      config: {
+        attributes: {
+          inputType: 'text',
+          fieldIcon: 'pi pi-user',           // left-addon icon
+          acceptedEvents: ['change', 'blur'],
+        },
+      },
+      validations: {
+        rules: {
+          required: true,
+          minLength: 3,
+          maxLength: 12,
+          pattern: '^[a-z0-9_]+$',
+        },
+        messages: {                          // override default error text
+          pattern: 'Only lowercase letters, digits and "_" are allowed.',
+        },
+      },
+      layout: { columnSpan: 6, order: 1 },   // half-row, render position #1
     },
+
+    /* ── v1.21 InputType alias: 'email' renders <input type="email"> ──── */
+    {
+      formControlName: 'email',
+      label: 'Email',
+      placeholder: 'you@example.com',
+      config: { attributes: { inputType: 'email', fieldIcon: 'pi pi-envelope' } },
+      validations: { rules: { required: true, email: true } },
+      layout: { columnSpan: 6, order: 2 },
+    },
+
+    /* ── 'number' alias + min/max range validators ───────────────────── */
+    {
+      formControlName: 'age',
+      label: 'Age',
+      config: { attributes: { inputType: 'number' } },
+      validations: { rules: { required: true, min: 13, max: 120 } },
+      layout: { columnSpan: 4, order: 3 },
+    },
+
+    /* ── Select with options + info hint below the field ────────────── */
+    {
+      formControlName: 'country',
+      label: 'Country',
+      placeholder: 'Choose…',
+      config: {
+        attributes: {
+          inputType: 'select',
+          options: [
+            { label: 'India',          value: 'IN' },
+            { label: 'United States',  value: 'US' },
+            { label: 'United Kingdom', value: 'UK' },
+          ],
+          optionLabel: 'label',
+          optionValue: 'value',
+          info: 'Picking India will reveal a City dropdown below.',
+        },
+      },
+      validations: { rules: { required: true } },
+      layout: { columnSpan: 8, order: 4 },
+    },
+
+    /* ── Conditional: only rendered when country === 'IN' ──────────── */
+    {
+      formControlName: 'city',
+      label: 'City',
+      placeholder: 'Choose…',
+      config: {
+        attributes: {
+          inputType: 'select',
+          options: [
+            { label: 'Mumbai',    value: 'BOM' },
+            { label: 'Delhi',     value: 'DEL' },
+            { label: 'Bangalore', value: 'BLR' },
+          ],
+          optionLabel: 'label',
+          optionValue: 'value',
+        },
+      },
+      showWhen: { conditions: [{ field: 'country', operator: 'eq', value: 'IN' }] },
+      validations: { rules: { required: true } },
+      layout: { columnSpan: 6, order: 5 },
+    },
+
+    /* ── visible vs isHidden — DIFFERENT semantics ──────────────────────
+       `visible: false`  → field is NOT BUILT.  No FormControl, no DOM,
+                           validations never fire. Use for role-based
+                           hiding ("admin-only field").
+
+       `isHidden: true`  → field IS built (FormControl exists, validates,
+                           appears in submit payload) but rendered with
+                           `display: none`. Use for hidden tokens,
+                           computed-only values you still want submitted.
+       Two examples below — submit the form to see which appears in the
+       payload (csrfToken yes; adminOnly no).                              */
+    {
+      formControlName: 'adminOnly',
+      label: 'Admin notes (visible: false)',
+      config: { attributes: { inputType: 'text', visible: false } },
+      validations: { rules: { required: true } },   // never fires
+      layout: { columnSpan: 12, order: 6 },
+    },
+    {
+      formControlName: 'csrfToken',
+      label: 'CSRF token (isHidden: true)',
+      config: {
+        attributes: {
+          inputType: 'text',
+          isHidden: true,
+          value: 'auto-generated-' + Math.random().toString(36).slice(2, 10),
+        },
+      },
+      validations: { rules: { required: true } },   // STILL VALIDATES
+      layout: { columnSpan: 12, order: 7 },
+    },
+
+    /* ── Textarea + maxLength (the "characters remaining" pattern) ──── */
+    {
+      formControlName: 'bio',
+      label: 'Bio',
+      placeholder: 'A few words about yourself…',
+      config: {
+        attributes: {
+          inputType: 'textarea',
+          autoResize: true,
+          rows: 3,
+          acceptedEvents: ['input'],
+        },
+      },
+      validations: {
+        rules: { maxLength: 200 },
+        messages: { maxLength: 'Bio must be ≤ 200 characters.' },
+      },
+      layout: { columnSpan: 12, order: 8 },
+    },
+
+    /* ── Buttons: acceptedEvents MUST include 'click' to bubble it ──── */
     {
       formControlName: 'submit',
       btnLabel: 'Submit',
-      config: { attributes: { inputType: 'button', buttonRole: 'submit', acceptedEvents: ['click'] } },
-      layout: { columnSpan: 3, order: 2 },
+      labelIcon: 'pi pi-send',
+      config: {
+        attributes: {
+          inputType: 'button',
+          buttonRole: 'submit',
+          acceptedEvents: ['click'],   // common gotcha — omit and (formSubmit) won't fire
+        },
+      },
+      layout: { columnSpan: 3, order: 9 },
+    },
+    {
+      formControlName: 'reset',
+      btnLabel: 'Reset',
+      config: {
+        attributes: {
+          inputType: 'button',
+          buttonRole: 'reset',
+          buttonSeverity: 'secondary',
+          acceptedEvents: ['click'],
+        },
+      },
+      layout: { columnSpan: 3, order: 10 },
     },
   ];
 
-  onSubmit(e: FormEngineEvent) {}
-  onChange(e: FormEngineEvent) {}
+  onSubmit(e: FormEngineEvent) { this.submitted.set(e.values); }
+  onChange(e: FormEngineEvent) { console.log('change:', e); }
 }
+```
+
+Manual install instead of `ng add`:
+
+```bash
+npm install @ngx-json-forms/core @ngx-json-forms/primeng \
+            primeng @primeng/themes primeicons \
+            --legacy-peer-deps
 ```
 
 ## Supported Field Types (PrimeNG adapter)
