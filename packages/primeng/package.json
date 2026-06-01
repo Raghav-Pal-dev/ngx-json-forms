@@ -1,6 +1,6 @@
 {
   "name": "@ngx-json-forms/primeng",
-  "version": "1.21.0",
+  "version": "1.21.1",
   "schematics": "./schematics/collection.json",
   "ng-add": {
     "save": "dependencies"
@@ -49,7 +49,7 @@
     "@angular/core": ">=19.0.0 <22.0.0",
     "@angular/forms": ">=19.0.0 <22.0.0",
     "@angular/platform-browser": ">=19.0.0 <22.0.0",
-    "@ngx-json-forms/core": "^1.21.0",
+    "@ngx-json-forms/core": "^1.21.1",
     "primeng": ">=19.0.0",
     "@primeng/themes": ">=19.0.0",
     "rxjs": "~7.8.0",

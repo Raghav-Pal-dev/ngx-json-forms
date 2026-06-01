@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.21.1] — 2026-06-01
+
+Docs-only release (no code changes).
+
+- Leads all three npm READMEs with the one-command install hero
+  (`ng add @ngx-json-forms/primeng`) right after the header links — the
+  first thing every new visitor sees on the package page.
+- Replaces the small 2-field Quick Start with a single `FormField[]`
+  exercising every major capability so a developer can paste it, hit
+  Submit, and see each feature working — all four validation rules
+  (`required` / `minLength` / `maxLength` / `pattern`) with custom error
+  messages, the v1.21 `inputType` aliases, `showWhen`, the `visible`
+  vs `isHidden` distinction, `acceptedEvents`, `fieldIcon`, `info` hint,
+  `layout.columnSpan` + `layout.order`, and a `{{ submitted() | json }}`
+  output of the submit payload.
+
 ## [1.21.0] — 2026-06-01
 
 The "plug-and-play" release. Setup goes from three providers + manual config
