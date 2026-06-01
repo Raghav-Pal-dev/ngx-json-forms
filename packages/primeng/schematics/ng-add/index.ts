@@ -22,11 +22,16 @@ import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks';
 
 import { NgAddSchema } from './schema';
 
+// Angular peer floor is ^21.2.0 — PrimeNG 21.1.x ships templates that
+// reference `ChangeDetectionStrategy.Eager` (Angular 21.2+), so installing
+// on 21.1.x silently fails inside Vite optimizeDeps with a cryptic
+// "Unsupported change detection strategy" later. Failing fast at npm
+// install time with a clear ERESOLVE message is the kinder UX.
 const PEER_DEPS: Record<string, string> = {
-  '@angular/animations': '^21.0.0',
+  '@angular/animations': '^21.2.0',
   '@primeng/themes': '^21.0.0',
   primeicons: '^7.0.0',
-  primeng: '^21.0.0',
+  primeng: '^21.1.0',
   quill: '^2.0.0',
 };
 
@@ -81,38 +86,43 @@ function patchAppConfig(options: NgAddSchema): Rule {
     const path = '/src/app/app.config.ts';
     if (!tree.exists(path)) {
       context.logger.warn(
-        `[@ngx-json-forms/primeng] ${path} not found. Add the providers manually:\n\n` +
-          "  import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';\n" +
-          "  import { providePrimeNG } from 'primeng/config';\n" +
-          "  import Aura from '@primeng/themes/aura';\n" +
-          "  import { provideNgxJsonForms } from '@ngx-json-forms/core';\n\n" +
+        `[@ngx-json-forms/primeng] ${path} not found. Add the provider manually:\n\n` +
+          "  import { provideNgxJsonFormsPrimeng } from '@ngx-json-forms/primeng';\n\n" +
           "  // ApplicationConfig.providers:\n" +
-          "  //   provideAnimationsAsync(),\n" +
-          "  //   providePrimeNG({ theme: { preset: Aura } }),\n" +
-          "  //   provideNgxJsonForms(),\n",
+          "  //   provideNgxJsonFormsPrimeng(),   // theme + animations + form engine\n",
       );
       return tree;
     }
 
     let src = tree.read(path)!.toString('utf-8');
-    if (src.includes('providePrimeNG')) {
+    if (
+      src.includes('provideNgxJsonFormsPrimeng') ||
+      // Don't overwrite a pre-existing custom three-provider setup either.
+      src.includes('providePrimeNG')
+    ) {
       context.logger.info(
-        '[@ngx-json-forms/primeng] providePrimeNG already wired — skipping app.config.ts edit.',
+        '[@ngx-json-forms/primeng] providers already wired — skipping app.config.ts edit.',
       );
       return tree;
     }
 
+    // Default theme = Aura. If the user passed --theme=nora etc., import that
+    // and pass it through to provideNgxJsonFormsPrimeng's `theme` option.
     const theme = options.theme ?? 'aura';
+    const useCustomTheme = theme !== 'aura';
     const themeImportName = theme.charAt(0).toUpperCase() + theme.slice(1);
 
-    const newImports = [
-      `import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';`,
-      `import { providePrimeNG } from 'primeng/config';`,
-      `import ${themeImportName} from '@primeng/themes/${theme}';`,
-      `import { provideNgxJsonForms } from '@ngx-json-forms/core';`,
-    ].join('\n');
+    // One mega-provider does the work of three. The consumer's
+    // app.config.ts gains a single import + a single line in `providers`.
+    // For non-default themes we also import the preset and pass it through.
+    const newImports = useCustomTheme
+      ? [
+          `import { provideNgxJsonFormsPrimeng } from '@ngx-json-forms/primeng';`,
+          `import ${themeImportName} from '@primeng/themes/${theme}';`,
+        ].join('\n')
+      : `import { provideNgxJsonFormsPrimeng } from '@ngx-json-forms/primeng';`;
 
-    // Insert imports after the last existing import statement
+    // Insert imports after the last existing import statement.
     const importRegex = /^import .+?;$/gm;
     let lastImportEnd = 0;
     let m: RegExpExecArray | null;
@@ -125,35 +135,26 @@ function patchAppConfig(options: NgAddSchema): Rule {
       newImports +
       src.slice(lastImportEnd);
 
-    // Insert providers — find `providers: [` and append our entries.
-    // darkModeSelector is set explicitly so PrimeNG's Aura theme doesn't
-    // auto-flip on system prefers-color-scheme. Without this, users on a
-    // dark-mode OS see white-bg inputs with white text (invisible) because
-    // PrimeNG flips foreground colors but consumer/page surfaces don't
-    // change in lockstep. Dark mode becomes opt-in via `.app-dark` on body.
+    // Append the one-line provider call to the providers array.
     const providersRegex = /(providers\s*:\s*\[)/;
+    const providerCall = useCustomTheme
+      ? `provideNgxJsonFormsPrimeng({ theme: ${themeImportName} })`
+      : `provideNgxJsonFormsPrimeng()`;
+
     if (providersRegex.test(src)) {
       src = src.replace(
         providersRegex,
-        `$1\n` +
-          `    provideAnimationsAsync(),\n` +
-          `    providePrimeNG({\n` +
-          `      theme: {\n` +
-          `        preset: ${themeImportName},\n` +
-          `        options: { darkModeSelector: '.app-dark' },\n` +
-          `      },\n` +
-          `    }),\n` +
-          `    provideNgxJsonForms(),`,
+        `$1\n    ${providerCall},`,
       );
     } else {
       context.logger.warn(
-        `[@ngx-json-forms/primeng] could not find a 'providers: [' array in ${path}. Imports added, but please add the three provider calls manually.`,
+        `[@ngx-json-forms/primeng] could not find a 'providers: [' array in ${path}. Import added, but please add ${providerCall} manually.`,
       );
     }
 
     tree.overwrite(path, src);
     context.logger.info(
-      `[@ngx-json-forms/primeng] wired providers (theme: ${theme}) into ${path}.`,
+      `[@ngx-json-forms/primeng] wired provideNgxJsonFormsPrimeng (theme: ${theme}) into ${path}.`,
     );
     return tree;
   };

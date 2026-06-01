@@ -479,14 +479,14 @@
             </p-inputgroup-addon>
           }
 
-          @switch (field.config.attributes.inputType) {
-            <!-- text / email / number / url -->
+          @switch (switchedInputType(field)) {
+            <!-- text — also catches email / number / url / tel / search via switchedInputType -->
             @case ('text') {
               <input
                 pInputText
                 [id]="inputId(field, idSuffix)"
                 [formControlName]="field.formControlName!"
-                [type]="field.config.attributes.type ?? 'text'"
+                [type]="inputHtmlType(field)"
                 [tabindex]="field.tabIndex ?? 0"
                 [attr.placeholder]="placeholderFor(field)"
                 [attr.aria-describedby]="

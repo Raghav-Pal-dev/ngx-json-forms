@@ -37,15 +37,42 @@ to edit and run in your browser.
 | `@ngx-json-forms/core` | Types, form builder, validation engine, registries, services | [![npm](https://img.shields.io/npm/v/@ngx-json-forms/core)](https://www.npmjs.com/package/@ngx-json-forms/core) |
 | `@ngx-json-forms/primeng` | PrimeNG adapter (renderer + stepper) | [![npm](https://img.shields.io/npm/v/@ngx-json-forms/primeng)](https://www.npmjs.com/package/@ngx-json-forms/primeng) |
 
-## Quick Start (PrimeNG)
+## Quick Start (PrimeNG) — one command
 
 ```bash
-npm install @ngx-json-forms/core @ngx-json-forms/primeng primeng
+ng add @ngx-json-forms/primeng
+```
+
+That installs both packages + PrimeNG + the Aura theme + primeicons, and
+wires `provideNgxJsonFormsPrimeng()` (theme + animations + form engine)
+into your `app.config.ts`. Requires Angular ≥ 21.2 — older versions will
+ERESOLVE at install time so you know to upgrade.
+
+Manual install if you prefer:
+
+```bash
+npm install @ngx-json-forms/core @ngx-json-forms/primeng \
+            primeng @primeng/themes primeicons \
+            --legacy-peer-deps
+```
+
+```ts
+// app.config.ts — one line of setup
+import { ApplicationConfig } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { provideNgxJsonFormsPrimeng } from '@ngx-json-forms/primeng';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideRouter([]),
+    provideNgxJsonFormsPrimeng(),   // ← theme + animations + form engine
+  ],
+};
 ```
 
 ```ts
 import { NgxJsonFormComponent } from '@ngx-json-forms/primeng';
-import { FormEngineService, FormField, FormEngineEvent } from '@ngx-json-forms/core';
+import { FormField, FormEngineEvent } from '@ngx-json-forms/core';
 
 @Component({
   imports: [NgxJsonFormComponent],

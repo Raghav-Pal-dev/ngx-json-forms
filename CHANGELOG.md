@@ -4,6 +4,48 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.21.0] — 2026-06-01
+
+The "plug-and-play" release. Setup goes from three providers + manual config
+to a single command and a single line in `app.config.ts`.
+
+### Added
+
+- **`provideNgxJsonFormsPrimeng()` mega-provider** (in `@ngx-json-forms/primeng`).
+  Bundles `provideAnimationsAsync()` + `providePrimeNG({ theme: { preset: Aura } })`
+  + `provideNgxJsonForms()` into one call. Your `app.config.ts` becomes:
+
+  ```ts
+  providers: [
+    provideRouter(routes),
+    provideNgxJsonFormsPrimeng(),   // ← one line, theme + animations + engine
+  ]
+  ```
+
+  Accepts `{ theme }`, `{ primengConfig }` and `{ formEngine }` for the rare
+  cases that need custom wiring.
+
+### Changed
+
+- **`ng add @ngx-json-forms/primeng` now uses the mega-provider.** New
+  consumers get a one-line provider call instead of three separate imports.
+- **`InputType` aliases `'email'` / `'number'` / `'url'` / `'tel'` / `'search'`
+  now actually work.** Previously these were in the `InputType` union but the
+  renderer's `@switch` had no matching `@case`, so a field with
+  `inputType: 'email'` silently rendered nothing. The renderer now collapses
+  these aliases to the `text` branch and propagates the HTML `type=` attribute
+  automatically — so `inputType: 'email'` produces `<input type="email">` and
+  the matching mobile keyboard, without the `attributes.type` boilerplate.
+- **Tightened peer dependency floors** in both packages: `@angular/*` now
+  ranges `>=19.0.0 <22.0.0` (was `>=19.0.0`). PrimeNG 21.1 was compiled with
+  Angular 21.2 features (`ChangeDetectionStrategy.Eager`), so the
+  `ng add @ngx-json-forms/primeng` schematic also pins
+  `@angular/animations` ≥21.2 and `primeng` ≥21.1 — npm now fails fast at
+  install time on incompatible Angular versions instead of crashing later
+  in Vite's `optimizeDeps` step.
+- **Added `@angular/platform-browser` to `@ngx-json-forms/primeng`
+  peerDependencies** (used by the new mega-provider's `provideAnimationsAsync`).
+
 ## [1.20.2] — 2026-05-31
 
 ### Fixed

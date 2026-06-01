@@ -364,6 +364,42 @@ export class NgxJsonFormComponent {
    * emulated-CSS compiler strips `:has(...)` selectors combined with
    * `::ng-deep`.)
    */
+  /**
+   * The set of `inputType` values that map to the plain `<input pInputText>`
+   * with a different HTML `type=` attribute (e.g. `'email'` → `type="email"`).
+   * Listed in the `InputType` union so users get autocomplete for them, even
+   * though the renderer treats them as a flavour of `'text'` under the hood.
+   */
+  private static readonly TEXT_LIKE_INPUT_TYPES = new Set([
+    'email', 'number', 'url', 'tel', 'search',
+  ]);
+
+  /**
+   * Returns the `inputType` value used by the template's `@switch` to pick a
+   * branch. Text-like aliases (`'email'`, `'number'`, …) collapse to
+   * `'text'` so the renderer only needs one `@case ('text')` branch.
+   */
+  protected switchedInputType(field: FormField): string {
+    const t = field.config.attributes.inputType;
+    if (NgxJsonFormComponent.TEXT_LIKE_INPUT_TYPES.has(t as string)) return 'text';
+    return (t as string) ?? 'text';
+  }
+
+  /**
+   * Returns the HTML `type=` attribute for the text input. Explicit
+   * `attributes.type` wins; otherwise the text-like `inputType` aliases
+   * (`'email'`, `'number'`, …) bubble through as the HTML type so users
+   * get the matching mobile keyboard and built-in browser validation
+   * without writing `inputType: 'text', type: 'email'`.
+   */
+  protected inputHtmlType(field: FormField): string {
+    const explicit = field.config.attributes.type;
+    if (explicit) return explicit;
+    const t = field.config.attributes.inputType;
+    if (NgxJsonFormComponent.TEXT_LIKE_INPUT_TYPES.has(t as string)) return t as string;
+    return 'text';
+  }
+
   protected isAtomicControl(field: FormField): boolean {
     const t = field.config.attributes.inputType;
     return (

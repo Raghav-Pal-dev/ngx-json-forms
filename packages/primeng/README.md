@@ -60,19 +60,21 @@ Optional peers — install only for the fields you use:
 `marked` (markdown), `cropperjs` (imageCrop), `libphonenumber-js` (phoneIntl),
 `quill` (rich-text editor), `@codemirror/*` (code editor).
 
-## Wire-up
+## Wire-up — one line
+
+If you used `ng add @ngx-json-forms/primeng`, this is already done. Otherwise:
 
 `app.config.ts`:
 
 ```ts
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { providePrimeNG } from 'primeng/config';
-import Aura from '@primeng/themes/aura';
+import { ApplicationConfig } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { provideNgxJsonFormsPrimeng } from '@ngx-json-forms/primeng';
 
-export const appConfig = {
+export const appConfig: ApplicationConfig = {
   providers: [
-    provideAnimationsAsync(),
-    providePrimeNG({ theme: { preset: Aura } }),
+    provideRouter([]),
+    provideNgxJsonFormsPrimeng(),   // ← theme + animations + form engine
   ],
 };
 ```
@@ -82,6 +84,20 @@ export const appConfig = {
 ```css
 @import 'primeicons/primeicons.css';
 ```
+
+### Custom theme
+
+`provideNgxJsonFormsPrimeng()` uses the **Aura** preset by default. Override it:
+
+```ts
+import Nora from '@primeng/themes/nora';
+
+providers: [
+  provideNgxJsonFormsPrimeng({ theme: Nora }),
+]
+```
+
+Or pass a full PrimeNG config object via `primengConfig` for ripple, CSP, etc.
 
 ## Quick start
 

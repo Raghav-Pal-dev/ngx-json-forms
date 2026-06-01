@@ -1,6 +1,6 @@
 {
   "name": "@ngx-json-forms/core",
-  "version": "1.20.2",
+  "version": "1.21.0",
   "description": "JSON-driven Angular form engine. Build dynamic, reactive Angular forms from a JSON config — validation, conditional fields (showWhen), computed values, multi-step wizard, FormArray repeaters, persistence — without writing template code. Pair with @ngx-json-forms/primeng for the renderer.",
   "keywords": [
     "angular",
@@ -42,8 +42,8 @@
   },
   "homepage": "https://raghav-pal-dev.github.io/ngx-json-forms/",
   "peerDependencies": {
-    "@angular/core": ">=19.0.0",
-    "@angular/forms": ">=19.0.0",
+    "@angular/core": ">=19.0.0 <22.0.0",
+    "@angular/forms": ">=19.0.0 <22.0.0",
     "rxjs": "~7.8.0"
   },
   "sideEffects": false
