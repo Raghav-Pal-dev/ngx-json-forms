@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.20.2] — 2026-05-31
+
+### Fixed
+
+- **Consumer build failure under Vite `optimizeDeps`.** The
+  `<ngx-json-form-debug>` component template used a parenthesised arrow
+  function (`open.update((v) => !v)`) which Angular's JIT template parser
+  rejected when the published `.mjs` was pre-bundled by Vite in some
+  consumer setups (e.g. Angular 21 `ng serve`), producing
+  `Parser Error: Missing expected )`. Refactored to `open.set(!open())`.
+  The library's own demo bypassed this path via Nx source imports, which
+  is why the bug only surfaced in real installs.
+
 ## [1.20.1] — 2026-05-29
 
 Docs-only release (no code changes).

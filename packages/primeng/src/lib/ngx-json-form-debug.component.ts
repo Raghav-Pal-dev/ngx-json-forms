@@ -104,7 +104,7 @@ import { FormEngineService } from '@ngx-json-forms/core';
   ],
   template: `
     <div class="panel" [class.floating]="position() === 'floating'">
-      <div class="header" (click)="open.update((v) => !v)">
+      <div class="header" (click)="open.set(!open())">
         <span class="chev" [class.open]="open()">▶</span>
         <span class="title">ngx-json-form-debug</span>
         <span class="pill" [class.valid]="valid()" [class.invalid]="!valid()">
